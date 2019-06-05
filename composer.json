@@ -1,0 +1,24 @@
+{
+    "name": "cekta/di",
+    "description": "psr/container implementation for humans",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Cekta\\DI\\": "src/"
+        }
+    },
+    "require": {
+        "psr/container": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.1"
+    },
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Evgeniy Kuvshinov",
+            "email": "smpl@itmywork.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}
