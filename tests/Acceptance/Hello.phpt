@@ -1,8 +1,17 @@
 --TEST--
-echo - basic test for echo language construct
+Набор параметров ключ значение
 --FILE--
 <?php
-echo 'This works ', 'and takes args!';
+
+use Cekta\DI\Container;
+
+require __DIR__ . '/../../vendor/autoload.php';
+
+$container = new Container([
+    'username' => 'root',
+    'password' => 12345
+]);
+echo $container->get('username');
 ?>
 --EXPECT--
-This works and takes args!
+root
