@@ -12,5 +12,4 @@ class NotFound extends InvalidArgumentException implements NotFoundExceptionInte
     {
         parent::__construct("Container `$name` not found");
     }
-
 }
