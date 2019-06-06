@@ -23,7 +23,11 @@ class Container implements ContainerInterface
         if (!$this->has($name)) {
             throw new NotFound($name);
         }
-        return $this->values[$name];
+        $result = $this->values[$name];
+        if ($result instanceof LoaderInterface) {
+            $result = $result($this);
+        }
+        return $result;
     }
 
 
