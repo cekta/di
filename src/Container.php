@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cekta\DI;
 
 use Cekta\DI\Exception\NotFound;
+use Closure;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -23,7 +24,11 @@ class Container implements ContainerInterface
         if (!$this->has($name)) {
             throw new NotFound($name);
         }
-        return $this->values[$name];
+        $result = $this->values[$name];
+        if ($result instanceof Closure) {
+            $result = $result($this);
+        }
+        return $result;
     }
 
 
