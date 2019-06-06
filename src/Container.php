@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Cekta\DI;
 
 use Cekta\DI\Exception\NotFound;
-use Closure;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -25,7 +24,7 @@ class Container implements ContainerInterface
             throw new NotFound($name);
         }
         $result = $this->values[$name];
-        if ($result instanceof Closure) {
+        if ($result instanceof LoaderInterface) {
             $result = $result($this);
         }
         return $result;
