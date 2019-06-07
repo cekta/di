@@ -29,17 +29,6 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @return ContainerInterface
-     * @throws ReflectionException
-     */
-    private function getContainerMock(): ContainerInterface
-    {
-        $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
-        return $container;
-    }
-
-    /**
      * @throws ReflectionException
      */
     public function testProvideNotFound()
@@ -63,5 +52,16 @@ class KeyValueTest extends TestCase
             'a' => $loader
         ]);
         $this->assertEquals(123, $provider->provide('a', $this->getContainerMock()));
+    }
+
+    /**
+     * @return ContainerInterface
+     * @throws ReflectionException
+     */
+    private function getContainerMock(): ContainerInterface
+    {
+        $container = $this->createMock(ContainerInterface::class);
+        /** @var ContainerInterface $container */
+        return $container;
     }
 }
