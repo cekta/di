@@ -9,30 +9,37 @@ use Psr\Container\ContainerInterface;
 class Container implements ContainerInterface
 {
     /**
-     * @var array
+     * @var ProviderInterface[]
      */
-    private $values;
+    private $providers;
 
-    public function __construct(array $values)
+    public function __construct(ProviderInterface ... $providers)
     {
-        $this->values = $values;
+        $this->providers = $providers;
     }
 
     public function get($name)
     {
-        if (!$this->has($name)) {
+        $provider = $this->findProvider($name);
+        if (null === $provider) {
             throw new NotFound($name);
         }
-        $result = $this->values[$name];
-        if ($result instanceof LoaderInterface) {
-            $result = $result($this);
-        }
-        return $result;
+        return $provider->provide($name, $this);
     }
 
 
     public function has($name)
     {
-        return array_key_exists($name, $this->values);
+        return !is_null($this->findProvider($name));
+    }
+
+    private function findProvider(string $name): ?ProviderInterface
+    {
+        foreach ($this->providers as $provider) {
+            if ($provider->hasProvide($name)) {
+                return $provider;
+            }
+        }
+        return null;
     }
 }
