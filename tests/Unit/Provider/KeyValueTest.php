@@ -8,55 +8,49 @@ use Cekta\DI\Provider\KeyValue;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
 
 class KeyValueTest extends TestCase
 {
-    public function testHasProvide()
+    final public function testHasProvide(): void
     {
-        $provider = new KeyValue(['a' => 'value']);
-        $this->assertTrue($provider->hasProvide('a'));
+        $provider = new KeyValue(['key' => 'value']);
+        $this->assertTrue($provider->hasProvide('key'));
         $this->assertFalse($provider->hasProvide('invalid name'));
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvide()
+    final public function testProvide(): void
     {
-        $provider = new KeyValue(['a' => 'value']);
-        $this->assertEquals('value', $provider->provide('a', $this->getContainerMock()));
+        $this->assertEquals(
+            'value',
+            (new KeyValue(['key' => 'value']))->provide(
+                'key',
+                $this->getContainerMock()
+            )
+        );
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideNotFound()
+    final public function testProvideNotFound(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');
 
-        $provider = new KeyValue([]);
-        $provider->provide('magic', $this->getContainerMock());
+        (new KeyValue([]))->provide('magic', $this->getContainerMock());
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideLoader()
+    final public function testProvideLoader(): void
     {
         $loader = $this->createMock(LoaderInterface::class);
-        $loader->method('__invoke')
-            ->willReturn(123);
-        $provider = new KeyValue([
-            'a' => $loader
-        ]);
-        $this->assertEquals(123, $provider->provide('a', $this->getContainerMock()));
+        $loader->method('__invoke')->willReturn('test');
+        $provider = new KeyValue([ 'a' => $loader ]);
+
+        $this->assertEquals(
+            'test',
+            $provider->provide('a', $this->getContainerMock())
+        );
     }
 
     /**
      * @return ContainerInterface
-     * @throws ReflectionException
      */
     private function getContainerMock(): ContainerInterface
     {
