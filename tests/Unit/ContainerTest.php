@@ -3,18 +3,15 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit;
 
-use Cekta\DI\Container;
+use Psr\Container\NotFoundExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use Cekta\DI\Container;
 
-/**
- * @covers \Cekta\DI\Container
- */
+/** @covers \Cekta\DI\Container */
 class ContainerTest extends TestCase
 {
-    public function testGetInvalidName()
+    final public function testGetInvalidName(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `invalid name` not found');
@@ -23,41 +20,27 @@ class ContainerTest extends TestCase
         $container->get('invalid name');
     }
 
-    public function testGet()
+    final public function testGet(): void
     {
-        $provider = new class implements ProviderInterface
-        {
-            public function provide(string $name, ContainerInterface $container)
-            {
-                return 123;
-            }
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->expects(static::once())->method('provide')->willReturn('test');
+        $provider->expects(static::once())->method('hasProvide')->willReturn(true);
+        assert($provider instanceof ProviderInterface);
 
-            public function hasProvide(string $name): bool
-            {
-                return true;
-            }
-        };
-        $container = new Container($provider);
-        $this->assertEquals(123, $container->get('a'));
+        static::assertEquals('test', (new Container($provider))->get('name'));
     }
 
-    public function testHas()
+    final public function testHas(): void
     {
-        $provider = new class implements ProviderInterface
-        {
+        $provider = $this->createMock(ProviderInterface::class);
+        assert($provider instanceof ProviderInterface);
+        $provider->expects(static::never())->method('provide');
+        $provider->expects(static::exactly(2))->method('hasProvide')
+            ->willReturnCallback(static function ($name) {
+                return $name === 'magic';
+            });
 
-            public function provide(string $name, ContainerInterface $container)
-            {
-                return 123;
-            }
-
-            public function hasProvide(string $name): bool
-            {
-                return $name === 'magic' ? true : false;
-            }
-        };
-        $container = new Container($provider);
-        $this->assertTrue($container->has('magic'));
-        $this->assertFalse($container->has('invalid name'));
+        static::assertTrue((new Container($provider))->has('magic'));
+        static::assertFalse((new Container($provider))->has('invalid name'));
     }
 }
