@@ -7,13 +7,12 @@ use Cekta\DI\Provider\Autowire;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
-use stdClass;
 use Throwable;
+use stdClass;
 
 class AutowireTest extends TestCase
 {
-    public function testHasProvide()
+    final public function testHasProvide(): void
     {
         $provider = new Autowire();
         $this->assertTrue($provider->hasProvide(stdClass::class));
@@ -21,35 +20,30 @@ class AutowireTest extends TestCase
         $this->assertFalse($provider->hasProvide(Throwable::class));
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideWithoutArguments()
+    final public function testProvideWithoutArguments(): void
     {
-        $provider = new Autowire();
-        $this->assertEquals(new stdClass(), $provider->provide(stdClass::class, $this->getContainerMock()));
+        $this->assertEquals(
+            new stdClass(),
+            (new Autowire())->provide(
+                stdClass::class,
+                $this->getContainerMock()
+            )
+        );
     }
 
-    /**
-     * @return ContainerInterface
-     * @throws ReflectionException
-     */
+    /** @return ContainerInterface */
     private function getContainerMock(): ContainerInterface
     {
         $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
+        assert($container instanceof ContainerInterface);
         return $container;
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideInvalidName()
+    final public function testProvideInvalidName(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');
 
-        $provider = new Autowire();
-        $provider->provide('magic', $this->getContainerMock());
+        (new Autowire())->provide('magic', $this->getContainerMock());
     }
 }

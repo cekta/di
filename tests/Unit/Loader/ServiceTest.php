@@ -1,49 +1,47 @@
 <?php
-declare(strict_types=1);
 
 namespace Cekta\DI\Test\Loader;
 
 use Cekta\DI\Loader\Service;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 
 class ServiceTest extends TestCase
 {
-    /**
-     * @throws ReflectionException
-     */
-    public function testInvoke()
+    final public function testInvoke(): void
     {
-        $service = new Service(function () {
-            return 123;
-        });
-        $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
-        $this->assertEquals(123, $service($container));
+        $this->assertEquals(
+            'test',
+            (new Service(static function () {
+                return 'test';
+            }))($this->createMock(ContainerInterface::class))
+        );
     }
 
-    public function testInvokeGenerate()
+    final public function testInvokeGenerate(): void
     {
-        $container = new class implements ContainerInterface
-        {
-            public function get($id)
-            {
-                $a = [
-                    'type' => 'mysql',
-                    'name' => 'test'
-                ];
-                return $a[$id];
-            }
+        /** @expected mysql:name */
+        $this->assertEquals(
+            'mysql:test',
+            (new Service(static function (ContainerInterface $c) {
+                return $c->get('type').$c->get('name');
+            }))(
+                new class implements ContainerInterface
+                {
+                    public function get($id)
+                    {
+                        return [
+                            'type' => 'mysql:',
+                            'name' => 'test'
+                        ][$id];
+                    }
 
-            public function has($id)
-            {
-                return true;
-            }
-        };
-        $service = new Service(function (ContainerInterface $c) {
-            return "{$c->get('type')}://dbName={$c->get('name')}";
-        });
-        $this->assertEquals('mysql://dbName=test', $service($container));
+                    public function has($id)
+                    {
+                        return true;
+                    }
+                }
+            )
+        );
     }
 }
