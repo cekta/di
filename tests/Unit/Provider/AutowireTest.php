@@ -30,8 +30,7 @@ class AutowireTest extends TestCase
             )
         );
     }
-
-    /** @return ContainerInterface */
+    
     private function getContainerMock(): ContainerInterface
     {
         $container = $this->createMock(ContainerInterface::class);

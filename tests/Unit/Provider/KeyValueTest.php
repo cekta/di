@@ -11,51 +11,46 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class KeyValueTest extends TestCase
 {
-    final public function testHasProvide(): void
+    /** @var ContainerInterface | null - Mock Container */
+    private $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function testHasProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
         $this->assertTrue($provider->hasProvide('key'));
         $this->assertFalse($provider->hasProvide('invalid name'));
     }
 
-    final public function testProvide(): void
+    public function testProvide(): void
     {
         $this->assertEquals(
             'value',
-            (new KeyValue(['key' => 'value']))->provide(
-                'key',
-                $this->getContainerMock()
-            )
+            (new KeyValue(['key' => 'value']))->provide('key', $this->container)
         );
     }
 
-    final public function testProvideNotFound(): void
+    public function testProvideNotFound(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');
 
-        (new KeyValue([]))->provide('magic', $this->getContainerMock());
+        (new KeyValue([]))->provide('magic', $this->container);
     }
 
-    final public function testProvideLoader(): void
+    public function testProvideLoader(): void
     {
         $loader = $this->createMock(LoaderInterface::class);
         $loader->method('__invoke')->willReturn('test');
-        $provider = new KeyValue([ 'a' => $loader ]);
+        $provider = new KeyValue(['key' => $loader]);
 
         $this->assertEquals(
             'test',
-            $provider->provide('a', $this->getContainerMock())
+            $provider->provide('key', $this->container)
         );
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    private function getContainerMock(): ContainerInterface
-    {
-        $container = $this->createMock(ContainerInterface::class);
-        assert($container instanceof ContainerInterface);
-        return $container;
     }
 }
