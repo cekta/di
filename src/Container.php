@@ -8,10 +8,8 @@ use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
 {
-    /**
-     * @var ProviderInterface[]
-     */
     private $providers;
+    private $values = [];
 
     public function __construct(ProviderInterface ... $providers)
     {
@@ -20,11 +18,15 @@ class Container implements ContainerInterface
 
     public function get($name)
     {
-        $provider = $this->findProvider($name);
-        if (null === $provider) {
-            throw new NotFound($name);
+        if (!array_key_exists($name, $this->values)) {
+            $provider = $this->findProvider($name);
+            if (null === $provider) {
+                throw new NotFound($name);
+            }
+            $this->values[$name] = $provider->provide($name, $this);
         }
-        return $provider->provide($name, $this);
+
+        return $this->values[$name];
     }
 
 
