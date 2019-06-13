@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Provider;
+namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
@@ -61,7 +61,7 @@ class KeyValueTest extends TestCase
     private function getContainerMock(): ContainerInterface
     {
         $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
+        assert($container instanceof ContainerInterface);
         return $container;
     }
 }

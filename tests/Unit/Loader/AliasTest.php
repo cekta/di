@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Loader;
+namespace Cekta\DI\Test\Unit\Loader;
 
 use Cekta\DI\Loader\Alias;
 use PHPUnit\Framework\TestCase;
@@ -20,7 +20,7 @@ class AliasTest extends TestCase
             ->with($this->equalTo('a'))
             ->willReturn(123);
         $alias = new Alias('a');
-        /** @var ContainerInterface $container */
+        assert($container instanceof ContainerInterface);
         $this->assertEquals(123, $alias($container));
     }
 }

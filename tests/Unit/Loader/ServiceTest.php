@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Loader;
+namespace Cekta\DI\Test\Unit\Loader;
 
 use Cekta\DI\Loader\Service;
 use PHPUnit\Framework\TestCase;
@@ -19,7 +19,7 @@ class ServiceTest extends TestCase
             return 123;
         });
         $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
+        assert($container instanceof ContainerInterface);
         $this->assertEquals(123, $service($container));
     }
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Provider;
+namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
 use PHPUnit\Framework\TestCase;
@@ -37,7 +37,7 @@ class AutowireTest extends TestCase
     private function getContainerMock(): ContainerInterface
     {
         $container = $this->createMock(ContainerInterface::class);
-        /** @var ContainerInterface $container */
+        assert($container instanceof ContainerInterface);
         return $container;
     }
 
