@@ -8,9 +8,8 @@ use PHPUnit\Framework\TestCase;
 
 class NotFoundTest extends TestCase
 {
-    public function testMessage()
+    public function testMessage(): void
     {
-        $exception = new NotFound('name');
-        $this->assertEquals('Container `name` not found', $exception->getMessage());
+        static::assertEquals('Container `name` not found', (new NotFound('name'))->getMessage());
     }
 }

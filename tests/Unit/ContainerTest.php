@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit;
 
@@ -22,22 +23,24 @@ class ContainerTest extends TestCase
     final public function testGet(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
-        $provider->expects($this->once())->method('provide')->willReturn('test');
-        $provider->expects($this->once())->method('hasProvide')->willReturn(true);
+        $provider->expects(static::once())->method('provide')->willReturn('test');
+        $provider->expects(static::once())->method('hasProvide')->willReturn(true);
+        assert($provider instanceof ProviderInterface);
 
-        $this->assertEquals('test', (new Container($provider))->get('name'));
+        static::assertEquals('test', (new Container($provider))->get('name'));
     }
 
     final public function testHas(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
-        $provider->expects($this->never())->method('provide');
-        $provider->expects($this->exactly(2))->method('hasProvide')
+        assert($provider instanceof ProviderInterface);
+        $provider->expects(static::never())->method('provide');
+        $provider->expects(static::exactly(2))->method('hasProvide')
             ->willReturnCallback(static function ($name) {
                 return $name === 'magic';
             });
 
-        $this->assertTrue((new Container($provider))->has('magic'));
-        $this->assertFalse((new Container($provider))->has('invalid name'));
+        static::assertTrue((new Container($provider))->has('magic'));
+        static::assertFalse((new Container($provider))->has('invalid name'));
     }
 }
