@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit;
 
-use Exception;
 use Psr\Container\NotFoundExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +20,6 @@ class ContainerTest extends TestCase
         $container->get('invalid name');
     }
 
-    /** @throws Exception */
     public function testGet(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
@@ -32,7 +30,6 @@ class ContainerTest extends TestCase
         static::assertEquals('test', (new Container($provider))->get('name'));
     }
 
-    /** @throws Exception */
     public function testHas(): void
     {
         $provider = $this->createMock(ProviderInterface::class);

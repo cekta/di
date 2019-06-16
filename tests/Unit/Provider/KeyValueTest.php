@@ -5,7 +5,6 @@ namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -16,7 +15,6 @@ class KeyValueTest extends TestCase
     /** @var ContainerInterface|null|MockObject - Mock Container */
     private $container;
 
-    /** @throws Exception */
     public function setUp(): void
     {
         $this->container = $this->createMock(ContainerInterface::class);

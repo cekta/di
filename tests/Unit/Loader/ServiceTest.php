@@ -4,13 +4,11 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Loader;
 
 use Cekta\DI\Loader\Service;
-use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 class ServiceTest extends TestCase
 {
-    /** @throws Exception */
     public function testInvoke(): void
     {
         $service = new Service(static function () {
@@ -22,7 +20,6 @@ class ServiceTest extends TestCase
         static::assertEquals('test', $service($container));
     }
 
-    /** @throws Exception */
     public function testInvokeDeep(): void
     {
         $container = $this->createMock(ContainerInterface::class);
