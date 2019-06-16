@@ -11,7 +11,7 @@ use Cekta\DI\Container;
 /** @covers \Cekta\DI\Container */
 class ContainerTest extends TestCase
 {
-    final public function testGetInvalidName(): void
+    public function testGetInvalidName(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `invalid name` not found');
@@ -20,7 +20,7 @@ class ContainerTest extends TestCase
         $container->get('invalid name');
     }
 
-    final public function testGet(): void
+    public function testGet(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
         $provider->expects(static::once())->method('provide')->willReturn('test');
@@ -30,7 +30,7 @@ class ContainerTest extends TestCase
         static::assertEquals('test', (new Container($provider))->get('name'));
     }
 
-    final public function testHas(): void
+    public function testHas(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
         assert($provider instanceof ProviderInterface);

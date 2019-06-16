@@ -12,7 +12,7 @@ use stdClass;
 
 class AutowireTest extends TestCase
 {
-    final public function testHasProvide(): void
+    public function testHasProvide(): void
     {
         $provider = new Autowire();
         $this->assertTrue($provider->hasProvide(stdClass::class));
@@ -20,14 +20,11 @@ class AutowireTest extends TestCase
         $this->assertFalse($provider->hasProvide(Throwable::class));
     }
 
-    final public function testProvideWithoutArguments(): void
+    public function testProvideWithoutArguments(): void
     {
         $this->assertEquals(
             new stdClass(),
-            (new Autowire())->provide(
-                stdClass::class,
-                $this->getContainerMock()
-            )
+            (new Autowire())->provide(stdClass::class, $this->getContainerMock())
         );
     }
 
@@ -39,7 +36,7 @@ class AutowireTest extends TestCase
         return $container;
     }
 
-    final public function testProvideInvalidName(): void
+    public function testProvideInvalidName(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');

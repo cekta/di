@@ -11,25 +11,22 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class KeyValueTest extends TestCase
 {
-    final public function testHasProvide(): void
+    public function testHasProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
         $this->assertTrue($provider->hasProvide('key'));
         $this->assertFalse($provider->hasProvide('invalid name'));
     }
 
-    final public function testProvide(): void
+    public function testProvide(): void
     {
         $this->assertEquals(
             'value',
-            (new KeyValue(['key' => 'value']))->provide(
-                'key',
-                $this->getContainerMock()
-            )
+            (new KeyValue(['key' => 'value']))->provide('key', $this->getContainerMock())
         );
     }
 
-    final public function testProvideNotFound(): void
+    public function testProvideNotFound(): void
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');
@@ -37,7 +34,7 @@ class KeyValueTest extends TestCase
         (new KeyValue([]))->provide('magic', $this->getContainerMock());
     }
 
-    final public function testProvideLoader(): void
+    public function testProvideLoader(): void
     {
         $loader = $this->createMock(LoaderInterface::class);
         $loader->method('__invoke')->willReturn('test');
