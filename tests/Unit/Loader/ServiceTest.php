@@ -6,44 +6,34 @@ namespace Cekta\DI\Test\Unit\Loader;
 use Cekta\DI\Loader\Service;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 
 class ServiceTest extends TestCase
 {
-    /**
-     * @throws ReflectionException
-     */
-    public function testInvoke()
+    public function testInvoke(): void
     {
-        $service = new Service(function () {
-            return 123;
+        $service = new Service(static function () {
+            return 'test';
         });
+
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
-        $this->assertEquals(123, $service($container));
+        static::assertEquals('test', $service($container));
     }
 
-    public function testInvokeGenerate()
+    public function testInvokeDeep(): void
     {
-        $container = new class implements ContainerInterface
-        {
-            public function get($id)
-            {
-                $a = [
-                    'type' => 'mysql',
-                    'name' => 'test'
-                ];
-                return $a[$id];
-            }
+        $container = $this->createMock(ContainerInterface::class);
+        assert($container instanceof ContainerInterface);
+        $container->expects(static::never())->method('has');
+        $container->expects(static::exactly(2))->method('get')
+            ->willReturnCallback(static function ($id) {
+                return ['type' => 'mysql', 'name' => 'test'][$id];
+            });
 
-            public function has($id)
-            {
-                return true;
-            }
-        };
-        $service = new Service(function (ContainerInterface $c) {
-            return "{$c->get('type')}://dbName={$c->get('name')}";
+        $service = new Service(static function (ContainerInterface $c) {
+            return "{$c->get('type')}:{$c->get('name')}";
         });
-        $this->assertEquals('mysql://dbName=test', $service($container));
+
+        static::assertEquals('mysql:test', $service($container));
     }
 }

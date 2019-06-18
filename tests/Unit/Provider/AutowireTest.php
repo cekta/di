@@ -4,52 +4,45 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
-use stdClass;
 use Throwable;
+use stdClass;
 
 class AutowireTest extends TestCase
 {
-    public function testHasProvide()
+    /** @var MockObject|ContainerInterface|null */
+    private $container;
+
+    public function setUp(): void
+    {
+        $this->container = $this->createMock(ContainerInterface::class);
+    }
+
+    public function testHasProvide(): void
     {
         $provider = new Autowire();
-        $this->assertTrue($provider->hasProvide(stdClass::class));
-        $this->assertFalse($provider->hasProvide('invalid name'));
-        $this->assertFalse($provider->hasProvide(Throwable::class));
+        static::assertTrue($provider->hasProvide(stdClass::class));
+        static::assertFalse($provider->hasProvide('invalid name'));
+        static::assertFalse($provider->hasProvide(Throwable::class));
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideWithoutArguments()
+    public function testProvideWithoutArguments(): void
     {
-        $provider = new Autowire();
-        $this->assertEquals(new stdClass(), $provider->provide(stdClass::class, $this->getContainerMock()));
+        /** need hard type correction for Autowire class */
+        assert($this->container instanceof ContainerInterface);
+        static::assertEquals(new stdClass(), (new Autowire())
+            ->provide(stdClass::class, $this->container));
     }
 
-    /**
-     * @return ContainerInterface
-     * @throws ReflectionException
-     */
-    private function getContainerMock(): ContainerInterface
+    public function testProvideInvalidName(): void
     {
-        $container = $this->createMock(ContainerInterface::class);
-        assert($container instanceof ContainerInterface);
-        return $container;
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    public function testProvideInvalidName()
-    {
+        assert($this->container instanceof ContainerInterface);
         $this->expectException(NotFoundExceptionInterface::class);
         $this->expectExceptionMessage('Container `magic` not found');
 
-        $provider = new Autowire();
-        $provider->provide('magic', $this->getContainerMock());
+        (new Autowire())->provide('magic', $this->container);
     }
 }
