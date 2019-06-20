@@ -8,8 +8,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Throwable;
 use stdClass;
+use Throwable;
 
 class AutowireTest extends TestCase
 {
@@ -31,7 +31,6 @@ class AutowireTest extends TestCase
 
     public function testProvideWithoutArguments(): void
     {
-        /** need hard type correction for Autowire class */
         assert($this->container instanceof ContainerInterface);
         static::assertEquals(new stdClass(), (new Autowire())
             ->provide(stdClass::class, $this->container));
