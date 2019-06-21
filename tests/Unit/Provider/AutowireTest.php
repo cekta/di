@@ -11,6 +11,9 @@ use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
 use Throwable;
 
+/**
+ * @covers \Cekta\DI\Provider\Autowire
+ */
 class AutowireTest extends TestCase
 {
     /** @var MockObject|ContainerInterface|null */
