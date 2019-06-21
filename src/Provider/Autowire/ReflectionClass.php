@@ -3,14 +3,13 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire;
 
-use ReflectionClass;
 use ReflectionMethod;
 
-class Reflection
+class ReflectionClass extends \ReflectionClass
 {
-    public static function getDependecies(ReflectionClass $class): array
+    public function readDependecies(): array
     {
-        $contructor = $class->getConstructor();
+        $contructor = $this->getConstructor();
         if (null === $contructor) {
             return [];
         }
