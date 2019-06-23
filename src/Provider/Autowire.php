@@ -15,7 +15,7 @@ class Autowire implements ProviderInterface
         try {
             $class = new Autowire\ReflectionClass($name);
             $args = [];
-            foreach ($class->readDependecies() as $dependecy) {
+            foreach ($class->getDependencies() as $dependecy) {
                 $args[] = $container->get($dependecy);
             }
             return $class->newInstanceArgs($args);

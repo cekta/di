@@ -13,7 +13,7 @@ class ReflectionClassTest extends TestCase
     public function testReadDependencies()
     {
         $class = new ReflectionClass(stdClass::class);
-        self::assertSame([], $class->readDependecies());
+        self::assertSame([], $class->getDependencies());
     }
 
     /**
@@ -34,6 +34,6 @@ class ReflectionClassTest extends TestCase
         };
         $name = get_class($obj);
         $class = new ReflectionClass($name);
-        self::assertSame([stdClass::class, 'b'], $class->readDependecies());
+        self::assertSame([stdClass::class, 'b'], $class->getDependencies());
     }
 }
