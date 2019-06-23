@@ -4,29 +4,41 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider\Autowire;
 
 use ReflectionMethod;
+use ReflectionParameter;
 
 class ReflectionClass extends \ReflectionClass
 {
-    public function readDependecies(): array
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
     {
-        $contructor = $this->getConstructor();
-        if (null === $contructor) {
+        $constructor = $this->getConstructor();
+        if (null === $constructor) {
             return [];
         }
-        return self::readConstructor($contructor);
+        return $this->getMethodParameters($constructor);
     }
 
-    private static function readConstructor(ReflectionMethod $constructor): array
+    /**
+     * @param ReflectionMethod $method
+     * @return string[]
+     */
+    private function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
-        foreach ($constructor->getParameters() as $parameter) {
-            $class = $parameter->getClass();
-            if (null !== $class) {
-                $result[] = $class->name;
-            } else {
-                $result[] = $parameter->name;
-            }
+        foreach ($method->getParameters() as $parameter) {
+            $result[] = $this->getParameterName($parameter);
         }
         return $result;
+    }
+
+    private function getParameterName(ReflectionParameter $parameter): string
+    {
+        $class = $parameter->getClass();
+        if (null !== $class) {
+            return $class->name;
+        }
+        return $parameter->name;
     }
 }
