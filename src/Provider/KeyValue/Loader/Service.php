@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Loader;
+namespace Cekta\DI\Provider\KeyValue\Loader;
 
-use Cekta\DI\LoaderInterface;
+use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Closure;
 use Psr\Container\ContainerInterface;
 

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Loader;
+namespace Cekta\DI\Test\Unit\Provider\KeyValue\Loader;
 
-use Cekta\DI\Loader\Service;
+use Cekta\DI\Provider\KeyValue\Loader\Service;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

@@ -4,8 +4,8 @@ Autowire проверка на вызов с аргументами разных
 <?php
 
 use Cekta\DI\Container;
-use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\KeyValue\Loader\Service;
 
 require __DIR__ . '/../../vendor/autoload.php';
 

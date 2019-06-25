@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
-use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
