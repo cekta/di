@@ -20,20 +20,20 @@ class KeyValue implements ProviderInterface
         $this->values = $values;
     }
 
-    public function provide(string $name, ContainerInterface $container)
+    public function provide(string $id, ContainerInterface $container)
     {
-        if (!$this->hasProvide($name)) {
-            throw new NotFound($name);
+        if (!$this->canProvide($id)) {
+            throw new NotFound($id);
         }
-        $result = $this->values[$name];
+        $result = $this->values[$id];
         if ($result instanceof LoaderInterface) {
             $result = $result($container);
         }
         return $result;
     }
 
-    public function hasProvide(string $name): bool
+    public function canProvide(string $id): bool
     {
-        return array_key_exists($name, $this->values);
+        return array_key_exists($id, $this->values);
     }
 }

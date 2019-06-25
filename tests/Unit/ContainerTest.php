@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit;
 
-use Psr\Container\NotFoundExceptionInterface;
+use Cekta\DI\Container;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\TestCase;
-use Cekta\DI\Container;
+use Psr\Container\NotFoundExceptionInterface;
 
 /** @covers \Cekta\DI\Container */
 class ContainerTest extends TestCase
@@ -24,7 +24,7 @@ class ContainerTest extends TestCase
     {
         $provider = $this->createMock(ProviderInterface::class);
         $provider->expects(static::once())->method('provide')->willReturn('test');
-        $provider->expects(static::once())->method('hasProvide')->willReturn(true);
+        $provider->expects(static::once())->method('canProvide')->willReturn(true);
         assert($provider instanceof ProviderInterface);
 
         static::assertEquals('test', (new Container($provider))->get('name'));
@@ -35,7 +35,7 @@ class ContainerTest extends TestCase
         $provider = $this->createMock(ProviderInterface::class);
         assert($provider instanceof ProviderInterface);
         $provider->expects(static::never())->method('provide');
-        $provider->expects(static::exactly(2))->method('hasProvide')
+        $provider->expects(static::exactly(2))->method('canProvide')
             ->willReturnCallback(static function ($name) {
                 return $name === 'magic';
             });

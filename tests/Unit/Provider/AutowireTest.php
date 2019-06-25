@@ -27,9 +27,9 @@ class AutowireTest extends TestCase
     public function testHasProvide(): void
     {
         $provider = new Autowire();
-        static::assertTrue($provider->hasProvide(stdClass::class));
-        static::assertFalse($provider->hasProvide('invalid name'));
-        static::assertFalse($provider->hasProvide(Throwable::class));
+        static::assertTrue($provider->canProvide(stdClass::class));
+        static::assertFalse($provider->canProvide('invalid name'));
+        static::assertFalse($provider->canProvide(Throwable::class));
     }
 
     public function testProvideWithoutArguments(): void

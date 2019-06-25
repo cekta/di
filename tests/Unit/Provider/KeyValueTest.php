@@ -23,8 +23,8 @@ class KeyValueTest extends TestCase
     public function testHasProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
-        static::assertTrue($provider->hasProvide('key'));
-        static::assertFalse($provider->hasProvide('invalid name'));
+        static::assertTrue($provider->canProvide('key'));
+        static::assertFalse($provider->canProvide('invalid name'));
     }
 
     public function testProvide(): void

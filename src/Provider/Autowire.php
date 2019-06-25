@@ -10,22 +10,22 @@ use ReflectionException;
 
 class Autowire implements ProviderInterface
 {
-    public function provide(string $name, ContainerInterface $container)
+    public function provide(string $id, ContainerInterface $container)
     {
         try {
-            $class = new Autowire\ReflectionClass($name);
+            $class = new Autowire\ReflectionClass($id);
             $args = [];
             foreach ($class->getDependencies() as $dependecy) {
                 $args[] = $container->get($dependecy);
             }
             return $class->newInstanceArgs($args);
         } catch (ReflectionException $e) {
-            throw new NotFound($name);
+            throw new NotFound($id);
         }
     }
 
-    public function hasProvide(string $name): bool
+    public function canProvide(string $id): bool
     {
-        return class_exists($name);
+        return class_exists($id);
     }
 }

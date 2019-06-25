@@ -36,7 +36,7 @@ class Container implements ContainerInterface
     private function findProvider(string $name): ?ProviderInterface
     {
         foreach ($this->providers as $provider) {
-            if ($provider->hasProvide($name)) {
+            if ($provider->canProvide($name)) {
                 return $provider;
             }
         }

@@ -7,7 +7,7 @@ use Psr\Container\ContainerInterface;
 
 interface ProviderInterface
 {
-    public function provide(string $name, ContainerInterface $container);
+    public function provide(string $id, ContainerInterface $container);
 
-    public function hasProvide(string $name): bool;
+    public function canProvide(string $id): bool;
 }
