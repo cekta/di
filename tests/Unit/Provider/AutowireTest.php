@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
+use Cekta\DI\ProviderNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
 use Throwable;
 
@@ -23,6 +23,9 @@ class AutowireTest extends TestCase
         static::assertFalse($provider->canProvide(Throwable::class));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideWithoutArguments(): void
     {
         $container = $this->createMock(ContainerInterface::class);
@@ -31,16 +34,23 @@ class AutowireTest extends TestCase
             ->provide(stdClass::class, $container));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideInvalidName(): void
     {
+        $this->expectException(ProviderNotFoundException::class);
+        $this->expectExceptionMessage('Container `magic` not found');
+
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
-        $this->expectException(NotFoundExceptionInterface::class);
-        $this->expectExceptionMessage('Container `magic` not found');
 
         (new Autowire())->provide('magic', $container);
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideWithArguments(): void
     {
         $obj = new class(new stdClass(), '123')

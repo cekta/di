@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit;
 
 use Cekta\DI\Container;
+use Cekta\DI\Exception\NotFoundInProvider;
 use Cekta\DI\ProviderInterface;
+use Cekta\DI\ProviderNotFoundException;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -86,5 +89,23 @@ class ContainerTest extends TestCase
         $a2 = $container->get('a');
         static::assertEquals(new stdClass(), $a1);
         static::assertSame($a1, $a2);
+    }
+
+    public function testGetNotFoundInProvider()
+    {
+        $this->expectException(NotFoundInProvider::class);
+        $this->expectExceptionMessage('Provider cant load container `a`');
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->expects($this->once())->method('canProvide')
+            ->with('a')
+            ->willReturn(true);
+        $provider->expects($this->once())->method('provide')
+            ->with('a')
+            ->willThrowException(new class extends Exception implements ProviderNotFoundException
+            {
+            });
+        assert($provider instanceof ProviderInterface);
+        $container = new Container($provider);
+        $container->get('a');
     }
 }

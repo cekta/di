@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Exception\NotFound;
+use Cekta\DI\Provider\KeyValue\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderInterface;
 use Psr\Container\ContainerInterface;
