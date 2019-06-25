@@ -4,10 +4,9 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
-use PHPUnit\Framework\MockObject\MockObject;
+use Cekta\DI\ProviderNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
 use Throwable;
 
@@ -16,35 +15,71 @@ use Throwable;
  */
 class AutowireTest extends TestCase
 {
-    /** @var MockObject|ContainerInterface|null */
-    private $container;
-
-    public function setUp(): void
-    {
-        $this->container = $this->createMock(ContainerInterface::class);
-    }
-
     public function testHasProvide(): void
     {
         $provider = new Autowire();
-        static::assertTrue($provider->hasProvide(stdClass::class));
-        static::assertFalse($provider->hasProvide('invalid name'));
-        static::assertFalse($provider->hasProvide(Throwable::class));
+        static::assertTrue($provider->canProvide(stdClass::class));
+        static::assertFalse($provider->canProvide('invalid name'));
+        static::assertFalse($provider->canProvide(Throwable::class));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideWithoutArguments(): void
     {
-        assert($this->container instanceof ContainerInterface);
+        $container = $this->createMock(ContainerInterface::class);
+        assert($container instanceof ContainerInterface);
         static::assertEquals(new stdClass(), (new Autowire())
-            ->provide(stdClass::class, $this->container));
+            ->provide(stdClass::class, $container));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideInvalidName(): void
     {
-        assert($this->container instanceof ContainerInterface);
-        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectException(ProviderNotFoundException::class);
         $this->expectExceptionMessage('Container `magic` not found');
 
-        (new Autowire())->provide('magic', $this->container);
+        $container = $this->createMock(ContainerInterface::class);
+        assert($container instanceof ContainerInterface);
+
+        (new Autowire())->provide('magic', $container);
+    }
+
+    /**
+     * @throws ProviderNotFoundException
+     */
+    public function testProvideWithArguments(): void
+    {
+        $obj = new class(new stdClass(), '123')
+        {
+            /**
+             * @var stdClass
+             */
+            public $class;
+            /**
+             * @var string
+             */
+            public $str;
+
+            public function __construct(stdClass $class, string $str)
+            {
+                $this->class = $class;
+                $this->str = $str;
+            }
+        };
+        $name = get_class($obj);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')
+            ->will($this->returnValueMap([
+                [stdClass::class, new stdClass()],
+                ['str', 'magic']
+            ]));
+        assert($container instanceof ContainerInterface);
+        $result = (new Autowire())->provide($name, $container);
+        static::assertInstanceOf($name, $result);
+        static::assertSame('magic', $result->str);
     }
 }

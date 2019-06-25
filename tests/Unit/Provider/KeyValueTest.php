@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
-use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\KeyValue\LoaderInterface;
+use Cekta\DI\ProviderNotFoundException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
 
+/** @covers \Cekta\DI\Provider\KeyValue */
 class KeyValueTest extends TestCase
 {
     /** @var ContainerInterface|null|MockObject - Mock Container */
@@ -23,10 +24,13 @@ class KeyValueTest extends TestCase
     public function testHasProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
-        static::assertTrue($provider->hasProvide('key'));
-        static::assertFalse($provider->hasProvide('invalid name'));
+        static::assertTrue($provider->canProvide('key'));
+        static::assertFalse($provider->canProvide('invalid name'));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvide(): void
     {
         /** needs hard type correction */
@@ -35,15 +39,20 @@ class KeyValueTest extends TestCase
             ->provide('key', $this->container));
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideNotFound(): void
     {
-        assert($this->container instanceof ContainerInterface);
-        $this->expectException(NotFoundExceptionInterface::class);
+        $this->expectException(ProviderNotFoundException::class);
         $this->expectExceptionMessage('Container `magic` not found');
-
+        assert($this->container instanceof ContainerInterface);
         (new KeyValue([]))->provide('magic', $this->container);
     }
 
+    /**
+     * @throws ProviderNotFoundException
+     */
     public function testProvideLoader(): void
     {
         assert($this->container instanceof ContainerInterface);

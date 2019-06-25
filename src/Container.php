@@ -5,6 +5,7 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotFound;
+use Cekta\DI\Exception\NotFoundInProvider;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -36,7 +37,7 @@ class Container implements ContainerInterface
     private function findProvider(string $name): ?ProviderInterface
     {
         foreach ($this->providers as $provider) {
-            if ($provider->hasProvide($name)) {
+            if ($provider->canProvide($name)) {
                 return $provider;
             }
         }
@@ -54,14 +55,32 @@ class Container implements ContainerInterface
         }
     }
 
+    /**
+     * @param string $name
+     * @throws NotFoundInProvider
+     */
     private function tryLoad(string $name): void
     {
         if (!array_key_exists($name, $this->values)) {
-            $provider = $this->findProvider($name);
-            if (null === $provider) {
-                throw new NotFound($name);
+            $provider = $this->getProvider($name);
+            try {
+                $this->values[$name] = $provider->provide($name, $this);
+            } catch (ProviderNotFoundException $e) {
+                throw new NotFoundInProvider($name, $e);
             }
-            $this->values[$name] = $provider->provide($name, $this);
         }
+    }
+
+    /**
+     * @param string $name
+     * @return ProviderInterface
+     */
+    private function getProvider(string $name)
+    {
+        $provider = $this->findProvider($name);
+        if (null === $provider) {
+            throw new NotFound($name);
+        }
+        return $provider;
     }
 }
