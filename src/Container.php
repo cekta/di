@@ -62,15 +62,25 @@ class Container implements ContainerInterface
     private function tryLoad(string $name): void
     {
         if (!array_key_exists($name, $this->values)) {
-            $provider = $this->findProvider($name);
-            if (null === $provider) {
-                throw new NotFound($name);
-            }
+            $provider = $this->getProvider($name);
             try {
                 $this->values[$name] = $provider->provide($name, $this);
             } catch (ProviderNotFoundException $e) {
                 throw new NotFoundInProvider($name, $e);
             }
         }
+    }
+
+    /**
+     * @param string $name
+     * @return ProviderInterface
+     */
+    private function getProvider(string $name)
+    {
+        $provider = $this->findProvider($name);
+        if (null === $provider) {
+            throw new NotFound($name);
+        }
+        return $provider;
     }
 }

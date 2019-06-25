@@ -13,7 +13,7 @@ class Autowire implements ProviderInterface
     public function provide(string $id, ContainerInterface $container)
     {
         try {
-            $class = new Autowire\ReflectionClass($id);
+            $class = new Autowire\Reflection($id);
             $args = [];
             foreach ($class->getDependencies() as $dependecy) {
                 $args[] = $container->get($dependecy);

@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire;
 
+use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
-class ReflectionClass extends \ReflectionClass
+class Reflection extends ReflectionClass
 {
     /**
      * @return string[]
@@ -17,23 +18,23 @@ class ReflectionClass extends \ReflectionClass
         if (null === $constructor) {
             return [];
         }
-        return $this->getMethodParameters($constructor);
+        return static::getMethodParameters($constructor);
     }
 
     /**
      * @param ReflectionMethod $method
      * @return string[]
      */
-    private function getMethodParameters(ReflectionMethod $method): array
+    private static function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
         foreach ($method->getParameters() as $parameter) {
-            $result[] = $this->getParameterName($parameter);
+            $result[] = static::getParameterName($parameter);
         }
         return $result;
     }
 
-    private function getParameterName(ReflectionParameter $parameter): string
+    private static function getParameterName(ReflectionParameter $parameter): string
     {
         $class = $parameter->getClass();
         if (null !== $class) {
