@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire;
 
-use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
-class Reflection extends ReflectionClass
+class ReflectionClass extends \ReflectionClass
 {
     /**
      * @return string[]

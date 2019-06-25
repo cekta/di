@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider\Autowire;
 
-use Cekta\DI\Provider\Autowire\Reflection;
+use Cekta\DI\Provider\Autowire\ReflectionClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
 use stdClass;
 
-class ReflectionTest extends TestCase
+class ReflectionClassTest extends TestCase
 {
     public function testReadDependencies()
     {
-        $class = new Reflection(stdClass::class);
+        $class = new ReflectionClass(stdClass::class);
         self::assertSame([], $class->getDependencies());
     }
 
@@ -33,7 +33,7 @@ class ReflectionTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $class = new Reflection($name);
+        $class = new ReflectionClass($name);
         self::assertSame([stdClass::class, 'b'], $class->getDependencies());
     }
 }
