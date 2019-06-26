@@ -14,6 +14,7 @@ class Autowire implements ProviderInterface
     {
         try {
             $class = new Autowire\ReflectionClass($id);
+            /** @var mixed[] $args */
             $args = [];
             foreach ($class->getDependencies() as $dependecy) {
                 $args[] = $container->get($dependecy);

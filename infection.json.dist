@@ -1,0 +1,16 @@
+{
+  "source": {
+    "directories": [
+      "src"
+    ]
+  },
+  "timeout": 10,
+  "tmpDir": "./",
+  "logs": {
+    "badge": {
+      "branch": "master"
+    }
+  },
+  "initialTestsPhpOptions": "-d zend_extension=xdebug.so",
+  "testFrameworkOptions": "-vvv"
+}
