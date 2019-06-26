@@ -8,6 +8,7 @@ use Cekta\DI\Exception\NotFoundInProvider;
 use Cekta\DI\ProviderInterface;
 use Cekta\DI\ProviderNotFoundException;
 use Exception;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -57,8 +58,13 @@ class ContainerTest extends TestCase
 
         $provider = new class implements ProviderInterface
         {
+            private $state = 0;
             public function provide(string $id, ContainerInterface $container)
             {
+                $this->state++;
+                if ($this->state > 10) {
+                    throw new InvalidArgumentException();
+                }
                 if ($id === 'FooA') {
                     return $container->get('FooB');
                 }

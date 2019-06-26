@@ -15,5 +15,6 @@ class NotFoundInProviderTest extends TestCase
         assert($prev instanceof Throwable);
         $e = new NotFoundInProvider('123', $prev);
         static::assertSame('Provider cant load container `123`', $e->getMessage());
+        static::assertSame(0, $e->getCode());
     }
 }

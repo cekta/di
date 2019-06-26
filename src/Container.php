@@ -10,8 +10,17 @@ use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
 {
+    /**
+     * @var ProviderInterface[]
+     */
     private $providers;
+    /**
+     * @var array
+     */
     private $values = [];
+    /**
+     * @var string[]
+     */
     private $calls = [];
 
     public function __construct(ProviderInterface ... $providers)

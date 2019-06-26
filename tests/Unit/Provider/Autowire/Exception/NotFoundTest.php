@@ -15,5 +15,6 @@ class NotFoundTest extends TestCase
         assert($prev instanceof Throwable);
         $e = new NotFound('123', $prev);
         static::assertSame('Container `123` not found', $e->getMessage());
+        static::assertSame(0, $e->getCode());
     }
 }
