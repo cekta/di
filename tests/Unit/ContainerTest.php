@@ -8,7 +8,6 @@ use Cekta\DI\Exception\NotFoundInProvider;
 use Cekta\DI\ProviderInterface;
 use Cekta\DI\ProviderNotFoundException;
 use Exception;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -56,27 +55,17 @@ class ContainerTest extends TestCase
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('Infinite recursion for `FooA`, calls: `FooA, FooB`');
 
-        $provider = new class implements ProviderInterface
-        {
-            private $state = 0;
-            public function provide(string $id, ContainerInterface $container)
-            {
-                $this->state++;
-                if ($this->state > 10) {
-                    throw new InvalidArgumentException();
-                }
-                if ($id === 'FooA') {
-                    return $container->get('FooB');
-                }
-                return $container->get('FooA');
-            }
-
-            public function canProvide(string $id): bool
-            {
-                return true;
-            }
-        };
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->method('canProvide')->willReturn(true);
         $container = new Container($provider);
+        $provider->expects($this->exactly(2))->method('provide')
+            ->willReturnCallback(function (string $id, ContainerInterface $container) {
+                $transform = [
+                    'FooA' => 'FooB',
+                    'FooB' => 'FooA'
+                ];
+                return $container->get($transform[$id]);
+            });
         $container->get('FooA');
     }
 

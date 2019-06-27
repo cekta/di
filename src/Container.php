@@ -32,11 +32,12 @@ class Container implements ContainerInterface
     {
         $this->checkInfiniteRecursion($name);
         $this->calls[] = $name;
-        $this->tryLoad($name);
+        if (!array_key_exists($name, $this->values)) {
+            $this->values[$name] = $this->provide($this->getProvider($name), $name);
+        }
         array_pop($this->calls);
         return $this->values[$name];
     }
-
 
     public function has($name)
     {
@@ -64,32 +65,27 @@ class Container implements ContainerInterface
         }
     }
 
-    /**
-     * @param string $name
-     * @throws NotFoundInProvider
-     */
-    private function tryLoad(string $name): void
-    {
-        if (!array_key_exists($name, $this->values)) {
-            $provider = $this->getProvider($name);
-            try {
-                $this->values[$name] = $provider->provide($name, $this);
-            } catch (ProviderNotFoundException $e) {
-                throw new NotFoundInProvider($name, $e);
-            }
-        }
-    }
-
-    /**
-     * @param string $name
-     * @return ProviderInterface
-     */
-    private function getProvider(string $name)
+    private function getProvider(string $name): ProviderInterface
     {
         $provider = $this->findProvider($name);
         if (null === $provider) {
             throw new NotFound($name);
         }
         return $provider;
+    }
+
+    /**
+     * @param ProviderInterface $provider
+     * @param string $name
+     * @return mixed
+     * @throws NotFoundInProvider
+     */
+    private function provide(ProviderInterface $provider, string $name)
+    {
+        try {
+            return $provider->provide($name, $this);
+        } catch (ProviderNotFoundException $e) {
+            throw new NotFoundInProvider($name, $e);
+        }
     }
 }
