@@ -54,9 +54,9 @@ class ContainerTest extends TestCase
     {
         $this->expectException(ContainerExceptionInterface::class);
         $this->expectExceptionMessage('Infinite recursion for `FooA`, calls: `FooA, FooB`');
-
         $provider = $this->createMock(ProviderInterface::class);
         $provider->method('canProvide')->willReturn(true);
+        assert($provider instanceof ProviderInterface);
         $container = new Container($provider);
         $provider->expects($this->exactly(2))->method('provide')
             ->willReturnCallback(function (string $id, ContainerInterface $container) {
