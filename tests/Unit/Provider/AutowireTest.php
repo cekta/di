@@ -82,4 +82,36 @@ class AutowireTest extends TestCase
         static::assertInstanceOf($name, $result);
         static::assertSame('magic', $result->str);
     }
+
+    /**
+     * @throws ProviderNotFoundException
+     */
+    public function testGetWithRuleForContainer()
+    {
+        $obj = new class('123')
+        {
+            public $path;
+
+            public function __construct(string $path)
+            {
+                $this->path = $path;
+            }
+        };
+        $name = get_class($obj);
+        $rule = $this->createMock(Autowire\RuleInterface::class);
+        $rule->expects($this->once())->method('acceptable')
+            ->with($name)
+            ->willReturn(true);
+        $rule->expects($this->once())->method('accept')
+            ->willReturn(['path' => 'magic.path']);
+        assert($rule instanceof Autowire\RuleInterface);
+        $autowire = new Autowire($rule);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects($this->once())->method('get')
+            ->with('magic.path')
+            ->willReturn('some value');
+        assert($container instanceof ContainerInterface);
+        $result = $autowire->provide($name, $container);
+        static::assertSame('some value', $result->path);
+    }
 }

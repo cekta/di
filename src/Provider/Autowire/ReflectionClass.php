@@ -9,6 +9,17 @@ use ReflectionParameter;
 class ReflectionClass extends \ReflectionClass
 {
     /**
+     * @var RuleInterface[]
+     */
+    private $rules;
+
+    public function __construct(string $name, RuleInterface ... $rules)
+    {
+        $this->rules = $rules;
+        parent::__construct($name);
+    }
+
+    /**
      * @return string[]
      */
     public function getDependencies(): array
@@ -17,28 +28,45 @@ class ReflectionClass extends \ReflectionClass
         if (null === $constructor) {
             return [];
         }
-        return static::getMethodParameters($constructor);
+
+        return $this->getMethodParameters($constructor);
     }
 
     /**
      * @param ReflectionMethod $method
      * @return string[]
      */
-    private static function getMethodParameters(ReflectionMethod $method): array
+    private function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
+        $replaces = $this->getReplaces();
         foreach ($method->getParameters() as $parameter) {
-            $result[] = static::getParameterName($parameter);
+            $name = $this->getParameterName($parameter);
+            if (array_key_exists($name, $replaces)) {
+                $name = $replaces[$name];
+            }
+            $result[] = $name;
         }
         return $result;
     }
 
-    private static function getParameterName(ReflectionParameter $parameter): string
+    private function getParameterName(ReflectionParameter $parameter): string
     {
         $class = $parameter->getClass();
         if (null !== $class) {
             return $class->name;
         }
         return $parameter->name;
+    }
+
+    private function getReplaces()
+    {
+        $result = [];
+        foreach ($this->rules as $rule) {
+            if ($rule->acceptable($this->name)) {
+                $result += $rule->accept();
+            }
+        }
+        return $result;
     }
 }
