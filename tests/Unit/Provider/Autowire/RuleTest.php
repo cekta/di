@@ -4,11 +4,16 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Provider\Autowire;
 
 use Cekta\DI\Provider\Autowire\Rule;
+use Cekta\DI\Provider\Autowire\RuleInterface;
 use PHPUnit\Framework\TestCase;
 
 class RuleTest extends TestCase
 {
-
+    public function testRuleMustImplementRuleInterface()
+    {
+        $rule = new Rule('', ['test' => 'value']);
+        static::assertInstanceOf(RuleInterface::class, $rule);
+    }
     public function testAcceptance()
     {
         $rule = new Rule('abc', ['test' => 'value']);

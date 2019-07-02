@@ -11,6 +11,5 @@
       "branch": "master"
     }
   },
-  "initialTestsPhpOptions": "-d zend_extension=xdebug.so",
   "testFrameworkOptions": "-vvv"
 }

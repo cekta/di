@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire;
 
-class Rule
+class Rule implements RuleInterface
 {
     /**
      * @var string
