@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider;
 
 use Cekta\DI\Provider\Autowire\Exception\NotFound;
+use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
+use Cekta\DI\Provider\Autowire\ReaderInterface;
 use Cekta\DI\Provider\Autowire\RuleInterface;
 use Cekta\DI\ProviderInterface;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 
 class Autowire implements ProviderInterface
 {
@@ -15,24 +16,27 @@ class Autowire implements ProviderInterface
      * @var RuleInterface[]
      */
     private $rules;
+    /**
+     * @var ReaderInterface
+     */
+    private $reader;
 
-    public function __construct(RuleInterface ...$rules)
+    public function __construct(ReaderInterface $reader, RuleInterface ...$rules)
     {
+        $this->reader = $reader;
         $this->rules = $rules;
     }
 
     public function provide(string $id, ContainerInterface $container)
     {
         try {
-            $class = new Autowire\ReflectionClass($id, ...$this->rules);
-            /** @var mixed[] $args */
             $args = [];
-            foreach ($class->getDependencies() as $dependecy) {
+            foreach ($this->reader->getDependencies($id) as $dependecy) {
                 $args[] = $container->get($dependecy);
             }
-            return $class->newInstanceArgs($args);
-        } catch (ReflectionException $e) {
-            throw new NotFound($id, $e);
+            return new $id(...$args);
+        } catch (InvalidClassName $exception) {
+            throw new NotFound($id, $exception);
         }
     }
 
