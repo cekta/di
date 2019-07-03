@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
+use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
 use Cekta\DI\ProviderNotFoundException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -17,7 +18,9 @@ class AutowireTest extends TestCase
 {
     public function testHasProvide(): void
     {
-        $provider = new Autowire();
+        $reader = $this->createMock(Autowire\ReaderInterface::class);
+        assert($reader instanceof Autowire\ReaderInterface);
+        $provider = new Autowire($reader);
         static::assertTrue($provider->canProvide(stdClass::class));
         static::assertFalse($provider->canProvide('invalid name'));
         static::assertFalse($provider->canProvide(Throwable::class));
@@ -28,24 +31,12 @@ class AutowireTest extends TestCase
      */
     public function testProvideWithoutArguments(): void
     {
+        $reader = $this->createMock(Autowire\ReaderInterface::class);
+        assert($reader instanceof Autowire\ReaderInterface);
+        $autowire = new Autowire($reader);
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
-        static::assertEquals(new stdClass(), (new Autowire())
-            ->provide(stdClass::class, $container));
-    }
-
-    /**
-     * @throws ProviderNotFoundException
-     */
-    public function testProvideInvalidName(): void
-    {
-        $this->expectException(ProviderNotFoundException::class);
-        $this->expectExceptionMessage('Container `magic` not found');
-
-        $container = $this->createMock(ContainerInterface::class);
-        assert($container instanceof ContainerInterface);
-
-        (new Autowire())->provide('magic', $container);
+        static::assertEquals(new stdClass(), $autowire->provide(stdClass::class, $container));
     }
 
     /**
@@ -71,6 +62,10 @@ class AutowireTest extends TestCase
             }
         };
         $name = get_class($obj);
+        $reader = $this->createMock(Autowire\ReaderInterface::class);
+        $reader->expects($this->once())->method('getDependencies')
+            ->with($name)
+            ->willReturn([stdClass::class, 'str']);
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')
             ->will($this->returnValueMap([
@@ -78,7 +73,8 @@ class AutowireTest extends TestCase
                 ['str', 'magic']
             ]));
         assert($container instanceof ContainerInterface);
-        $result = (new Autowire())->provide($name, $container);
+        assert($reader instanceof Autowire\ReaderInterface);
+        $result = (new Autowire($reader))->provide($name, $container);
         static::assertInstanceOf($name, $result);
         static::assertSame('magic', $result->str);
     }
@@ -86,32 +82,21 @@ class AutowireTest extends TestCase
     /**
      * @throws ProviderNotFoundException
      */
-    public function testGetWithRuleForContainer()
+    public function testProvideInvalidName(): void
     {
-        $obj = new class('123')
-        {
-            public $path;
+        $this->expectException(ProviderNotFoundException::class);
+        $this->expectExceptionMessage('Container `magic` not found');
 
-            public function __construct(string $path)
-            {
-                $this->path = $path;
-            }
-        };
-        $name = get_class($obj);
-        $rule = $this->createMock(Autowire\RuleInterface::class);
-        $rule->expects($this->once())->method('acceptable')
-            ->with($name)
-            ->willReturn(true);
-        $rule->expects($this->once())->method('accept')
-            ->willReturn(['path' => 'magic.path']);
-        assert($rule instanceof Autowire\RuleInterface);
-        $autowire = new Autowire($rule);
         $container = $this->createMock(ContainerInterface::class);
-        $container->expects($this->once())->method('get')
-            ->with('magic.path')
-            ->willReturn('some value');
         assert($container instanceof ContainerInterface);
-        $result = $autowire->provide($name, $container);
-        static::assertSame('some value', $result->path);
+
+        $exception = $this->createMock(InvalidClassName::class);
+        $reader = $this->createMock(Autowire\ReaderInterface::class);
+        assert($exception instanceof InvalidClassName);
+        $reader->expects($this->once())->method('getDependencies')
+            ->with('magic')
+            ->willThrowException($exception);
+        assert($reader instanceof Autowire\ReaderInterface);
+        (new Autowire($reader))->provide('magic', $container);
     }
 }
