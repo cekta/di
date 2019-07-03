@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\KeyValue\Loader;
+namespace Cekta\DI\Loader;
 
-use Cekta\DI\Provider\KeyValue\LoaderInterface;
+use Cekta\DI\LoaderInterface;
 use Psr\Container\ContainerInterface;
 
 class Alias implements LoaderInterface

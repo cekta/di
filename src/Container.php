@@ -4,8 +4,7 @@ declare(strict_types=1);
 namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\NotFound;
-use Cekta\DI\Exception\NotFoundInProvider;
+use Cekta\DI\Exception\ProviderNotFound;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -28,15 +27,20 @@ class Container implements ContainerInterface
         $this->providers = $providers;
     }
 
-    public function get($name)
+    public function get($id)
     {
-        $this->checkInfiniteRecursion($name);
-        $this->calls[] = $name;
-        if (!array_key_exists($name, $this->values)) {
-            $this->values[$name] = $this->provide($this->getProvider($name), $name);
+        $this->checkInfiniteRecursion($id);
+        $this->calls[] = $id;
+        if (!array_key_exists($id, $this->values)) {
+            $provider = $this->getProvider($id);
+            $this->values[$id] = $provider->provide($id);
+        }
+        $result = $this->values[$id];
+        if ($result instanceof LoaderInterface) {
+            $result = $result($this);
         }
         array_pop($this->calls);
-        return $this->values[$name];
+        return $result;
     }
 
     public function has($name)
@@ -54,38 +58,19 @@ class Container implements ContainerInterface
         return null;
     }
 
-    /**
-     * @param string $name
-     * @throws InfiniteRecursion
-     */
-    private function checkInfiniteRecursion(string $name): void
+    private function checkInfiniteRecursion(string $id): void
     {
-        if (in_array($name, $this->calls)) {
-            throw new InfiniteRecursion($name, $this->calls);
+        if (in_array($id, $this->calls)) {
+            throw new InfiniteRecursion($id, $this->calls);
         }
     }
 
-    private function getProvider(string $name): ProviderInterface
+    private function getProvider(string $id): ProviderInterface
     {
-        $provider = $this->findProvider($name);
+        $provider = $this->findProvider($id);
         if (null === $provider) {
-            throw new NotFound($name);
+            throw new ProviderNotFound($id);
         }
         return $provider;
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param string $name
-     * @return mixed
-     * @throws NotFoundInProvider
-     */
-    private function provide(ProviderInterface $provider, string $name)
-    {
-        try {
-            return $provider->provide($name, $this);
-        } catch (ProviderNotFoundException $e) {
-            throw new NotFoundInProvider($name, $e);
-        }
     }
 }

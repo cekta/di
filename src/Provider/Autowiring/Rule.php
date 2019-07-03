@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\Autowire;
+namespace Cekta\DI\Provider\Autowiring;
 
 class Rule implements RuleInterface
 {
@@ -20,9 +20,9 @@ class Rule implements RuleInterface
         $this->replace = $replace;
     }
 
-    public function acceptable(string $name): bool
+    public function acceptable(string $id): bool
     {
-        return $this->prefix === substr($name, 0, strlen($this->prefix));
+        return $this->prefix === substr($id, 0, strlen($this->prefix));
     }
 
     public function accept(): array
