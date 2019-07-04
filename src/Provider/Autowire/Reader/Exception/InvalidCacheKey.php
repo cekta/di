@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire\Reader\Exception;
 
-use RuntimeException;
+use Cekta\DI\Provider\Autowire\ReaderException;
+use Exception;
 use Throwable;
 
-class InvalidCacheKey extends RuntimeException
+class InvalidCacheKey extends Exception implements ReaderException
 {
     public function __construct(string $className, string $key, Throwable $previous = null)
     {

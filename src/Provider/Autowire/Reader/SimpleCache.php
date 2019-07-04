@@ -19,16 +19,12 @@ class SimpleCache implements ReaderInterface
      */
     private $reader;
 
-    public function __construct(CacheInterface $cache)
+    public function __construct(CacheInterface $cache, RuleInterface ...$rules)
     {
         $this->cache = $cache;
-        $this->reader = new WithoutCache();
+        $this->reader = new Reflection(...$rules);
     }
 
-    /**
-     * @param string $className
-     * @return array
-     */
     public function getDependencies(string $className): array
     {
         $key = base64_encode($className);

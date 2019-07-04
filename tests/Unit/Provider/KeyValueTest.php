@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
+use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue;
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
-use Cekta\DI\ProviderNotFoundException;
+use Cekta\DI\ProviderException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -29,7 +30,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvide(): void
     {
@@ -40,18 +41,17 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideNotFound(): void
     {
-        $this->expectException(ProviderNotFoundException::class);
-        $this->expectExceptionMessage('Container `magic` not found');
+        $this->expectException(NotFound::class);
         assert($this->container instanceof ContainerInterface);
         (new KeyValue([]))->provide('magic', $this->container);
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideLoader(): void
     {

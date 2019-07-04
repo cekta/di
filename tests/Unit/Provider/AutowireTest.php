@@ -5,7 +5,8 @@ namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowire;
 use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
-use Cekta\DI\ProviderNotFoundException;
+use Cekta\DI\Provider\Exception\NotReadable;
+use Cekta\DI\ProviderException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
@@ -27,7 +28,7 @@ class AutowireTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideWithoutArguments(): void
     {
@@ -40,7 +41,7 @@ class AutowireTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideWithArguments(): void
     {
@@ -80,12 +81,11 @@ class AutowireTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideInvalidName(): void
     {
-        $this->expectException(ProviderNotFoundException::class);
-        $this->expectExceptionMessage('Container `magic` not found');
+        $this->expectException(NotReadable::class);
 
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);

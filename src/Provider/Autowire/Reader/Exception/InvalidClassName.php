@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowire\Reader\Exception;
 
-use RuntimeException;
-use Throwable;
+use Cekta\DI\Provider\Autowire\ReaderException;
+use Exception;
 
-class InvalidClassName extends RuntimeException
+class InvalidClassName extends Exception implements ReaderException
 {
-    public function __construct(string $className, Throwable $previous = null)
+    public function __construct(string $className)
     {
         $message = "Invalid class name: `{$className}`";
-        parent::__construct($message, 0, $previous);
+        parent::__construct($message);
     }
 }

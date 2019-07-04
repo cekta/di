@@ -5,6 +5,7 @@ namespace Cekta\DI\Test\Unit\Provider\Autowire\Reader;
 
 use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidCacheKey;
 use Cekta\DI\Provider\Autowire\Reader\SimpleCache;
+use Cekta\DI\Provider\Autowire\ReaderException;
 use Cekta\DI\Provider\Autowire\ReaderInterface;
 use Exception;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,9 @@ class SimpleCacheTest extends TestCase
         $this->assertInstanceOf(ReaderInterface::class, new SimpleCache($cache));
     }
 
+    /**
+     * @throws ReaderException
+     */
     public function testGetDependenciesCacheMiss()
     {
         $key = base64_encode(stdClass::class);
@@ -38,6 +42,9 @@ class SimpleCacheTest extends TestCase
         $this->assertSame([], $reader->getDependencies(stdClass::class));
     }
 
+    /**
+     * @throws ReaderException
+     */
     public function testGetDependenciesCacheHit()
     {
         $key = base64_encode(stdClass::class);
@@ -54,6 +61,9 @@ class SimpleCacheTest extends TestCase
         $this->assertSame([], $reader->getDependencies(stdClass::class));
     }
 
+    /**
+     * @throws ReaderException
+     */
     public function testGetDependenciesWithInvalidArgumentException()
     {
         $this->expectException(InvalidCacheKey::class);
