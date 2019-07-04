@@ -5,20 +5,19 @@ namespace Cekta\DI\Provider\Autowire\Reader;
 
 use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
 use Cekta\DI\Provider\Autowire\ReaderInterface;
-use Cekta\DI\Provider\Autowire\RuleInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 
-class WithoutCache implements ReaderInterface
+class Reflection implements ReaderInterface
 {
     /**
      * @var RuleInterface[]
      */
     private $rules;
 
-    public function __construct(RuleInterface ... $rules)
+    public function __construct(RuleInterface ...$rules)
     {
         $this->rules = $rules;
     }

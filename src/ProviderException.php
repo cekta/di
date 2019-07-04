@@ -5,7 +5,6 @@ namespace Cekta\DI;
 
 use Throwable;
 
-interface ProviderNotFoundException extends Throwable
+interface ProviderException extends Throwable
 {
-
 }

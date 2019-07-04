@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Provider\KeyValue\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue\Loader\Service;
+use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderInterface;
 use Closure;

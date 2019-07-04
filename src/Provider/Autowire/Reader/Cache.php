@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider\Autowire\Reader;
 
 use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidCacheKey;
-use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
 use Cekta\DI\Provider\Autowire\ReaderInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -16,21 +15,16 @@ class Cache implements ReaderInterface
      */
     private $pool;
     /**
-     * @var WithoutCache
+     * @var Reflection
      */
     private $reader;
 
-    public function __construct(CacheItemPoolInterface $pool)
+    public function __construct(CacheItemPoolInterface $pool, RuleInterface ...$rules)
     {
         $this->pool = $pool;
-        $this->reader = new WithoutCache();
+        $this->reader = new Reflection(...$rules);
     }
 
-    /**
-     * @param string $className
-     * @return array
-     * @throws InvalidClassName
-     */
     public function getDependencies(string $className): array
     {
         $key = base64_encode($className);
