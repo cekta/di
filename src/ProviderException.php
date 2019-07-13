@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Throwable;
+use Psr\Container\ContainerExceptionInterface;
 
-interface ProviderException extends Throwable
+interface ProviderException extends ContainerExceptionInterface
 {
 }

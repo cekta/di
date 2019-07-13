@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use Exception;
 use Psr\Container\ContainerExceptionInterface;
+use RuntimeException;
 
-class InfiniteRecursion extends Exception implements ContainerExceptionInterface
+class InfiniteRecursion extends RuntimeException implements ContainerExceptionInterface
 {
     public function __construct(string $id, array $calls)
     {

@@ -6,7 +6,6 @@ namespace Cekta\DI\Test\Unit;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\IdNotString;
 use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\NotProvideble;
 use Cekta\DI\Exception\ProviderNotFound;
 use Cekta\DI\ProviderException;
 use Cekta\DI\ProviderInterface;
@@ -103,8 +102,7 @@ class ContainerTest extends TestCase
      */
     public function testGetNotFoundInProvider()
     {
-        $this->expectException(NotProvideble::class);
-        $this->expectExceptionMessage('Provider cant load container `a`');
+        $this->expectException(ProviderException::class);
         $provider = $this->createMock(ProviderInterface::class);
         $provider->expects($this->once())->method('canProvide')
             ->with('a')

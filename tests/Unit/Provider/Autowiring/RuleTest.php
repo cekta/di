@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider\Autowire\Reader;
+namespace Cekta\DI\Test\Unit\Provider\Autowiring;
 
-use Cekta\DI\Provider\Autowire\Reader\Rule;
-use Cekta\DI\Provider\Autowire\Reader\RuleInterface;
+use Cekta\DI\Provider\Autowiring\Rule;
+use Cekta\DI\Provider\Autowiring\RuleInterface;
 use PHPUnit\Framework\TestCase;
 
 class RuleTest extends TestCase

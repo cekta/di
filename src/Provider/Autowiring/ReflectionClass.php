@@ -1,59 +1,46 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\Autowire\Reader;
+namespace Cekta\DI\Provider\Autowiring;
 
-use Cekta\DI\Provider\Autowire\Reader\Exception\InvalidClassName;
-use Cekta\DI\Provider\Autowire\ReaderInterface;
-use ReflectionClass;
-use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 
-class Reflection implements ReaderInterface
+/**
+ * @internal
+ */
+class ReflectionClass extends \ReflectionClass
 {
     /**
      * @var RuleInterface[]
      */
     private $rules;
 
-    public function __construct(RuleInterface ...$rules)
+    public function __construct($name, RuleInterface ...$rules)
     {
         $this->rules = $rules;
-    }
-
-    public function getDependencies(string $className): array
-    {
-        try {
-            $class = new ReflectionClass($className);
-            return $this->getDependenciesForClass($class);
-        } catch (ReflectionException $e) {
-            throw new InvalidClassName($className);
-        }
+        parent::__construct($name);
     }
 
     /**
-     * @param ReflectionClass $class
      * @return string[]
      */
-    private function getDependenciesForClass(ReflectionClass $class): array
+    public function getDependencies(): array
     {
-        $constructor = $class->getConstructor();
+        $constructor = $this->getConstructor();
         if (null === $constructor) {
             return [];
         }
-        $replaces = $this->getReplaces($class->name);
-        return $this->getMethodParameters($constructor, $replaces);
+        return $this->getMethodParameters($constructor);
     }
-
     /**
      * @param ReflectionMethod $method
-     * @param array $replaces
      * @return string[]
      */
-    private function getMethodParameters(ReflectionMethod $method, array $replaces): array
+    private function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
+        $replaces = $this->getReplaces();
         foreach ($method->getParameters() as $parameter) {
             $name = $this->getParameterName($parameter);
             if (array_key_exists($name, $replaces)) {
@@ -63,7 +50,6 @@ class Reflection implements ReaderInterface
         }
         return $result;
     }
-
     private function getParameterName(ReflectionParameter $parameter): string
     {
         $class = $parameter->getClass();
@@ -72,12 +58,11 @@ class Reflection implements ReaderInterface
         }
         return $parameter->name;
     }
-
-    private function getReplaces(string $name)
+    private function getReplaces()
     {
         $result = [];
         foreach ($this->rules as $rule) {
-            if ($rule->acceptable($name)) {
+            if ($rule->acceptable($this->name)) {
                 $result += $rule->accept();
             }
         }

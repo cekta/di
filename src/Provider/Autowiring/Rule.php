@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\Autowire\Reader;
+namespace Cekta\DI\Provider\Autowiring;
 
 class Rule implements RuleInterface
 {
