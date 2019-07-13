@@ -6,7 +6,6 @@ namespace Cekta\DI;
 use Cekta\DI\Exception\IdNotString;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
-use Cekta\DI\Exception\NotProvideble;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 
@@ -43,7 +42,8 @@ class Container implements ContainerInterface
         $this->checkInfiniteRecursion($id);
         $this->calls[] = $id;
         if (!array_key_exists($id, $this->values)) {
-            $this->values[$id] = $this->provide($this->getProvider($id), $id);
+            $provider = $this->getProvider($id);
+            $this->values[$id] = $provider->provide($id, $this);
         }
         array_pop($this->calls);
         return $this->values[$id];
@@ -64,10 +64,6 @@ class Container implements ContainerInterface
         return null;
     }
 
-    /**
-     * @param string $id
-     * @throws InfiniteRecursion
-     */
     private function checkInfiniteRecursion(string $id): void
     {
         if (in_array($id, $this->calls)) {
@@ -82,20 +78,5 @@ class Container implements ContainerInterface
             throw new ProviderNotFound($id);
         }
         return $provider;
-    }
-
-    /**
-     * @param ProviderInterface $provider
-     * @param string $id
-     * @return mixed
-     * @throws NotProvideble
-     */
-    private function provide(ProviderInterface $provider, string $id)
-    {
-        try {
-            return $provider->provide($id, $this);
-        } catch (ProviderException $e) {
-            throw new NotProvideble($id, $e);
-        }
     }
 }

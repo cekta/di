@@ -7,7 +7,6 @@ use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue;
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderException;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
@@ -15,7 +14,7 @@ use stdClass;
 /** @covers \Cekta\DI\Provider\KeyValue */
 class KeyValueTest extends TestCase
 {
-    /** @var ContainerInterface|null|MockObject - Mock Container */
+    /** @var ContainerInterface */
     private $container;
 
     public function setUp(): void
@@ -23,7 +22,7 @@ class KeyValueTest extends TestCase
         $this->container = $this->createMock(ContainerInterface::class);
     }
 
-    public function testHasProvide(): void
+    public function testCanProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
         static::assertTrue($provider->canProvide('key'));

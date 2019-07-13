@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use InvalidArgumentException;
 use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
 
-class ProviderNotFound extends InvalidArgumentException implements NotFoundExceptionInterface
+class ProviderNotFound extends RuntimeException implements NotFoundExceptionInterface
 {
     public function __construct(string $id)
     {
