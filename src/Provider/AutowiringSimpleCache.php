@@ -33,8 +33,8 @@ class AutowiringSimpleCache implements ProviderInterface
     public function provide(string $id, ContainerInterface $container)
     {
         $args = [];
-        foreach ($this->getDependencies($id) as $dependecy) {
-            $args[] = $container->get($dependecy);
+        foreach ($this->getDependencies($id) as $dependency) {
+            $args[] = $container->get($dependency);
         }
         return $this->autowiring->create($id, $args);
     }
