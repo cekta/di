@@ -10,16 +10,12 @@ use Cekta\DI\ProviderException;
 use Cekta\DI\ProviderInterface;
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
 /** @covers \Cekta\DI\Container */
 class ContainerTest extends TestCase
 {
-    /**
-     * @throws ContainerExceptionInterface
-     */
     public function testGetInvalidName(): void
     {
         $this->expectException(ProviderNotFound::class);
@@ -28,9 +24,6 @@ class ContainerTest extends TestCase
         $container->get('invalid name');
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     */
     public function testGet(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
@@ -56,9 +49,6 @@ class ContainerTest extends TestCase
         static::assertFalse((new Container($provider))->has('invalid name'));
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     */
     public function testInfiniteRecursion(): void
     {
         $this->expectException(InfiniteRecursion::class);
@@ -77,9 +67,6 @@ class ContainerTest extends TestCase
         $container->get('FooA');
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     */
     public function testGetFindProviderOnce(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
@@ -97,9 +84,6 @@ class ContainerTest extends TestCase
         static::assertSame($a1, $a2);
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     */
     public function testGetNotFoundInProvider(): void
     {
         $this->expectException(ProviderException::class);
@@ -118,12 +102,12 @@ class ContainerTest extends TestCase
     }
 
     /**
-     * @throws ContainerExceptionInterface
+     * @phpstan-igonore
      */
     public function testGetNotString(): void
     {
         $this->expectException(\TypeError::class);
         $container = new Container();
-        $container->get(123);
+        $container->get(100);
     }
 }

@@ -11,7 +11,6 @@ interface ProviderInterface
      * @param string $id
      * @param ContainerInterface $container
      * @return mixed
-     * @throws ProviderException
      */
     public function provide(string $id, ContainerInterface $container);
 

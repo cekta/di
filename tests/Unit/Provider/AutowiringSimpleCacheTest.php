@@ -42,9 +42,6 @@ class AutowiringSimpleCacheTest extends TestCase
         $this->assertFalse($provider->canBeProvided(ProviderInterface::class));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideCacheHit(): void
     {
         $autowiring = $this->createMock(Autowiring::class);
@@ -64,9 +61,6 @@ class AutowiringSimpleCacheTest extends TestCase
         $this->assertEquals(new stdClass(), $provider->provide(stdClass::class, $container));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideCacheMiss(): void
     {
         $name = 'mocked';
@@ -99,9 +93,6 @@ class AutowiringSimpleCacheTest extends TestCase
         $this->assertInstanceOf(stdClass::class, $result);
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideClassNotCreated(): void
     {
         $this->expectException(ClassNotCreated::class);
@@ -117,18 +108,14 @@ class AutowiringSimpleCacheTest extends TestCase
         $provider->provide($name, $container);
     }
 
-    /**
-     * @throws ProviderException
-     */
-    public function testProvideInvaliCacheKey(): void
+    public function testProvideInvalidCacheKey(): void
     {
         $this->expectException(InvalidCacheKey::class);
-        $name = 'some invalide cache key{}';
+        $name = 'some invalid cache key{}';
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())->method('has')
             ->with($name)
-            ->willThrowException(new class() extends RuntimeException implements InvalidArgumentException
-            {
+            ->willThrowException(new class() extends RuntimeException implements InvalidArgumentException{
             });
         assert($cache instanceof CacheInterface);
         $provider = new AutowiringSimpleCache($cache);

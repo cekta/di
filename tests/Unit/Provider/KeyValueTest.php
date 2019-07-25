@@ -9,12 +9,11 @@ use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use stdClass;
 
 /** @covers \Cekta\DI\Provider\KeyValue */
 class KeyValueTest extends TestCase
 {
-    /** @var ContainerInterface */
+    /** @var ContainerInterface|\PHPUnit\Framework\MockObject\MockObject */
     private $container;
 
     public function setUp(): void
@@ -29,9 +28,6 @@ class KeyValueTest extends TestCase
         static::assertFalse($provider->canBeProvided('invalid name'));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvide(): void
     {
         /** needs hard type correction */
@@ -40,9 +36,6 @@ class KeyValueTest extends TestCase
             ->provide('key', $this->container));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideNotFound(): void
     {
         $this->expectException(NotFound::class);
@@ -50,9 +43,6 @@ class KeyValueTest extends TestCase
         (new KeyValue([]))->provide('magic', $this->container);
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideLoader(): void
     {
         assert($this->container instanceof ContainerInterface);
@@ -61,22 +51,5 @@ class KeyValueTest extends TestCase
         $provider = new KeyValue(['key' => $loader]);
 
         static::assertEquals('test', $provider->provide('key', $this->container));
-    }
-
-    /**
-     * @throws ProviderNotFoundException
-     */
-    public function testTransform(): void
-    {
-        $result = KeyValue::transform([
-            'a' => function () {
-                return new stdClass();
-            },
-            'b' => 123
-        ]);
-        $contaienr = $this->createMock(ContainerInterface::class);
-        assert($contaienr instanceof ContainerInterface);
-        $this->assertSame(123, $result->provide('b', $contaienr));
-        $this->assertInstanceOf(stdClass::class, $result->provide('a', $contaienr));
     }
 }

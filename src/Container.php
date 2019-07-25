@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\IdNotString;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
 use Psr\Container\ContainerExceptionInterface;
@@ -28,10 +27,9 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param  string  $id
+     * @param  string|mixed  $id
      *
      * @return mixed
-     * @throws ContainerExceptionInterface
      */
     public function get($id)
     {
@@ -80,5 +78,4 @@ class Container implements ContainerInterface
 
         throw new ProviderNotFound($id);
     }
-
 }

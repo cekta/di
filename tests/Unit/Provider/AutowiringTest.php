@@ -40,9 +40,6 @@ class AutowiringTest extends TestCase
         $this->assertFalse($provider->canBeProvided(Throwable::class));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideWithoutArguments(): void
     {
         $provide = new Autowiring();
@@ -51,20 +48,15 @@ class AutowiringTest extends TestCase
         $this->assertEquals(new stdClass(), $provide->provide(stdClass::class, $container));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideWithArguments(): void
     {
         $obj = new class(new stdClass(), '123')
         {
-            /**
-             * @var stdClass
-             */
+
+            /** @var stdClass */
             public $class;
-            /**
-             * @var string
-             */
+
+            /** @var string */
             public $str;
 
             public function __construct(stdClass $class, string $str)
@@ -75,11 +67,10 @@ class AutowiringTest extends TestCase
         };
         $name = get_class($obj);
         $container = $this->createMock(ContainerInterface::class);
-        $container->method('get')
-            ->will($this->returnValueMap([
+        $container->method('get')->willReturnMap([
                 [stdClass::class, new stdClass()],
                 ['str', 'magic']
-            ]));
+        ]);
         assert($container instanceof ContainerInterface);
         $provider = new Autowiring();
         $result = $provider->provide($name, $container);
@@ -87,10 +78,7 @@ class AutowiringTest extends TestCase
         $this->assertSame('magic', $result->str);
     }
 
-    /**
-     * @throws ProviderException
-     */
-    public function testProvideReflectionClassNotCreatebale()
+    public function testProvideReflectionClassNotCreatable(): void
     {
         $this->expectException(ClassNotCreated::class);
         $provider = new Autowiring();
@@ -99,20 +87,14 @@ class AutowiringTest extends TestCase
         $provider->provide('invalid name', $container);
     }
 
-    /**
-     * @throws ProviderException
-     */
-    public function testProvideWithRules()
+    public function testProvideWithRules(): void
     {
         $obj = new class()
         {
-            /**
-             * @var int
-             */
+            /** @var int */
             public $a;
-            /**
-             * @var int
-             */
+
+            /** @var int */
             public $b;
 
             public function __construct(int $a = 1, int $b = 2)
@@ -123,10 +105,12 @@ class AutowiringTest extends TestCase
         };
         $name = get_class($obj);
         $rule = $this->createMock(Autowiring\RuleInterface::class);
+        assert($rule instanceof Autowiring\RuleInterface);
         $rule->method('acceptable')->with($name)->willReturn(true);
         $rule->method('accept')->willReturn(['a' => 'c']);
         $provider = new Autowiring($rule);
         $container = $this->createMock(ContainerInterface::class);
+        assert($container instanceof ContainerInterface);
         $container->method('get')->willReturnMap([
             ['c', 5],
             ['b', 6]

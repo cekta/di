@@ -9,12 +9,13 @@ use PHPUnit\Framework\TestCase;
 
 class RuleTest extends TestCase
 {
-    public function testRuleMustImplementRuleInterface()
+    public function testRuleMustImplementRuleInterface(): void
     {
         $rule = new Rule('', ['test' => 'value']);
         static::assertInstanceOf(RuleInterface::class, $rule);
     }
-    public function testAcceptance()
+
+    public function testAcceptance(): void
     {
         $rule = new Rule('abc', ['test' => 'value']);
         static::assertTrue($rule->acceptable('abc'));
@@ -22,7 +23,7 @@ class RuleTest extends TestCase
         static::assertFalse($rule->acceptable('ab'));
     }
 
-    public function testAccept()
+    public function testAccept(): void
     {
         $rule = new Rule('abc', ['test' => 'value']);
         static::assertSame(['test' => 'value'], $rule->accept());

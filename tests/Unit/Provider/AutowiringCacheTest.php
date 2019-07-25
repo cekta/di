@@ -50,10 +50,7 @@ class AutowiringCacheTest extends TestCase
         $this->assertFalse($provider->canBeProvided(ProviderInterface::class));
     }
 
-    /**
-     * @throws ProviderException
-     */
-    public function testProvideCacheHit()
+    public function testProvideCacheHit(): void
     {
         $pool = $this->createMock(CacheItemPoolInterface::class);
         $item = $this->createMock(CacheItemInterface::class);
@@ -68,20 +65,14 @@ class AutowiringCacheTest extends TestCase
         $this->assertInstanceOf(stdClass::class, $provider->provide(stdClass::class, $container));
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideCacheMiss(): void
     {
         $obj = new class(new stdClass(), 1)
         {
-            /**
-             * @var stdClass
-             */
+            /** @var stdClass */
             public $class;
-            /**
-             * @var int
-             */
+
+            /** @var int */
             public $value;
 
             public function __construct(stdClass $class, int $value)
@@ -110,9 +101,6 @@ class AutowiringCacheTest extends TestCase
         $this->assertSame(6, $result->value);
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideNotCreated(): void
     {
         $this->expectException(ClassNotCreated::class);
@@ -127,13 +115,10 @@ class AutowiringCacheTest extends TestCase
         $provider->provide($name, $container);
     }
 
-    /**
-     * @throws ProviderException
-     */
     public function testProvideInvalidCacheKeyException(): void
     {
         $this->expectException(InvalidCacheKey::class);
-        $name = 'some invalide cache key';
+        $name = 'some invalid cache key';
         $pool = $this->createMock(CacheItemPoolInterface::class);
         $pool->expects($this->once())->method('getItem')->with($name)->willThrowException(
             new class extends RuntimeException implements InvalidArgumentException
@@ -146,23 +131,4 @@ class AutowiringCacheTest extends TestCase
         assert($container instanceof ContainerInterface);
         $provider->provide($name, $container);
     }
-
-//    /**
-//     * @throws ProviderException
-//     */
-//    public function testProvideInvalidCacheKeyTransform(): void
-//    {
-//        $name = '{}()/\@:test';
-//        $transform = '........test';
-//        $value = 'value';
-//        $item = $this->createMock(CacheItemInterface::class);
-//        $item->method('isHit')->willReturn(false);
-//        $pool = $this->createMock(CacheItemPoolInterface::class);
-//        $pool->method('getItem')->with($transform)->willReturn($item);
-//        $reader = $this->createMock(Reader::class);
-//        $reader->method('getDependencies')->with($name)->willReturn([]);
-//        $provider = new AutowiringCache($pool, $reader);
-//        $container = $this->createMock(ContainerInterface::class);
-//        $result = $provider->provide($name, $container);
-//    }
 }
