@@ -12,21 +12,15 @@ use Psr\SimpleCache\InvalidArgumentException;
 
 class AutowiringSimpleCache implements ProviderInterface
 {
-    /**
-     * @var CacheInterface
-     */
+    /** @var CacheInterface */
     private $cache;
-    /**
-     * @var Autowiring
-     */
+
+    /** @var Autowiring */
     private $autowiring;
 
     public function __construct(CacheInterface $cache, ?Autowiring $autowiring = null)
     {
-        if (null === $autowiring) {
-            $autowiring = new Autowiring();
-        }
-        $this->autowiring = $autowiring;
+        $this->autowiring = $autowiring ?? new Autowiring();
         $this->cache = $cache;
     }
 
