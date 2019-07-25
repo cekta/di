@@ -14,5 +14,4 @@ class InvalidCacheKey extends RuntimeException implements ProviderException
         $message = "Invalide cache key $id";
         parent::__construct($message, 0, $previous);
     }
-
 }

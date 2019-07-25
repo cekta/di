@@ -4,14 +4,11 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider;
 
 use Cekta\DI\Provider\Autowiring\ReflectionClass;
-use Cekta\DI\Provider\Autowiring\RuleInterface;
-use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderInterface;
 use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Psr\SimpleCache\InvalidArgumentException;
-use ReflectionException;
 
 class AutowiringSimpleCache implements ProviderInterface
 {
@@ -20,14 +17,17 @@ class AutowiringSimpleCache implements ProviderInterface
      */
     private $cache;
     /**
-     * @var RuleInterface[]
+     * @var Autowiring
      */
-    private $rules;
+    private $autowiring;
 
-    public function __construct(CacheInterface $cache, RuleInterface ...$rules)
+    public function __construct(CacheInterface $cache, ?Autowiring $autowiring = null)
     {
+        if (null === $autowiring) {
+            $autowiring = new Autowiring();
+        }
+        $this->autowiring = $autowiring;
         $this->cache = $cache;
-        $this->rules = $rules;
     }
 
     public function provide(string $id, ContainerInterface $container)
@@ -36,7 +36,7 @@ class AutowiringSimpleCache implements ProviderInterface
         foreach ($this->getDependencies($id) as $dependecy) {
             $args[] = $container->get($dependecy);
         }
-        return new $id(...$args);
+        return $this->autowiring->create($id, $args);
     }
 
     public function canProvide(string $id): bool
@@ -48,15 +48,11 @@ class AutowiringSimpleCache implements ProviderInterface
     {
         try {
             if (!$this->cache->has($id)) {
-                $class = new ReflectionClass($id, ...$this->rules);
-                $this->cache->set($id, $class->getDependencies());
+                $this->cache->set($id, $this->autowiring->getDependencies($id));
             }
             return $this->cache->get($id);
         } catch (InvalidArgumentException $e) {
             throw new InvalidCacheKey($id, $e);
-        } catch (ReflectionException $e) {
-            throw new ClassNotCreated($id, $e);
         }
     }
-
 }

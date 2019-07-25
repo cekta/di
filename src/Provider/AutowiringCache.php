@@ -3,15 +3,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Provider\Autowiring\ReflectionClass;
-use Cekta\DI\Provider\Autowiring\RuleInterface;
-use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 
 class AutowiringCache implements ProviderInterface
 {
@@ -20,14 +16,17 @@ class AutowiringCache implements ProviderInterface
      */
     private $pool;
     /**
-     * @var RuleInterface[]
+     * @var Autowiring
      */
-    private $rules;
+    private $autowiring;
 
-    public function __construct(CacheItemPoolInterface $pool, RuleInterface ...$rules)
+    public function __construct(CacheItemPoolInterface $pool, ?Autowiring $autowiring = null)
     {
+        if (null === $autowiring) {
+            $autowiring = new Autowiring();
+        }
+        $this->autowiring = $autowiring;
         $this->pool = $pool;
-        $this->rules = $rules;
     }
 
     public function provide(string $id, ContainerInterface $container)
@@ -49,15 +48,12 @@ class AutowiringCache implements ProviderInterface
         try {
             $item = $this->pool->getItem($id);
             if (!$item->isHit()) {
-                $class = new ReflectionClass($id, ...$this->rules);
-                $item->set($class->getDependencies());
+                $item->set($this->autowiring->getDependencies($id));
                 $this->pool->save($item);
             }
             return $item->get();
         } catch (InvalidArgumentException $e) {
             throw new InvalidCacheKey($id, $e);
-        } catch (ReflectionException $e) {
-            throw new ClassNotCreated($id, $e);
         }
     }
 }
