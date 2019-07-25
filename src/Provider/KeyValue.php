@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider;
 
 use Cekta\DI\Provider\KeyValue\Exception\NotFound;
+use Cekta\DI\Provider\KeyValue\Loader\Service;
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderInterface;
+use Closure;
 use Psr\Container\ContainerInterface;
 
 class KeyValue implements ProviderInterface
@@ -14,6 +16,18 @@ class KeyValue implements ProviderInterface
      * @var array
      */
     private $values;
+
+    public static function transform(array $values): self
+    {
+        $result = [];
+        foreach ($values as $key => $value) {
+            if ($value instanceof Closure) {
+                $value = new Service($value);
+            }
+            $result[$key] = $value;
+        }
+        return new static($result);
+    }
 
     public function __construct(array $values)
     {
