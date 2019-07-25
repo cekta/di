@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
+use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Provider\AutowiringSimpleCache;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
@@ -22,32 +23,22 @@ class AutowiringSimpleCacheTest extends TestCase
 {
     public function testMustBeProvider(): void
     {
+        $autowiring = $this->createMock(Autowiring::class);
         $cache = $this->createMock(CacheInterface::class);
         assert($cache instanceof CacheInterface);
-        $this->assertInstanceOf(ProviderInterface::class, new AutowiringSimpleCache($cache));
+        assert($autowiring instanceof Autowiring);
+        $this->assertInstanceOf(ProviderInterface::class, new AutowiringSimpleCache($cache, $autowiring));
     }
 
     public function testCanProvide(): void
     {
+        $autowiring = $this->createMock(Autowiring::class);
         $cache = $this->createMock(CacheInterface::class);
         assert($cache instanceof CacheInterface);
-        $provider = new AutowiringSimpleCache($cache);
+        assert($autowiring instanceof Autowiring);
+        $provider = new AutowiringSimpleCache($cache, $autowiring);
         $this->assertTrue($provider->canProvide(stdClass::class));
-    }
-
-    public function testCanProvideInvalidName(): void
-    {
-        $cache = $this->createMock(CacheInterface::class);
-        assert($cache instanceof CacheInterface);
-        $provider = new AutowiringSimpleCache($cache);
         $this->assertFalse($provider->canProvide('invalid name'));
-    }
-
-    public function testCanProvideInterface(): void
-    {
-        $cache = $this->createMock(CacheInterface::class);
-        assert($cache instanceof CacheInterface);
-        $provider = new AutowiringSimpleCache($cache);
         $this->assertFalse($provider->canProvide(ProviderInterface::class));
     }
 
@@ -56,6 +47,8 @@ class AutowiringSimpleCacheTest extends TestCase
      */
     public function testProvideCacheHit(): void
     {
+        $autowiring = $this->createMock(Autowiring::class);
+        $autowiring->expects($this->never())->method('getDependencies');
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())->method('has')
             ->with(stdClass::class)
@@ -64,7 +57,8 @@ class AutowiringSimpleCacheTest extends TestCase
             ->with(stdClass::class)
             ->willReturn([]);
         assert($cache instanceof CacheInterface);
-        $provider = new AutowiringSimpleCache($cache);
+        assert($autowiring instanceof Autowiring);
+        $provider = new AutowiringSimpleCache($cache, $autowiring);
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
         $this->assertEquals(new stdClass(), $provider->provide(stdClass::class, $container));
@@ -75,18 +69,13 @@ class AutowiringSimpleCacheTest extends TestCase
      */
     public function testProvideCacheMiss(): void
     {
-        $obj = new class(new stdClass(), 5)
-        {
-            public $class;
-            public $value;
-
-            public function __construct(stdClass $class, int $value)
-            {
-                $this->class = $class;
-                $this->value = $value;
-            }
-        };
-        $name = get_class($obj);
+        $name = 'mocked';
+        $autowiring = $this->createMock(Autowiring::class);
+        $autowiring->expects($this->once())->method('getDependencies')->with($name)->willReturn([
+            stdClass::class,
+            'value'
+        ]);
+        $autowiring->expects($this->once())->method('create')->with($name)->willReturn(new stdClass());
         $cache = $this->createMock(CacheInterface::class);
         $cache->expects($this->once())->method('has')
             ->with($name)
@@ -97,7 +86,8 @@ class AutowiringSimpleCacheTest extends TestCase
             ->with($name)
             ->willReturn([stdClass::class, 'value']);
         assert($cache instanceof CacheInterface);
-        $provider = new AutowiringSimpleCache($cache);
+        assert($autowiring instanceof Autowiring);
+        $provider = new AutowiringSimpleCache($cache, $autowiring);
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->exactly(2))->method('get')
             ->willReturnMap([
@@ -106,7 +96,7 @@ class AutowiringSimpleCacheTest extends TestCase
             ]);
         assert($container instanceof ContainerInterface);
         $result = $provider->provide($name, $container);
-        $this->assertInstanceOf($name, $result);
+        $this->assertInstanceOf(stdClass::class, $result);
     }
 
     /**

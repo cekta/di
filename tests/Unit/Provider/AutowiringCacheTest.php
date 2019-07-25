@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
+use Cekta\DI\Provider\Autowiring\Reader;
 use Cekta\DI\Provider\AutowiringCache;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
@@ -129,7 +130,7 @@ class AutowiringCacheTest extends TestCase
     /**
      * @throws ProviderException
      */
-    public function testProvideInvalidCacheKey(): void
+    public function testProvideInvalidCacheKeyException(): void
     {
         $this->expectException(InvalidCacheKey::class);
         $name = 'some invalide cache key';
@@ -146,5 +147,22 @@ class AutowiringCacheTest extends TestCase
         $provider->provide($name, $container);
     }
 
-    public function testProvideInvalid
+//    /**
+//     * @throws ProviderException
+//     */
+//    public function testProvideInvalidCacheKeyTransform(): void
+//    {
+//        $name = '{}()/\@:test';
+//        $transform = '........test';
+//        $value = 'value';
+//        $item = $this->createMock(CacheItemInterface::class);
+//        $item->method('isHit')->willReturn(false);
+//        $pool = $this->createMock(CacheItemPoolInterface::class);
+//        $pool->method('getItem')->with($transform)->willReturn($item);
+//        $reader = $this->createMock(Reader::class);
+//        $reader->method('getDependencies')->with($name)->willReturn([]);
+//        $provider = new AutowiringCache($pool, $reader);
+//        $container = $this->createMock(ContainerInterface::class);
+//        $result = $provider->provide($name, $container);
+//    }
 }

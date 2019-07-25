@@ -36,7 +36,7 @@ class AutowiringTest extends TestCase
 
     public function testCanProvideInterface(): void
     {
-        $provider= new Autowiring();
+        $provider = new Autowiring();
         $this->assertFalse($provider->canProvide(Throwable::class));
     }
 
@@ -97,5 +97,42 @@ class AutowiringTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
         $provider->provide('invalid name', $container);
+    }
+
+    /**
+     * @throws ProviderException
+     */
+    public function testProvideWithRules()
+    {
+        $obj = new class()
+        {
+            /**
+             * @var int
+             */
+            public $a;
+            /**
+             * @var int
+             */
+            public $b;
+
+            public function __construct(int $a = 1, int $b = 2)
+            {
+                $this->a = $a;
+                $this->b = $b;
+            }
+        };
+        $name = get_class($obj);
+        $rule = $this->createMock(Autowiring\RuleInterface::class);
+        $rule->method('acceptable')->with($name)->willReturn(true);
+        $rule->method('accept')->willReturn(['a' => 'c']);
+        $provider = new Autowiring($rule);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnMap([
+            ['c', 5],
+            ['b', 6]
+        ]);
+        $result = $provider->provide($name, $container);
+        $this->assertSame(5, $result->a);
+        $this->assertSame(6, $result->b);
     }
 }
