@@ -9,6 +9,7 @@ use Cekta\DI\Provider\KeyValue\LoaderInterface;
 use Cekta\DI\ProviderException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use stdClass;
 
 /** @covers \Cekta\DI\Provider\KeyValue */
 class KeyValueTest extends TestCase
@@ -60,5 +61,22 @@ class KeyValueTest extends TestCase
         $provider = new KeyValue(['key' => $loader]);
 
         static::assertEquals('test', $provider->provide('key', $this->container));
+    }
+
+    /**
+     * @throws ProviderNotFoundException
+     */
+    public function testTransform(): void
+    {
+        $result = KeyValue::transform([
+            'a' => function () {
+                return new stdClass();
+            },
+            'b' => 123
+        ]);
+        $contaienr = $this->createMock(ContainerInterface::class);
+        assert($contaienr instanceof ContainerInterface);
+        $this->assertSame(123, $result->provide('b', $contaienr));
+        $this->assertInstanceOf(stdClass::class, $result->provide('a', $contaienr));
     }
 }
