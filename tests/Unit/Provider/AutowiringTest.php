@@ -25,19 +25,19 @@ class AutowiringTest extends TestCase
     public function testCanProvide(): void
     {
         $provider = new Autowiring();
-        $this->assertTrue($provider->canProvide(stdClass::class));
+        $this->assertTrue($provider->canBeProvided(stdClass::class));
     }
 
     public function testCanProvideInvalidName(): void
     {
         $provider = new Autowiring();
-        $this->assertFalse($provider->canProvide('invalid name'));
+        $this->assertFalse($provider->canBeProvided('invalid name'));
     }
 
     public function testCanProvideInterface(): void
     {
         $provider = new Autowiring();
-        $this->assertFalse($provider->canProvide(Throwable::class));
+        $this->assertFalse($provider->canBeProvided(Throwable::class));
     }
 
     /**

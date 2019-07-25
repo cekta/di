@@ -8,9 +8,7 @@ use Psr\Container\ContainerInterface;
 
 class Alias implements LoaderInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $name;
 
     public function __construct(string $name)

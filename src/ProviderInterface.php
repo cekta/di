@@ -15,5 +15,5 @@ interface ProviderInterface
      */
     public function provide(string $id, ContainerInterface $container);
 
-    public function canProvide(string $id): bool;
+    public function canBeProvided(string $id): bool;
 }

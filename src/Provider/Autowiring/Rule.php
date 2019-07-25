@@ -1,17 +1,13 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace Cekta\DI\Provider\Autowiring;
 
 class Rule implements RuleInterface
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $prefix;
-    /**
-     * @var array
-     */
+
+    /** @var array */
     private $replace;
 
     public function __construct(string $prefix, array $replace)
@@ -22,7 +18,7 @@ class Rule implements RuleInterface
 
     public function acceptable(string $id): bool
     {
-        return $this->prefix === substr($id, 0, strlen($this->prefix));
+        return strpos($id, $this->prefix) === 0;
     }
 
     public function accept(): array

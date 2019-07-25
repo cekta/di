@@ -31,7 +31,7 @@ class AutowiringCacheTest extends TestCase
         $pool = $this->createMock(CacheItemPoolInterface::class);
         assert($pool instanceof CacheItemPoolInterface);
         $provider = new AutowiringCache($pool);
-        $this->assertTrue($provider->canProvide(stdClass::class));
+        $this->assertTrue($provider->canBeProvided(stdClass::class));
     }
 
     public function testCanProvideInvalidName(): void
@@ -39,7 +39,7 @@ class AutowiringCacheTest extends TestCase
         $pool = $this->createMock(CacheItemPoolInterface::class);
         assert($pool instanceof CacheItemPoolInterface);
         $provider = new AutowiringCache($pool);
-        $this->assertFalse($provider->canProvide('invalid name'));
+        $this->assertFalse($provider->canBeProvided('invalid name'));
     }
 
     public function testCanProvideInterface(): void
@@ -47,7 +47,7 @@ class AutowiringCacheTest extends TestCase
         $pool = $this->createMock(CacheItemPoolInterface::class);
         assert($pool instanceof CacheItemPoolInterface);
         $provider = new AutowiringCache($pool);
-        $this->assertFalse($provider->canProvide(ProviderInterface::class));
+        $this->assertFalse($provider->canBeProvided(ProviderInterface::class));
     }
 
     /**

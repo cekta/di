@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Provider\Autowiring\ReflectionClass;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderInterface;
 use Psr\Container\ContainerInterface;
@@ -26,14 +25,14 @@ class AutowiringSimpleCache implements ProviderInterface
 
     public function provide(string $id, ContainerInterface $container)
     {
-        $args = [];
         foreach ($this->getDependencies($id) as $dependency) {
             $args[] = $container->get($dependency);
         }
-        return $this->autowiring->create($id, $args);
+
+        return $this->autowiring->create($id, $args ?? []);
     }
 
-    public function canProvide(string $id): bool
+    public function canBeProvided(string $id): bool
     {
         return class_exists($id);
     }
@@ -44,6 +43,7 @@ class AutowiringSimpleCache implements ProviderInterface
             if (!$this->cache->has($id)) {
                 $this->cache->set($id, $this->autowiring->getDependencies($id));
             }
+
             return $this->cache->get($id);
         } catch (InvalidArgumentException $e) {
             throw new InvalidCacheKey($id, $e);

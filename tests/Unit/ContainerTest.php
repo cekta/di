@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Unit;
 
 use Cekta\DI\Container;
-use Cekta\DI\Exception\IdNotString;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
 use Cekta\DI\ProviderException;
@@ -36,7 +35,8 @@ class ContainerTest extends TestCase
     {
         $provider = $this->createMock(ProviderInterface::class);
         $provider->expects(static::once())->method('provide')->willReturn('test');
-        $provider->expects(static::once())->method('canProvide')->willReturn(true);
+        $provider->expects(static::once())->method('canBeProvided')
+            ->willReturn(true);
         assert($provider instanceof ProviderInterface);
 
         static::assertEquals('test', (new Container($provider))->get('name'));
@@ -47,7 +47,7 @@ class ContainerTest extends TestCase
         $provider = $this->createMock(ProviderInterface::class);
         assert($provider instanceof ProviderInterface);
         $provider->expects(static::never())->method('provide');
-        $provider->expects(static::exactly(2))->method('canProvide')
+        $provider->expects(static::exactly(2))->method('canBeProvided')
             ->willReturnCallback(static function ($name) {
                 return $name === 'magic';
             });
@@ -63,7 +63,7 @@ class ContainerTest extends TestCase
     {
         $this->expectException(InfiniteRecursion::class);
         $provider = $this->createMock(ProviderInterface::class);
-        $provider->method('canProvide')->willReturn(true);
+        $provider->method('canBeProvided')->willReturn(true);
         assert($provider instanceof ProviderInterface);
         $container = new Container($provider);
         $provider->expects($this->exactly(2))->method('provide')
@@ -80,13 +80,13 @@ class ContainerTest extends TestCase
     /**
      * @throws ContainerExceptionInterface
      */
-    public function testGetFindProviderOnce()
+    public function testGetFindProviderOnce(): void
     {
         $provider = $this->createMock(ProviderInterface::class);
         $provider->expects($this->once())->method('provide')
             ->with('a')
             ->willReturn(new stdClass());
-        $provider->expects($this->once())->method('canProvide')
+        $provider->expects($this->once())->method('canBeProvided')
             ->with('a')
             ->willReturn(true);
         assert($provider instanceof ProviderInterface);
@@ -100,11 +100,11 @@ class ContainerTest extends TestCase
     /**
      * @throws ContainerExceptionInterface
      */
-    public function testGetNotFoundInProvider()
+    public function testGetNotFoundInProvider(): void
     {
         $this->expectException(ProviderException::class);
         $provider = $this->createMock(ProviderInterface::class);
-        $provider->expects($this->once())->method('canProvide')
+        $provider->expects($this->once())->method('canBeProvided')
             ->with('a')
             ->willReturn(true);
         $provider->expects($this->once())->method('provide')
@@ -120,9 +120,9 @@ class ContainerTest extends TestCase
     /**
      * @throws ContainerExceptionInterface
      */
-    public function testGetNotString()
+    public function testGetNotString(): void
     {
-        $this->expectException(IdNotString::class);
+        $this->expectException(\TypeError::class);
         $container = new Container();
         $container->get(123);
     }

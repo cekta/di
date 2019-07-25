@@ -37,9 +37,9 @@ class AutowiringSimpleCacheTest extends TestCase
         assert($cache instanceof CacheInterface);
         assert($autowiring instanceof Autowiring);
         $provider = new AutowiringSimpleCache($cache, $autowiring);
-        $this->assertTrue($provider->canProvide(stdClass::class));
-        $this->assertFalse($provider->canProvide('invalid name'));
-        $this->assertFalse($provider->canProvide(ProviderInterface::class));
+        $this->assertTrue($provider->canBeProvided(stdClass::class));
+        $this->assertFalse($provider->canBeProvided('invalid name'));
+        $this->assertFalse($provider->canBeProvided(ProviderInterface::class));
     }
 
     /**

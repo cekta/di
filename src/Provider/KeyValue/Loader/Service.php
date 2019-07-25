@@ -4,14 +4,12 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider\KeyValue\Loader;
 
 use Cekta\DI\Provider\KeyValue\LoaderInterface;
-use Closure;
 use Psr\Container\ContainerInterface;
+use Closure;
 
 class Service implements LoaderInterface
 {
-    /**
-     * @var Closure
-     */
+    /** @var Closure */
     private $closure;
 
     public function __construct(Closure $closure)

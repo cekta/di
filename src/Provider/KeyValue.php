@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Cekta\DI\Provider;
 
@@ -10,9 +10,7 @@ use Psr\Container\ContainerInterface;
 
 class KeyValue implements ProviderInterface
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $values;
 
     public function __construct(array $values)
@@ -22,17 +20,19 @@ class KeyValue implements ProviderInterface
 
     public function provide(string $id, ContainerInterface $container)
     {
-        if (!$this->canProvide($id)) {
-            throw new NotFound($id);
+        if ($this->canBeProvided($id)) {
+            $result = $this->values[$id];
+            if ($result instanceof LoaderInterface) {
+                $result = $result($container);
+            }
+
+            return $result;
         }
-        $result = $this->values[$id];
-        if ($result instanceof LoaderInterface) {
-            $result = $result($container);
-        }
-        return $result;
+
+        throw new NotFound($id);
     }
 
-    public function canProvide(string $id): bool
+    public function canBeProvided(string $id): bool
     {
         return array_key_exists($id, $this->values);
     }
