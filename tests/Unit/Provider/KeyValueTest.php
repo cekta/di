@@ -6,7 +6,7 @@ namespace Cekta\DI\Test\Unit\Provider;
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\ProviderException;
+use Cekta\DI\ProviderExceptionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -30,7 +30,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvide(): void
     {
@@ -40,7 +40,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideNotFound(): void
     {
@@ -50,7 +50,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideLoader(): void
     {
@@ -64,7 +64,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testTransform(): void
     {

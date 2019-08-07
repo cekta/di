@@ -6,6 +6,6 @@ namespace Cekta\DI;
 use Psr\Container\ContainerExceptionInterface;
 use Throwable;
 
-interface ProviderException extends ContainerExceptionInterface, Throwable
+interface ProviderExceptionInterface extends ContainerExceptionInterface, Throwable
 {
 }

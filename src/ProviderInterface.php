@@ -8,7 +8,7 @@ interface ProviderInterface
     /**
      * @param string $id
      * @return mixed
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function provide(string $id);
 

@@ -6,7 +6,7 @@ namespace Cekta\DI\Test\Unit\Provider;
 use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Provider\AutowiringCache;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
-use Cekta\DI\ProviderException;
+use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -72,7 +72,7 @@ class AutowiringCacheTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideCacheHit()
     {
@@ -88,7 +88,7 @@ class AutowiringCacheTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideCacheMiss(): void
     {
@@ -107,7 +107,7 @@ class AutowiringCacheTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideInvalidCacheKeyException(): void
     {

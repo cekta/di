@@ -10,5 +10,5 @@ install:
 script:
   - ./vendor/bin/phpcs
   - ./vendor/bin/phpstan analyse
-  - ./vendor/bin/phpunit --coverage-clover=coverage.clover
+  - ./vendor/bin/phpunit
   - ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100
