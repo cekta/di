@@ -5,7 +5,7 @@ namespace Cekta\DI\Test\Unit\Provider;
 
 use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
-use Cekta\DI\ProviderException;
+use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -51,7 +51,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideWithoutArguments(): void
     {
@@ -61,7 +61,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideWithArguments(): void
     {
@@ -95,7 +95,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideReflectionClassNotCreatebale()
     {
@@ -107,7 +107,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderException
+     * @throws ProviderExceptionInterface
      */
     public function testProvideWithRules()
     {

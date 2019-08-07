@@ -5,7 +5,7 @@ namespace Cekta\DI\Test\Unit\Provider\Exception;
 
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
-use Cekta\DI\ProviderException;
+use Cekta\DI\ProviderExceptionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -35,7 +35,7 @@ class InvalidCacheKeyTest extends TestCase
 
     public function testMustProviderExceptionInterface()
     {
-        $this->assertInstanceOf(ProviderException::class, $this->exception);
+        $this->assertInstanceOf(ProviderExceptionInterface::class, $this->exception);
     }
 
     public function testCodeZero()

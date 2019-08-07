@@ -7,7 +7,7 @@ use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
 use Cekta\DI\LoaderInterface;
-use Cekta\DI\ProviderException;
+use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -94,13 +94,13 @@ class ContainerTest extends TestCase
 
     public function testGetNotFoundInProvider()
     {
-        $this->expectException(ProviderException::class);
+        $this->expectException(ProviderExceptionInterface::class);
         $this->provider->expects($this->once())->method('canProvide')
             ->with('a')
             ->willReturn(true);
         $this->provider->expects($this->once())->method('provide')
             ->with('a')
-            ->willThrowException(new class extends Exception implements ProviderException
+            ->willThrowException(new class extends Exception implements ProviderExceptionInterface
             {
             });
         $this->container->get('a');
