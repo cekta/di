@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Provider\KeyValue\Exception\NotFound;
-use Cekta\DI\Provider\KeyValue\Loader\Service;
-use Cekta\DI\Provider\KeyValue\LoaderInterface;
+use Cekta\DI\Loader\Service;
+use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\ProviderInterface;
 use Closure;
-use Psr\Container\ContainerInterface;
 
 class KeyValue implements ProviderInterface
 {
@@ -26,7 +24,7 @@ class KeyValue implements ProviderInterface
             }
             $result[$key] = $value;
         }
-        return new static($result);
+        return new self($result);
     }
 
     public function __construct(array $values)
@@ -34,15 +32,12 @@ class KeyValue implements ProviderInterface
         $this->values = $values;
     }
 
-    public function provide(string $id, ContainerInterface $container)
+    public function provide(string $id)
     {
         if (!$this->canProvide($id)) {
             throw new NotFound($id);
         }
         $result = $this->values[$id];
-        if ($result instanceof LoaderInterface) {
-            $result = $result($container);
-        }
         return $result;
     }
 

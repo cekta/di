@@ -3,18 +3,18 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Unit\Provider;
 
+use Cekta\DI\Provider\Exception\NotFound;
+use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\Provider\KeyValue\LoaderInterface;
-use Cekta\DI\ProviderNotFoundException;
+use Cekta\DI\ProviderException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
-/** @covers \Cekta\DI\Provider\KeyValue */
 class KeyValueTest extends TestCase
 {
-    /** @var ContainerInterface|null|MockObject - Mock Container */
+    /** @var MockObject */
     private $container;
 
     public function setUp(): void
@@ -22,7 +22,7 @@ class KeyValueTest extends TestCase
         $this->container = $this->createMock(ContainerInterface::class);
     }
 
-    public function testHasProvide(): void
+    public function testCanProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
         static::assertTrue($provider->canProvide('key'));
@@ -30,54 +30,52 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvide(): void
     {
-        /** needs hard type correction */
+        $provider = new KeyValue(['key' => 'value']);
         assert($this->container instanceof ContainerInterface);
-        static::assertEquals('value', (new KeyValue(['key' => 'value']))
-            ->provide('key', $this->container));
+        static::assertEquals('value', $provider->provide('key'));
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideNotFound(): void
     {
-        $this->expectException(ProviderNotFoundException::class);
-        $this->expectExceptionMessage('Container `magic` not found');
+        $this->expectException(NotFound::class);
         assert($this->container instanceof ContainerInterface);
-        (new KeyValue([]))->provide('magic', $this->container);
+        (new KeyValue([]))->provide('magic');
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testProvideLoader(): void
     {
-        assert($this->container instanceof ContainerInterface);
         $loader = $this->createMock(LoaderInterface::class);
         $loader->method('__invoke')->willReturn('test');
         $provider = new KeyValue(['key' => $loader]);
-
-        static::assertEquals('test', $provider->provide('key', $this->container));
+        $result = $provider->provide('key');
+        $this->assertInstanceOf(LoaderInterface::class, $result);
+        assert($this->container instanceof ContainerInterface);
+        $this->assertEquals('test', $result($this->container));
     }
 
     /**
-     * @throws ProviderNotFoundException
+     * @throws ProviderException
      */
     public function testTransform(): void
     {
-        $result = KeyValue::transform([
+        $provider = KeyValue::transform([
             'a' => function () {
                 return new stdClass();
             },
             'b' => 123
         ]);
-        $contaienr = $this->createMock(ContainerInterface::class);
-        assert($contaienr instanceof ContainerInterface);
-        $this->assertSame(123, $result->provide('b', $contaienr));
-        $this->assertInstanceOf(stdClass::class, $result->provide('a', $contaienr));
+        assert($this->container instanceof ContainerInterface);
+        $this->assertSame(123, $provider->provide('b'));
+        $this->assertInstanceOf(stdClass::class, $provider->provide('a')($this->container));
     }
 }

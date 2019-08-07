@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\KeyValue;
+namespace Cekta\DI;
 
 use Psr\Container\ContainerInterface;
 
