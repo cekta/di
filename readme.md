@@ -8,31 +8,6 @@ composer require cekta/di
 
 ## Getting Started
 
-/app/config.json
-```json
-{
-  "dsn": "mysql:dbname=testdb;host=127.0.0.1",
-  "username": "root",
-  "passwd": "secret",
-  "options": {}
-}
-```
-
-/app/di.php
-```php
-<?php
-declare(strict_types=1);
-
-use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\Container;
-
-$providers = [];
-$providers[] = new KeyValue(json_decode(file_get_contents(__DIR__ . '/config.json'), true));
-$providers[] = new Autowiring();
-return new Container(...$providers);
-```
-
 /src/Foo.php
 ```php
 <?php
@@ -61,14 +36,37 @@ class Foo
 <?php
 declare(strict_types=1);
 
-use Psr\Container\ContainerInterface;
-
 require __DIR__ . '/../vendor/autoload.php';
-/** @var ContainerInterface $container */
-$container = require __DIR__ . '/app/di.php';
 
+$container = new MyContainer();
 $foo = $container->get(Foo::class);
 $foo->bar();
+```
+
+/src/MyContainer.php
+```php
+<?php
+declare(strict_types=1);
+
+use Cekta\DI\Container;
+use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\Autowiring;
+
+class MyContainer extends Container
+{
+    public function __construct() 
+    {
+        $providers = [];
+        $providers[] = new KeyValue([
+            "dsn" => "mysql:dbname=testdb;host=127.0.0.1",
+            "username" => "root",
+            "passwd" => "secret",
+            "options" => []
+        ]);
+        $providers[] = new Autowiring();
+        parent::__construct(...$providers);
+    }
+}
 ```
 
 ## Documentation
