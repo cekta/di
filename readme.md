@@ -8,14 +8,15 @@ composer require cekta/di
 
 ## Getting Started
 
-/src/Foo.php
 ```php
 <?php
-declare(strict_types=1);
+/** @noinspection PhpComposerExtensionStubsInspection */
 
-use PDO;
+use Cekta\DI\Container;
+use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\Autowiring;
 
-class Foo
+class SomeService
 {
     private $pdo;
 
@@ -29,44 +30,18 @@ class Foo
         // you have access to db via $this->pdo
     }
 }
-```
 
-/public/index.php
-```php
-<?php
-declare(strict_types=1);
-
-require __DIR__ . '/../vendor/autoload.php';
-
-$container = new MyContainer();
-$foo = $container->get(Foo::class);
-$foo->bar();
-```
-
-/src/MyContainer.php
-```php
-<?php
-declare(strict_types=1);
-
-use Cekta\DI\Container;
-use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\Provider\Autowiring;
-
-class MyContainer extends Container
-{
-    public function __construct() 
-    {
-        $providers = [];
-        $providers[] = new KeyValue([
-            "dsn" => "mysql:dbname=testdb;host=127.0.0.1",
-            "username" => "root",
-            "passwd" => "secret",
-            "options" => []
-        ]);
-        $providers[] = new Autowiring();
-        parent::__construct(...$providers);
-    }
-}
+$providers[] = new KeyValue([
+    "dsn" => "mysql:dbname=testdb;host=127.0.0.1",
+    "username" => "root",
+    "passwd" => "secret",
+    "options" => []
+]);
+$providers[] = new Autowiring();
+$container = new Container(...$providers);
+$service = $container->get(SomeService::class);
+assert($service instanceof SomeService);
+$service->bar();
 ```
 
 ## Documentation
