@@ -152,7 +152,7 @@ $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
 
-#### KeyValue может возвращать LoaderInterface.
+#### KeyValue return LoaderInterface.
 
 В некоторых случаях для загрузки зависимости могут потребоваться другие зависимости.
 
@@ -177,7 +177,7 @@ $container = new Container(...$providers);
 assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 ```
 
-В этом примере использовался загрузчик Service.
+В этом примере использовался загрузчик [Service](#service).
 
 #### KeyValue transform.
 
@@ -198,6 +198,7 @@ $providers[] = new KeyValue([
 ]);
 $providers[] = KeyValue::transform([
     'dsn' => function (ContainerInterface $c) {
+        // можно вернуть что угодно и создавать как угодно.
         return "{$c->get('type')}:dbname={$c->get('dbName')};host={$c->get('host')}";
     },
     'example' => 'value'
@@ -255,9 +256,9 @@ assert($magic->number === 123);
 assert($magic->default === 789);
 ```
 
-Можно таким образом создавать в том числе и классы предоставляемые php, например PDO.
+Можно обращаться в том числе и классы предоставляемые php, например PDO.
 
-#### Autowiring и интерфейсы.
+#### Autowiring and interface.
 
 В некоторых случаях объект может зависеть от интерфейса к которому может существовать несколько реализаций, тогда вам 
 надо указать какую надо использовать.
@@ -294,4 +295,157 @@ assert($demo->driver instanceof DriverInterface);
 assert($demo->driver instanceof FileDriver);
 ```
 
-В этом примере использовался Loader Alias.
+В этом примере использовался загрузчик [Alias](#alias).
+
+#### Autowiring и RuleInterface
+
+В некоторых случаях, может существовать два класса которые зависят от username, но одному надо username от mysql, 
+другому от redis.
+
+[RuleInterface](/src/Provider/Autowiring/RuleInterface.php) позволяет задавать правила для загружаемой зависимости, 
+чтобы загружать зависимость с другим именем, есть простая реализация в виде [Rule](/src/Provider/Autowiring/Rule.php).
+
+```php
+<?php
+use Cekta\DI\Provider\KeyValue;
+use Cekta\DI\Provider\Autowiring;
+use Cekta\DI\Container;
+
+class DriverMysql
+{
+    public $username;
+
+    public function __construct(string $username) 
+    {
+        $this->username = $username;
+    }
+}
+class DriverRedis
+{
+    public $username;
+
+    public function __construct(string $username) 
+    {
+        $this->username = $username;
+    }
+}
+
+$providers[] = new KeyValue([
+    'username' => 'mysql username',
+    'redis.username' => 'redis username'
+]);
+$providers[] = new Autowiring(new Autowiring\Rule(DriverRedis::class, ['username' => 'redis.username']));
+$container = new Container(...$providers);
+
+$mysql = $container->get(DriverMysql::class);
+assert($mysql instanceof DriverMysql);
+assert($mysql->username === 'mysql username');
+$redis = $container->get(DriverRedis::class);
+assert($redis instanceof DriverRedis);
+assert($redis->username === 'redis username');
+```
+
+#### Autowiring и производительность
+
+Для получения аргументов конструктора, используется [Reflection](https://www.php.net/manual/ru/book.reflection.php).
+
+Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к 
+Reflection используя [psr/cache](https://www.php-fig.org/psr/psr-6/) и 
+[psr/simple-cache](https://www.php-fig.org/psr/psr-16/).
+
+### AutowiringSimpleCache
+
+Этот провайдер является декаратором, который перед использование Reflection пытается найти значение в 
+[psr/simple-cache](https://www.php-fig.org/psr/psr-16/) на продакшене каждое обращение может браться из кэша.
+
+1. Выберите реализацию 
+[psr/simple-cache-implementation](https://packagist.org/providers/psr/simple-cache-implementation)
+или создайте свою
+2. Установите реализацию например [cache/array-adapter](https://packagist.org/packages/cache/array-adapter)
+этот вариант прост для демонстрации, но для production хорошо чтобы он кэшировал в постоянное хранилище (redis, 
+memcached, file system и тд).
+    ```
+    composer require cache/array-adapter
+    ```
+3. Пример
+
+```php
+<?php
+use Cache\Adapter\PHPArray\ArrayCachePool;
+use Cekta\DI\Container;
+use Cekta\DI\Provider\Autowiring;
+use Cekta\DI\Provider\AutowiringSimpleCache;
+
+$cache = new ArrayCachePool();
+$providers[] = new AutowiringSimpleCache($cache, new Autowiring());
+$container = new Container(... $providers);
+
+$start = microtime(true);
+$container->get(stdClass::class);
+$result = number_format(microtime(true) - $start, 17);
+echo "$result используя Reflection и помещает в кэш" . PHP_EOL;
+
+$start = microtime(true);
+$container->get(stdClass::class);
+$result = number_format(microtime(true) - $start, 17);
+echo "$result последующие вызовы идут минуя Provider и Reflection" . PHP_EOL;
+
+$container = new Container(...$providers);
+
+$start = microtime(true);
+$container->get(stdClass::class);
+$result = number_format(microtime(true) - $start, 17);
+echo "$result минуя Reflection используя Cache" . PHP_EOL;
+
+$start = microtime(true);
+$container->get(stdClass::class);
+$result = number_format(microtime(true) - $start, 17);
+echo "$result последующие вызовы идут минуя Provider и Reflection" . PHP_EOL;
+```
+
+Output:
+```
+0.00098490715026856 используя Reflection и помещает в кэш
+0.00000500679016113 последующие вызовы идут минуя Provider и Reflection
+0.00007414817810059 минуя Reflection используя Cache
+0.00000405311584473 последующие вызовы идут минуя Provider и Reflection
+```
+
+Вывод времени и microtime не совсем корректный bencmark показывающий разницу, но для примера сойдет.
+
+### AutowiringCache
+
+Этот провайдер использует для кэширования [psr/cache](https://www.php-fig.org/psr/psr-6/) в остальном он похож на 
+AutowiringSimpleCache
+
+## Загручики
+
+Если для разрешения одной зависимости требуются другие, то provider возвращает объект реализующий 
+[LoaderInterface](/src/LoaderInterface.php).
+
+[Container](/src/Container.php) получив такое от провайдера, передает себя для того чтобы загрузить нужные зависимости.
+
+### Service
+
+Этот загрузчик принимает на входе анонимную функцию, первым аргументом которой он передает 
+Psr\Container\ContainerInterface, то что вернет эта функция это и будет результатом.
+
+Пример кода смотри в [KeyValue может возвращать LoaderInterface](#keyvalue-return-loaderinterface)
+
+### Alias
+
+Этот провайдер получает id зависимости и обращается к ней в момент загрузки.
+
+Этот провадер удобно использовать для регистрации интерфейсов и зависимостей их реализующих.
+
+[Пример использования](#autowiring-and-interface)
+
+## Практические советы
+
+### Создание объекта Container
+
+#### Использования класса
+
+#### Использование файла
+
+### Регистрируйте реализации интерфейсов в одном месте.
