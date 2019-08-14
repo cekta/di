@@ -55,6 +55,7 @@ class Container implements ContainerInterface
         if (in_array($id, $this->calls)) {
             throw new InfiniteRecursion($id, $this->calls);
         }
+        $this->calls[] = $id;
     }
 
     private function getProvider(string $id): ProviderInterface
@@ -74,13 +75,11 @@ class Container implements ContainerInterface
     private function getValue(string $id)
     {
         $this->checkInfiniteRecursion($id);
-        $this->calls[] = $id;
         $provider = $this->getProvider($id);
         $result = $provider->provide($id);
         if ($result instanceof LoaderInterface) {
             $result = $result($this);
         }
-        array_pop($this->calls);
         return $result;
     }
 }
