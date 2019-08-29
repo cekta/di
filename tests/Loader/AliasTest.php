@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Loader;
+namespace Cekta\DI\Test\Loader;
 
 use Cekta\DI\Loader\Alias;
 use PHPUnit\Framework\TestCase;

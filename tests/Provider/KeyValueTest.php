@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider;
+namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\LoaderInterface;

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit;
+namespace Cekta\DI\Test;
 
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
