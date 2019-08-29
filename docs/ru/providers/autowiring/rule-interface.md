@@ -45,6 +45,11 @@ $redis = $container->get(DriverRedis::class);
 assert($redis instanceof DriverRedis);
 assert($redis->username === 'redis username');
 ```
-
+---
+* [Autowiring](autowiring.md):
+    * [Autowiring и interface](interface.md) 
+    * [Autowiring и производительность](perfomance.md) 
+    * [AutowiringSimpleCache](simple-cache.md) 
+    * [AutowiringCache](cache.md) 
 ---
 [Вернуться на главную](../../readme.md)

@@ -6,4 +6,6 @@ Psr\Container\ContainerInterface, то что вернёт эта функция
 Пример кода смотреть в [KeyValue может возвращать LoaderInterface](../providers/key-value/loader-interface.md)
 
 ---
+* [Alias](alias.md)
+---
 [Вернуться на главную](../readme.md)

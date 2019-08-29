@@ -7,4 +7,10 @@ Reflection используя [psr/cache](https://www.php-fig.org/psr/psr-6/) и
 [psr/simple-cache](https://www.php-fig.org/psr/psr-16/).
 
 ---
+* [Autowiring](autowiring.md):
+    * [Autowiring и interface](interface.md) 
+    * [Autowiring и RuleInterface](rule-interface.md) 
+    * [AutowiringSimpleCache](simple-cache.md) 
+    * [AutowiringCache](cache.md) 
+---
 [Вернуться на главную](../../readme.md)

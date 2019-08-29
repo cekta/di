@@ -38,4 +38,10 @@ assert($demo->driver instanceof FileDriver);
 В этом примере использовался загрузчик [Alias](../../loaders/alias.md).
 
 ---
+* [Autowiring](autowiring.md):
+    * [Autowiring и RuleInterface](rule-interface.md) 
+    * [Autowiring и производительность](perfomance.md) 
+    * [AutowiringSimpleCache](simple-cache.md) 
+    * [AutowiringCache](cache.md) 
+---
 [Вернуться на главную](../../readme.md)

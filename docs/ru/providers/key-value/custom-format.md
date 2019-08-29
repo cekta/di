@@ -25,6 +25,12 @@ $providers[] = new KeyValue(Yaml::parseFile(__DIR__ . '/config.yaml'));
 $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
-
+---
+* [KeyValue](key-value.md)
+* [Environment](environment.md)
+* [JSON](json.md)
+* [PHP](PHP.md)
+* [LoaderInterface](loader-interface.md)
+* [Transform](transform.md)
 ---
 [Вернуться на главную](../../readme.md)

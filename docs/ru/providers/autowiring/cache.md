@@ -4,4 +4,10 @@
 AutowiringSimpleCache
 
 ---
+* [Autowiring](autowiring.md):
+    * [Autowiring и interface](interface.md) 
+    * [Autowiring и RuleInterface](rule-interface.md) 
+    * [Autowiring и производительность](perfomance.md) 
+    * [AutowiringSimpleCache](simple-cache.md) 
+---
 [Вернуться на главную](../../readme.md)

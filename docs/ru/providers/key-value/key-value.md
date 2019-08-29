@@ -31,4 +31,11 @@ assert($container->get(stdClass::class) instanceof stdClass);
 Источник данных для провайдера может быть что угодно.
 
 ---
+* [Environment](environment.md)
+* [JSON](json.md)
+* [PHP](PHP.md)
+* [Custom format](custom-format.md)
+* [LoaderInterface](loader-interface.md)
+* [Transform](transform.md)
+---
 [Вернуться на главную](../../readme.md)

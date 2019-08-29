@@ -47,4 +47,10 @@ assert($magic->default === 789);
 Можно обращаться в том числе и классы предоставляемые php, например PDO.
 
 ---
+* [Autowiring и interface](interface.md) 
+* [Autowiring и RuleInterface](rule-interface.md) 
+* [Autowiring и производительность](perfomance.md) 
+* [AutowiringSimpleCache](simple-cache.md) 
+* [AutowiringCache](cache.md) 
+---
 [Вернуться на главную](../../readme.md)

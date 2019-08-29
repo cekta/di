@@ -59,4 +59,10 @@ Output:
 Вывод времени и microtime не совсем корректный bencmark показывающий разницу, но для примера сойдет.
 
 ---
+* [Autowiring](autowiring.md):
+    * [Autowiring и interface](interface.md) 
+    * [Autowiring и RuleInterface](rule-interface.md) 
+    * [Autowiring и производительность](perfomance.md) 
+    * [AutowiringCache](cache.md) 
+---
 [Вернуться на главную](../../readme.md)
