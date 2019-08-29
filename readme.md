@@ -46,4 +46,4 @@ $service->bar();
 
 ## Documentation
 
-1. [RU](docs/RU/README.md)
+1. [RU](docs/ru/readme.md)
