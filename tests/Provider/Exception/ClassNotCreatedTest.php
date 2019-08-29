@@ -1,23 +1,22 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider\Exception;
+namespace Cekta\DI\Test\Provider\Exception;
 
 use Cekta\DI\Provider\Exception\ClassNotCreated;
-use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderExceptionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
-class InvalidCacheKeyTest extends TestCase
+class ClassNotCreatedTest extends TestCase
 {
     /**
      * @var MockObject
      */
     private $prev;
     /**
-     * @var InvalidCacheKey
+     * @var ClassNotCreated
      */
     private $exception;
     /**
@@ -30,7 +29,7 @@ class InvalidCacheKeyTest extends TestCase
         $this->prev = $this->createMock(Throwable::class);
         $this->id = 'magic';
         assert($this->prev instanceof Throwable);
-        $this->exception = new InvalidCacheKey($this->id, $this->prev);
+        $this->exception = new ClassNotCreated($this->id, $this->prev);
     }
 
     public function testMustProviderExceptionInterface()
@@ -45,6 +44,6 @@ class InvalidCacheKeyTest extends TestCase
 
     public function testMessage()
     {
-        $this->assertSame("Invalide cache key `{$this->id}`", $this->exception->getMessage());
+        $this->assertSame("ReflectionClass not createable for `{$this->id}`", $this->exception->getMessage());
     }
 }

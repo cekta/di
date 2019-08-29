@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider\Exception;
+namespace Cekta\DI\Test\Provider\Exception;
 
 use Cekta\DI\Provider\Exception\NotFound;
 use PHPUnit\Framework\TestCase;
