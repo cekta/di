@@ -7,6 +7,5 @@
 [Пример использования](../providers/autowiring/interface.md)
 
 ---
-* [Service](service.md)
----
-[Вернуться на главную](../readme.md)
+* [Вернуться к началу раздела](../loaders.md)
+* [Вернуться на главную](../readme.md)
