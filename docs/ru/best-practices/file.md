@@ -34,9 +34,5 @@ use Psr\Container\ContainerInterface;
 $container = require 'app/container.php';
 ```
 ---
-* [Создание объекта Container](container-creation.md)
-* [Использования класса](class.md)
-* [Регистрирование реализации интерфейсов в одном месте](reg-in-one.md)
-* [Использование autocomplete](autocomplete.md)
----
-[Вернуться на главную](../readme.md)
+* [Вернуться к началу раздела](../best-practices.md)
+* [Вернуться на главную](../readme.md)

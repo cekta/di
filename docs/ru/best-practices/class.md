@@ -37,9 +37,5 @@ $container = new Vendor\Package\MyContainer();
 $container = new Vendor\Package\MyContainer();
 ```
 ---
-* [Создание объекта Container](container-creation.md)
-* [Использование файла](file.md)
-* [Регистрирование реализации интерфейсов в одном месте](reg-in-one.md)
-* [Использование autocomplete](autocomplete.md)
----
-[Вернуться на главную](../readme.md)
+* [Вернуться к началу раздела](../best-practices.md)
+* [Вернуться на главную](../readme.md)
