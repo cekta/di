@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Dependency Injection | di</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Dependency Injection" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="psr/container implementation for humans" />
+<meta property="og:description" content="psr/container implementation for humans" />
+<link rel="canonical" href="http://localhost:4000/" />
+<meta property="og:url" content="http://localhost:4000/" />
+<meta property="og:site_name" content="di" />
+<script type="application/ld+json">
+{"description":"psr/container implementation for humans","@type":"WebSite","name":"di","headline":"Dependency Injection","url":"http://localhost:4000/","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#157878">
+    <link rel="stylesheet" href="/assets/css/style.css?v=63c363d614c3652e8aec1b8c2eaffbb1a4a100a7">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">di</h1>
+      <h2 class="project-tagline">psr/container implementation for humans</h2>
+      
+        <a href="https://github.com/joev1/di" class="btn">View on GitHub</a>
+      
+      
+    </section>
+
+    <section class="main-content">
+      <h1 id="dependency-injection">Dependency Injection</h1>
+
+<h2 id="install-via-composer">Install via <a href="https://getcomposer.org/">composer</a></h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>composer require cekta/di
+</code></pre></div></div>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+<span class="sd">/** @noinspection PhpComposerExtensionStubsInspection */</span>
+
+<span class="k">use</span> <span class="nx">Cekta\DI\Container</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">Cekta\DI\Provider\KeyValue</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">Cekta\DI\Provider\Autowiring</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">SomeService</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="nv">$pdo</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nx">PDO</span> <span class="nv">$pdo</span><span class="p">)</span> 
+    <span class="p">{</span>
+        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">pdo</span> <span class="o">=</span> <span class="nv">$pdo</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">bar</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// you have access to db via $this-&gt;pdo
+</span>    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nv">$providers</span><span class="p">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">KeyValue</span><span class="p">([</span>
+    <span class="s2">"dsn"</span> <span class="o">=&gt;</span> <span class="s2">"mysql:dbname=testdb;host=127.0.0.1"</span><span class="p">,</span>
+    <span class="s2">"username"</span> <span class="o">=&gt;</span> <span class="s2">"root"</span><span class="p">,</span>
+    <span class="s2">"passwd"</span> <span class="o">=&gt;</span> <span class="s2">"secret"</span><span class="p">,</span>
+    <span class="s2">"options"</span> <span class="o">=&gt;</span> <span class="p">[]</span>
+<span class="p">]);</span>
+<span class="nv">$providers</span><span class="p">[]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Autowiring</span><span class="p">();</span>
+<span class="nv">$container</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Container</span><span class="p">(</span><span class="o">...</span><span class="nv">$providers</span><span class="p">);</span>
+<span class="nv">$service</span> <span class="o">=</span> <span class="nv">$container</span><span class="o">-&gt;</span><span class="na">get</span><span class="p">(</span><span class="nx">SomeService</span><span class="o">::</span><span class="na">class</span><span class="p">);</span>
+<span class="nb">assert</span><span class="p">(</span><span class="nv">$service</span> <span class="nx">instanceof</span> <span class="nx">SomeService</span><span class="p">);</span>
+<span class="nv">$service</span><span class="o">-&gt;</span><span class="na">bar</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h2 id="documentation">Documentation</h2>
+
+<ol>
+  <li><a href="/docs/ru/">RU</a></li>
+</ol>
+
+
+      <footer class="site-footer">
+        
+          <span class="site-footer-owner"><a href="https://github.com/joev1/di">di</a> is maintained by <a href="https://github.com/joev1">joev1</a>.</span>
+        
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
+      </footer>
+    </section>
+
+    
+  </body>
+</html>
