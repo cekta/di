@@ -36,6 +36,6 @@ assert($container->get(stdClass::class) instanceof stdClass);
 * [PHP](PHP.md)
 * [Custom format](custom-format.md)
 * [LoaderInterface](loader-interface.md)
-* [Transform](transform.md)
+* [ClosureToService](closureToService.md)
 ---
 [Вернуться на главную](../../readme.md)

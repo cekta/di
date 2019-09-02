@@ -25,6 +25,6 @@ assert($container->get('username') === 'root');
 * [JSON](json.md)
 * [Custom format](custom-format.md)
 * [LoaderInterface](loader-interface.md)
-* [Transform](transform.md)
+* [ClosureToService](closureToService.md)
 ---
 [Вернуться на главную](../../readme.md)

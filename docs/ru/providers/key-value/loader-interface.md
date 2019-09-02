@@ -32,6 +32,6 @@ assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 * [JSON](json.md)
 * [PHP](PHP.md)
 * [Custom format](custom-format.md)
-* [Transform](transform.md)
+* [ClosureToService](closureToService.md)
 ---
 [Вернуться на главную](../../readme.md)
