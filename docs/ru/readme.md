@@ -9,7 +9,8 @@
         * [Custom format](providers/key-value/custom-format.md)
         * Зависимости и анонимных функций:
             * [KeyValue return LoaderInterface](providers/key-value/loader-interface.md)
-            * [KeyValue transform](providers/key-value/transform.md)
+            * [KeyValue closureToService](providers/key-value/closureToService.md)
+            * [KeyValue stringToAlias](providers/key-value/stringToAlias.md)
     * [Autowiring](providers/autowiring/autowiring.md):
         * [Autowiring и interface](providers/autowiring/interface.md) 
         * [Autowiring и RuleInterface](providers/autowiring/rule-interface.md) 
