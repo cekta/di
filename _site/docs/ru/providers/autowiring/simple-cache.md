@@ -1,5 +1,5 @@
-### AutowiringSimpleCache
-
+## AutowiringSimpleCache
+---
 Этот провайдер является декоратором, который перед использование Reflection пытается найти значение в
 [psr/simple-cache](https://www.php-fig.org/psr/psr-16/) на продакшене каждое обращение может браться из кэша.
 
@@ -57,12 +57,3 @@ Output:
 ```
 
 Вывод времени и microtime не совсем корректный bencmark показывающий разницу, но для примера сойдет.
-
----
-* [Autowiring](autowiring.md):
-    * [Autowiring и interface](interface.md) 
-    * [Autowiring и RuleInterface](rule-interface.md) 
-    * [Autowiring и производительность](perfomance.md) 
-    * [AutowiringCache](cache.md) 
----
-[Вернуться на главную](../../readme.md)

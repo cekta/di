@@ -1,6 +1,5 @@
-
-#### KeyValue return LoaderInterface.
-
+## KeyValue return LoaderInterface
+---
 В некоторых случаях для загрузки зависимости могут потребоваться другие зависимости.
 
 ```php
@@ -25,13 +24,3 @@ assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 ```
 
 В этом примере использовался загрузчик [Service](../../loaders/service.md).
-
----
-* [KeyValue](key-value.md)
-* [Environment](environment.md)
-* [JSON](json.md)
-* [PHP](PHP.md)
-* [Custom format](custom-format.md)
-* [Transform](transform.md)
----
-[Вернуться на главную](../../readme.md)

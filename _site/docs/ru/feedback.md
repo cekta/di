@@ -1,5 +1,5 @@
 ## Feedback
-
+---
 Процесс разработки этой библиотеки полностью транслировался на youtube, 
 [ссылка на плейлист](https://www.youtube.com/playlist?list=PL7Nh93imVuXyePa8PjJ1qZzkjkGFWyDZ0)
 
@@ -8,6 +8,3 @@
 [Мой телеграмм](https://t.me/KuvshinovEE)
 
 Я буду рад вашим Pull Request, а также оставленными сообщениями об ошибках или пожеланиям по улучшениям.
-
----
-[Вернуться на главную](readme.md)

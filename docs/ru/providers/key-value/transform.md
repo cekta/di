@@ -1,6 +1,5 @@
-
-#### KeyValue transform.
-
+## KeyValue transform
+---
 В некоторых случаях людям хочется использовать анонимные функции как Service.
 
 Для реализации этих желаний есть специальный метод, который трансформирует любой Closure в Service.
@@ -29,13 +28,3 @@ assert($container->get('example') === 'value');
 ```
 
 Во втором провайдере любая анонимная функция становится сервисом, остальные значения не изменяются.
-
----
-* [KeyValue](key-value.md)
-* [Environment](environment.md)
-* [JSON](json.md)
-* [PHP](PHP.md)
-* [Custom format](custom-format.md)
-* [LoaderInterface](loader-interface.md)
----
-[Вернуться на главную](../../readme.md)

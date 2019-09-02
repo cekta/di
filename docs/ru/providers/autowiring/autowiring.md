@@ -1,5 +1,5 @@
-### Autowiring
-
+## Autowiring
+---
 Этот провайдер занимает загрузкой объекта по полному имени класса ([FQCN](https://lmgtfy.com/?q=php+fqcn)).
 
 Если у класса есть конструктор который принимает аргументы, то провайдер их предоставляет.
@@ -45,12 +45,3 @@ assert($magic->default === 789);
 ```
 
 Можно обращаться в том числе и классы предоставляемые php, например PDO.
-
----
-* [Autowiring и interface](interface.md) 
-* [Autowiring и RuleInterface](rule-interface.md) 
-* [Autowiring и производительность](perfomance.md) 
-* [AutowiringSimpleCache](simple-cache.md) 
-* [AutowiringCache](cache.md) 
----
-[Вернуться на главную](../../readme.md)

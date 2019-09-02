@@ -1,5 +1,5 @@
-#### Использование файла
-
+## Использование файла
+---
 Другой вариант это вынести создание Container в отдельный и возвращать объект, подключая его по необходимости.
 
 /app/container.php
@@ -33,6 +33,3 @@ use Psr\Container\ContainerInterface;
 /** @var ContainerInterface $container */
 $container = require 'app/container.php';
 ```
----
-* [Вернуться к началу раздела](../best-practices.md)
-* [Вернуться на главную](../readme.md)

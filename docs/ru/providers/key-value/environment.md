@@ -1,5 +1,5 @@
-#### KeyValue из environment
-
+## KeyValue из environment
+---
 ```php
 <?php
 use Cekta\DI\Container;
@@ -9,12 +9,3 @@ $providers[] = new KeyValue(getenv());
 $container = new Container(... $providers);
 echo $container->get('PATH');
 ```
----
-* [KeyValue](key-value.md)
-* [JSON](json.md)
-* [PHP](PHP.md)
-* [Custom format](custom-format.md)
-* [LoaderInterface](loader-interface.md)
-* [Transform](transform.md)
----
-[Вернуться на главную](../../readme.md)

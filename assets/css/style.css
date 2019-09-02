@@ -8,7 +8,7 @@ Error: Invalid CSS after "... site.theme }}"": expected "{", was ";"
 4: @import "{{ site.theme }}";
 5: 
 6: .page-header {
-7:   padding: 2rem;
+7:   padding: 1rem;
 8: }
 9: 
 
@@ -37,4 +37,4 @@ style.scss:4
 body:before {
   white-space: pre;
   font-family: monospace;
-  content: "Error: Invalid CSS after \"... site.theme }}\"\": expected \"{\", was \";\"\A         on line 4 of style.scss\A \A 1: ---\A 2: ---\A 3: \A 4: @import \"{{ site.theme }}\";\A 5: \A 6: .page-header {\A 7:   padding: 2rem;\A 8: }\A 9: "; }
+  content: "Error: Invalid CSS after \"... site.theme }}\"\": expected \"{\", was \";\"\A         on line 4 of style.scss\A \A 1: ---\A 2: ---\A 3: \A 4: @import \"{{ site.theme }}\";\A 5: \A 6: .page-header {\A 7:   padding: 1rem;\A 8: }\A 9: "; }
