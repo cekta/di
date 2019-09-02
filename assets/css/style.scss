@@ -1,0 +1,58 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+.page-header {
+  padding: 2rem;
+}
+
+.main-content {
+  padding: 2rem 0;
+  font-size: 1rem;
+}
+
+#mainContent {
+  display: grid;
+  grid-template-columns: fit-content(100%);
+  grid-auto-rows: auto;
+  grid-gap: 10px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.one {
+  max-width: 64rem;
+  margin: 2rem auto;
+  font-size: 0.9rem;
+  text-align: right;
+  list-style-position: inside;
+  grid-column: 1 / 2;
+  grid-row: 1 / 5;
+  width: 15rem;
+  line-height: 2;
+}
+
+.one li a{
+  margin-top: 1.5rem;
+  list-style: none;
+  color: #159957;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.one ul {
+  margin-bottom: 1rem;
+  list-style: none;
+  padding-left: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  color: #1b1e21;
+}
+
+.two{
+  grid-column: 3 / 7;
+  grid-row: 1 / 5;
+}
