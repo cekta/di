@@ -1,5 +1,5 @@
 
-#### KeyValue transform.
+#### KeyValue closureToService.
 
 В некоторых случаях людям хочется использовать анонимные функции как Service.
 
@@ -16,7 +16,7 @@ $providers[] = new KeyValue([
     'host' => '127.0.0.1',
     'dbName' => 'test'
 ]);
-$providers[] = KeyValue::transform([
+$providers[] = KeyValue::closureToService([
     'dsn' => function (ContainerInterface $c) {
         // можно вернуть что угодно и создавать как угодно.
         return "{$c->get('type')}:dbname={$c->get('dbName')};host={$c->get('host')}";
