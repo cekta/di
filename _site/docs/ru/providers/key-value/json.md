@@ -1,5 +1,5 @@
 ## KeyValue из json
----
+
 /config.json
 ```json
 {
@@ -18,3 +18,5 @@ $providers[] = new KeyValue(json_decode(file_get_contents(__DIR__ . '/config.jso
 $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
+
+ext-json required

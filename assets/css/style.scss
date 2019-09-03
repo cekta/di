@@ -1,17 +1,6 @@
 ---
 ---
 
-@import "{{ site.theme }}";
-
-.page-header {
-  padding: 1rem;
-}
-
-.main-content {
-  padding: 2rem 0;
-  font-size: 1rem;
-}
-
 #mainContent {
   display: grid;
   grid-template-columns: 1fr 0.1fr 1fr 1fr 1fr 1fr;
@@ -82,3 +71,14 @@
   align-items: center;
   padding-left: 0;
 }
+
+@import "{{ site.theme }}";
+
+.main-content {
+  padding: 2rem 0;
+  font-size: 1rem;
+}
+.page-header {
+  padding: 1rem;
+}
+

@@ -22,7 +22,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="/assets/css/style.css?v=5e0fa30f96725b632b9af79c27104d4694463793">
+    <link rel="stylesheet" href="/assets/css/style.css?v=280c7f248ebfe720f0c21964f27a19002ab92e36">
+    <link rel="icon" href="/images/favicon.ico">
 </head>
 <body>
 <!--<a id="skip-to-content" href="#content">Skip to the content.</a>-->
@@ -41,6 +42,7 @@
         <ul style="padding-left: 0">
             <li><span class="section-title">Вступление</span>
                 <ul>
+                    <li><a href="/">Getting started</a></li>
                     <li><a href="/docs/ru/container.html">Как работает Container</a></li>
                 </ul>
             </li>
@@ -54,7 +56,8 @@
                     <li><a href="/docs/ru/providers/key-value/custom-format.html">KeyValue из Custom format</a>
                     </li>
                     <li><a href="/docs/ru/providers/key-value/loader-interface.html">KeyValue и LoaderInterface</a></li>
-                    <li><a href="/docs/ru/providers/key-value/transform.html">KeyValue transform</a></li>
+                    <li><a href="/docs/ru/providers/key-value/closureToService.html">KeyValue closureToService</a></li>
+                    <li><a href="/docs/ru/providers/key-value/stringToAlias.html">KeyValue stringToAlias</a></li>
                     <li><a href="/docs/ru/providers/autowiring/autowiring.html">Autowiring</a></li>
                     <li><a href="/docs/ru/providers/autowiring/interface.html">Autowiring и interface</a></li>
                     <li><a href="/docs/ru/providers/autowiring/rule-interface.html">Autowiring и
@@ -97,16 +100,22 @@
       </h1>
 
 <ul>
-  <li><a href="/docs/ru/container.html">Как работает Container и стандартные провайдеры</a>
+  <li><a href="/docs/ru/container.html">Как работает Container</a></li>
+  <li>Стандартные провайдеры:
     <ul>
-      <li><a href="/docs/ru/providers/key-value/key-value.html">KeyValue</a>:
+      <li><a href="/docs/ru/providers/key-value/key-value.html">KeyValue из</a>:
         <ul>
-          <li><a href="/docs/ru/providers/key-value/environment.html">KeyValue из Environment</a></li>
-          <li><a href="/docs/ru/providers/key-value/json.html">KeyValue из JSON</a></li>
-          <li><a href="/docs/ru/providers/key-value/PHP.html">KeyValue из PHP</a></li>
-          <li><a href="/docs/ru/providers/key-value/custom-format.html">KeyValue из Custom format</a></li>
-          <li><a href="/docs/ru/providers/key-value/loader-interface.html">KeyValue значение реализующее LoaderInterface</a></li>
-          <li><a href="/docs/ru/providers/key-value/transform.html">KeyValue transform</a></li>
+          <li><a href="/docs/ru/providers/key-value/environment.html">Environment</a></li>
+          <li><a href="/docs/ru/providers/key-value/json.html">JSON</a></li>
+          <li><a href="/docs/ru/providers/key-value/PHP.html">PHP</a></li>
+          <li><a href="/docs/ru/providers/key-value/custom-format.html">Custom format</a></li>
+          <li>Зависимости и анонимных функций:
+            <ul>
+              <li><a href="/docs/ru/providers/key-value/loader-interface.html">KeyValue return LoaderInterface</a></li>
+              <li><a href="/docs/ru/providers/key-value/closureToService.html">KeyValue closureToService</a></li>
+              <li><a href="/docs/ru/providers/key-value/stringToAlias.html">KeyValue stringToAlias</a></li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li><a href="/docs/ru/providers/autowiring/autowiring.html">Autowiring</a>:
@@ -118,26 +127,24 @@
           <li><a href="/docs/ru/providers/autowiring/cache.html">AutowiringCache</a></li>
         </ul>
       </li>
-    </ul>
-  </li>
-  <li><a href="/docs/ru/loaders.html">Loaders</a>:
-    <ul>
-      <li><a href="/docs/ru/loaders/alias.html">Alias</a></li>
-      <li><a href="/docs/ru/loaders/service.html">Service</a></li>
-    </ul>
-  </li>
-  <li><a href="/docs/ru/best-practices.html">Практические советы</a>:
-    <ul>
-      <li><a href="/docs/ru/best-practices/container-creation.html">Создание объекта Container</a>
+      <li><a href="/docs/ru/loaders.html">Loaders</a>:
         <ul>
-          <li><a href="/docs/ru/best-practices/class.html">Использования класса</a></li>
-          <li><a href="/docs/ru/best-practices/file.html">Использование файла</a></li>
+          <li><a href="/docs/ru/loaders/alias.html">Alias</a></li>
+          <li><a href="/docs/ru/loaders/service.html">Service</a></li>
         </ul>
       </li>
+    </ul>
+  </li>
+  <li>Практические советы:
+    <ul>
+      <li><a href="/docs/ru/best-practices/container-creation.html">Создание объекта Container</a></li>
+      <li><a href="/docs/ru/best-practices/class.html">Использования класса</a></li>
+      <li><a href="/docs/ru/best-practices/file.html">Использование файла</a></li>
       <li><a href="/docs/ru/best-practices/reg-in-one.html">Регистрирование реализации интерфейсов в одном месте</a></li>
       <li><a href="/docs/ru/best-practices/autocomplete.html">Использование autocomplete</a></li>
     </ul>
   </li>
+  <li><a href="/docs/ru/feedback.html">Feedback</a></li>
 </ul>
         </main>
     </div>

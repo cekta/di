@@ -1,5 +1,5 @@
 ## KeyValue из PHP
----
+
 /config.php
 ```php
 <?php
@@ -19,3 +19,4 @@ $providers[] = new KeyValue(require __DIR__ . '/config.php');
 $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
+

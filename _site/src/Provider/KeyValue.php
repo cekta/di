@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
+use Cekta\DI\Loader\Alias;
 use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\ProviderInterface;
@@ -15,12 +16,24 @@ class KeyValue implements ProviderInterface
      */
     private $values;
 
-    public static function transform(array $values): self
+    public static function closureToService(array $values): self
     {
         $result = [];
         foreach ($values as $key => $value) {
             if ($value instanceof Closure) {
                 $value = new Service($value);
+            }
+            $result[$key] = $value;
+        }
+        return new self($result);
+    }
+
+    public static function stringToAlias(array $values): self
+    {
+        $result = [];
+        foreach ($values as $key => $value) {
+            if (is_string($value)) {
+                $value = new Alias($value);
             }
             $result[$key] = $value;
         }

@@ -1,4 +1,4 @@
-#### KeyValue из json
+## KeyValue из json
 
 /config.json
 ```json
@@ -20,13 +20,3 @@ assert($container->get('username') === 'root');
 ```
 
 ext-json required
-
----
-* [KeyValue](key-value.md)
-* [Environment](environment.md)
-* [PHP](PHP.md)
-* [Custom format](custom-format.md)
-* [LoaderInterface](loader-interface.md)
-* [ClosureToService](closureToService.md)
----
-[Вернуться на главную](../../readme.md)

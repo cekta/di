@@ -22,7 +22,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="/assets/css/style.css?v=5e0fa30f96725b632b9af79c27104d4694463793">
+    <link rel="stylesheet" href="/assets/css/style.css?v=280c7f248ebfe720f0c21964f27a19002ab92e36">
+    <link rel="icon" href="/images/favicon.ico">
 </head>
 <body>
 <!--<a id="skip-to-content" href="#content">Skip to the content.</a>-->
@@ -41,6 +42,7 @@
         <ul style="padding-left: 0">
             <li><span class="section-title">Вступление</span>
                 <ul>
+                    <li><a href="/">Getting started</a></li>
                     <li><a href="/docs/ru/container.html">Как работает Container</a></li>
                 </ul>
             </li>
@@ -54,7 +56,8 @@
                     <li><a href="/docs/ru/providers/key-value/custom-format.html">KeyValue из Custom format</a>
                     </li>
                     <li><a href="/docs/ru/providers/key-value/loader-interface.html">KeyValue и LoaderInterface</a></li>
-                    <li><a href="/docs/ru/providers/key-value/transform.html">KeyValue transform</a></li>
+                    <li><a href="/docs/ru/providers/key-value/closureToService.html">KeyValue closureToService</a></li>
+                    <li><a href="/docs/ru/providers/key-value/stringToAlias.html">KeyValue stringToAlias</a></li>
                     <li><a href="/docs/ru/providers/autowiring/autowiring.html">Autowiring</a></li>
                     <li><a href="/docs/ru/providers/autowiring/interface.html">Autowiring и interface</a></li>
                     <li><a href="/docs/ru/providers/autowiring/rule-interface.html">Autowiring и
@@ -95,7 +98,7 @@
         
         
       </h2>
-    <hr />
+
 <p>/config.json</p>
 <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="s2">"username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"root"</span><span class="w">
@@ -112,6 +115,8 @@
 <span class="nv">$container</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Container</span><span class="p">(</span><span class="o">...</span><span class="nv">$providers</span><span class="p">);</span>
 <span class="nb">assert</span><span class="p">(</span><span class="nv">$container</span><span class="o">-&gt;</span><span class="na">get</span><span class="p">(</span><span class="s1">'username'</span><span class="p">)</span> <span class="o">===</span> <span class="s1">'root'</span><span class="p">);</span>
 </code></pre></div></div>
+
+<p>ext-json required</p>
         </main>
     </div>
 </div>
