@@ -1,5 +1,5 @@
-## KeyValue
----
+### KeyValue
+
 Этот провайдер представляет из себя массив ключ => значение.
 Значением может быть что угодно.
 
@@ -29,3 +29,13 @@ assert($container->get(stdClass::class) instanceof stdClass);
 3. В случае если 2 провайдера предоставляют одну и туже зависимость используется тот что передан раньше.
 
 Источник данных для провайдера может быть что угодно.
+
+---
+* [Environment](environment.md)
+* [JSON](json.md)
+* [PHP](PHP.md)
+* [Custom format](custom-format.md)
+* [LoaderInterface](loader-interface.md)
+* [ClosureToService](closureToService.md)
+---
+[Вернуться на главную](../../readme.md)
