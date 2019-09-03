@@ -22,15 +22,24 @@
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    <link rel="icon" href="/images/favicon.ico">
 </head>
 <body>
-<!--<a id="skip-to-content" href="#content">Skip to the content.</a>-->
-
 <header class="page-header" role="banner">
+    {% if page.url == '/' %}
+    <div style="text-align: center">
+        <a title="Русская документация" href="/docs/ru/"><img style="max-width: 36px; height: auto" src="/images/rus.webp" alt=""></a>
+        <a title="Work in progress" href="#"><img style="max-width: 36px; height: auto" src="/images/uk.webp" alt=""></a>
+    </div>
+    {% endif %}
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline
         }}</h2>
-    {% if site.github.is_project_page %}
+    {% if page.url == '/' %}
+    <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
+    <a href="{{site.github.repository_url}}/blob/master/{{page.path}}" class="btn">Edit this page</a>
+    {% elsif page.url != '/' %}
+    <a href="/" class="btn">На главную</a>
     <a href="{{ site.github.repository_url }}" class="btn">Посмотреть код на GitHub</a>
     <a href="{{site.github.repository_url}}/blob/master/{{page.path}}" class="btn">Отредактировать эту страницу</a>
     {% endif %}
@@ -38,8 +47,10 @@
     <a href="{{ site.github.zip_url }}" class="btn">Download .zip</a>
     <a href="{{ site.github.tar_url }}" class="btn">Download .tar.gz</a>
     {% endif %}
+
 </header>
-<div id="mainContent">
+<div class="mainContent">
+    {% if page.url != '/' %}
     <div class="one">
         <ul style="padding-left: 0">
             <li><span class="section-title">Вступление</span>
@@ -50,31 +61,15 @@
             <li>
                 <span class="section-title">Провайдеры</span>
                 <ul>
-                    <li><a href="/docs/ru/providers/key-value/key-value.html">KeyValue</a>
-                    <li><a href="/docs/ru/providers/key-value/environment.html">KeyValue из Environment</a></li>
-                    <li><a href="/docs/ru/providers/key-value/json.html">KeyValue из JSON</a></li>
-                    <li><a href="/docs/ru/providers/key-value/PHP.html">KeyValue из PHP</a></li>
-                    <li><a href="/docs/ru/providers/key-value/custom-format.html">KeyValue из Custom format</a>
-                    </li>
-                    <li><a href="/docs/ru/providers/key-value/loader-interface.html">KeyValue и LoaderInterface</a></li>
-                    <li><a href="/docs/ru/providers/key-value/transform.html">KeyValue transform</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/autowiring.html">Autowiring</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/interface.html">Autowiring и interface</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/rule-interface.html">Autowiring и
-                        RuleInterface</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/perfomance.html">Autowiring и
-                        производительность</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/simple-cache.html">AutowiringSimpleCache</a></li>
-                    <li><a href="/docs/ru/providers/autowiring/cache.html">AutowiringCache</a></li>
+                    <li><a href="/docs/ru/providers/key-value.html">KeyValue</a>
+                    <li><a href="/docs/ru/providers/autowiring.html">Autowiring</a></li>
+                    <li><a href="/docs/ru/providers/simple-cache.html">AutowiringSimpleCache</a></li>
+                    <li><a href="/docs/ru/providers/cache.html">AutowiringCache</a></li>
                 </ul>
             </li>
             <li>
-                <span class="section-title">Загрузчики</span>
-                <ul>
-                    <li><a href="/docs/ru/loaders.html">Loaders</a>
-                    <li><a href="/docs/ru/loaders/alias.html">Alias</a></li>
-                    <li><a href="/docs/ru/loaders/service.html">Service</a></li>
-                </ul>
+                <span class="section-title"><a href="/docs/ru/loaders.html">Загрузчики</a></span>
+                <ul></ul>
             </li>
             <li>
                 <span class="section-title">Практические советы</span>
@@ -89,18 +84,17 @@
             <li><span class="site-footer-owner"><a href="/docs/ru/feedback.html">Обратная связь</a></span></li>
         </ul>
     </div>
+    {% endif %}
     <div class="two">
         <main id="content" class="main-content" role="main">
-            {% include anchor_headings.html html=content anchorBody="#" %}
+            {% include anchor_headings.html html=content anchorBody="#" beforeHeading="true" %}
         </main>
     </div>
 </div>
 <div id="footer">
     <footer class="site-footer">
-        {% if site.github.is_project_page %}
         <span class="site-footer-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a
                 href="https://github.com/smpl">Evgeniy Kuvshinov</a>.</span>
-        {% endif %}
         <ul class="social">
             <li><a target="_blank" href="https://t.me/dev_ru"><img src="/images/tel.webp" alt=""></a></li>
             <li><a target="_blank" href="https://www.youtube.com/c/EvgeniyKuvshinov"><img src="/images/yt.webp" alt=""></a></li>
