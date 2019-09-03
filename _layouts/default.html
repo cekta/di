@@ -31,10 +31,8 @@
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline
         }}</h2>
-    {% if site.github.is_project_page %}
     <a href="{{ site.github.repository_url }}" class="btn">Посмотреть код на GitHub</a>
     <a href="{{site.github.repository_url}}/blob/master/{{page.path}}" class="btn">Отредактировать эту страницу</a>
-    {% endif %}
     {% if site.show_downloads %}
     <a href="{{ site.github.zip_url }}" class="btn">Download .zip</a>
     <a href="{{ site.github.tar_url }}" class="btn">Download .tar.gz</a>
@@ -100,10 +98,8 @@
 </div>
 <div id="footer">
     <footer class="site-footer">
-        {% if site.github.is_project_page %}
         <span class="site-footer-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a
                 href="https://github.com/smpl">Evgeniy Kuvshinov</a>.</span>
-        {% endif %}
         <ul class="social">
             <li><a target="_blank" href="https://t.me/dev_ru"><img src="/images/tel.webp" alt=""></a></li>
             <li><a target="_blank" href="https://www.youtube.com/c/EvgeniyKuvshinov"><img src="/images/yt.webp" alt=""></a></li>
