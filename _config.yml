@@ -1,1 +1,10 @@
+title: "Cekta/DI"
+#email: ""
+#url: ""
+#docs_github: ""
+exclude: [Gemfile, Gemfile.lock, readme.md, vendor]
+syntax-highlighting:
+  enabled: true
+sass:
+  sass_dir: assets/css
 theme: jekyll-theme-cayman
