@@ -1,5 +1,8 @@
 ---
 ---
+
+@import "{{ site.theme }}";
+
 .mainContent {
   display: grid;
   grid-template-columns: 1fr 0.1fr 1fr 1fr 1fr 1fr;
@@ -73,9 +76,6 @@ div.highlighter-rouge {
   align-items: center;
   padding-left: 0;
 }
-
-@import "{{ site.theme }}";
-
 
 .main-content {
   padding: 2rem 0;
