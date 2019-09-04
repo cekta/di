@@ -28,7 +28,7 @@
 <header class="page-header" role="banner">
     {% if page.url == '/' %}
     <div style="text-align: center">
-        <a title="Русская документация" href="/docs/ru/"><img style="max-width: 36px; height: auto" src="/images/rus.webp" alt=""></a>
+        <a title="Русская документация" href="/ru/"><img style="max-width: 36px; height: auto" src="/images/rus.webp" alt=""></a>
         <a title="Work in progress" href="#"><img style="max-width: 36px; height: auto" src="/images/uk.webp" alt=""></a>
     </div>
     {% endif %}
@@ -36,8 +36,8 @@
     <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline
         }}</h2>
     {% if page.url == '/' %}
-    <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
-    <a href="{{site.github.repository_url}}/blob/master/{{page.path}}" class="btn">Edit this page</a>
+<!--    <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>-->
+<!--    <a href="{{site.github.repository_url}}/blob/master/{{page.path}}" class="btn">Edit this page</a>-->
     {% elsif page.url != '/' %}
     <a href="/" class="btn">На главную</a>
     <a href="{{ site.github.repository_url }}" class="btn">Посмотреть код на GitHub</a>
