@@ -6,9 +6,7 @@
     * [Autowiring](providers/autowiring.md):
         * [AutowiringSimpleCache](providers/simple-cache.md) 
         * [AutowiringCache](providers/cache.md) 
-    * [Loaders](loaders.md):
-        * [Alias](loaders/alias.md)
-        * [Service](loaders/service.md)
+* [Loaders](loaders.md)
 * Практические советы:
     * [Создание объекта Container](best-practices/container-creation.md)
     * [Использования класса](best-practices/class.md)
