@@ -2,21 +2,10 @@
 
 * [Как работает Container](container.md)
 * Стандартные провайдеры:
-    * [KeyValue из](providers/key-value/key-value.md):
-        * [Environment](providers/key-value/environment.md)
-        * [JSON](providers/key-value/json.md)
-        * [PHP](providers/key-value/PHP.md)
-        * [Custom format](providers/key-value/custom-format.md)
-        * Зависимости и анонимных функций:
-            * [KeyValue return LoaderInterface](providers/key-value/loader-interface.md)
-            * [KeyValue closureToService](providers/key-value/closureToService.md)
-            * [KeyValue stringToAlias](providers/key-value/stringToAlias.md)
-    * [Autowiring](providers/autowiring/autowiring.md):
-        * [Autowiring и interface](providers/autowiring/interface.md) 
-        * [Autowiring и RuleInterface](providers/autowiring/rule-interface.md) 
-        * [Autowiring и производительность](providers/autowiring/perfomance.md) 
-        * [AutowiringSimpleCache](providers/autowiring/simple-cache.md) 
-        * [AutowiringCache](providers/autowiring/cache.md) 
+    * [KeyValue](providers/key-value.md):
+    * [Autowiring](providers/autowiring.md):
+        * [AutowiringSimpleCache](providers/simple-cache.md) 
+        * [AutowiringCache](providers/cache.md) 
     * [Loaders](loaders.md):
         * [Alias](loaders/alias.md)
         * [Service](loaders/service.md)
