@@ -17,7 +17,6 @@
     {% endif %}
     <meta charset="UTF-8">
 
-    {% seo %}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,18 +25,13 @@
 </head>
 <body>
 <header class="page-header" role="banner">
-    {% if page.url == '/' %}
-    <div style="text-align: center">
-        <a title="Русская документация" href="{{ site.url }}/ru/"><img style="max-width: 36px; height: auto" src="{{ site.url }}/img/rus.webp" alt=""></a>
-        <a title="Work in progress" href="#"><img style="max-width: 36px; height: auto" src="{{ site.url }}/img/uk.webp" alt=""></a>
-    </div>
-    {% endif %}
     <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
     <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline
         }}</h2>
     {% if page.url == '/' %}
     <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
     <a href="{{site.github.repository_url}}/blob/master/docs/{{page.path}}" class="btn">Edit this page</a>
+    <a href="{{ site.url }}/ru/container.html" class="btn">Русская документация</a>
     {% elsif page.url != '/' %}
     <a href="{{ site.url }}" class="btn">На главную</a>
     <a href="{{ site.github.repository_url }}" class="btn">Посмотреть код на GitHub</a>
