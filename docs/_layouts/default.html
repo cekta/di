@@ -21,7 +21,7 @@
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
-    <link rel="icon" href="{{ site.url }}/img/favicon.ico">
+    <link rel="icon" href="{{ site.url }}/di/img/favicon.ico">
 </head>
 <body>
 <header class="page-header" role="banner">
@@ -31,7 +31,7 @@
     {% if page.url == '/' %}
     <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
     <a href="{{site.github.repository_url}}/blob/master/docs/{{page.path}}" class="btn">Edit this page</a>
-    <a href="{{ site.url }}/ru/container.html" class="btn">Русская документация</a>
+    <a href="{{ site.url }}/di/ru/container.html" class="btn">Русская документация</a>
     {% elsif page.url != '/' %}
     <a href="{{ site.url }}" class="btn">На главную</a>
     <a href="{{ site.github.repository_url }}" class="btn">Посмотреть код на GitHub</a>
@@ -49,33 +49,33 @@
         <ul style="padding-left: 0">
             <li><span class="section-title">Вступление</span>
                 <ul>
-                    <li><a href="{{ site.url }}/ru/container.html">Как работает Container</a></li>
+                    <li><a href="{{ site.url }}/di/ru/container.html">Как работает Container</a></li>
                 </ul>
             </li>
             <li>
                 <span class="section-title">Провайдеры</span>
                 <ul>
-                    <li><a href="{{ site.url }}/ru/providers/key-value.html">KeyValue</a>
-                    <li><a href="{{ site.url }}/ru/providers/autowiring.html">Autowiring</a></li>
-                    <li><a href="{{ site.url }}/ru/providers/simple-cache.html">AutowiringSimpleCache</a></li>
-                    <li><a href="{{ site.url }}/ru/providers/cache.html">AutowiringCache</a></li>
+                    <li><a href="{{ site.url }}/di/ru/providers/key-value.html">KeyValue</a>
+                    <li><a href="{{ site.url }}/di/ru/providers/autowiring.html">Autowiring</a></li>
+                    <li><a href="{{ site.url }}/di/ru/providers/simple-cache.html">AutowiringSimpleCache</a></li>
+                    <li><a href="{{ site.url }}/di/ru/providers/cache.html">AutowiringCache</a></li>
                 </ul>
             </li>
             <li>
-                <span class="section-title"><a href="{{ site.url }}/ru/loaders.html">Загрузчики</a></span>
+                <span class="section-title"><a href="{{ site.url }}/di/ru/loaders.html">Загрузчики</a></span>
                 <ul></ul>
             </li>
             <li>
                 <span class="section-title">Практические советы</span>
                 <ul>
-                    <li><a href="{{ site.url }}/ru/best-practices/container-creation.html">Создание объекта Container</a>
-                    <li><a href="{{ site.url }}/ru/best-practices/class.html">Использования класса</a></li>
-                    <li><a href="{{ site.url }}/ru/best-practices/file.html">Использование файла</a></li>
-                    <li><a href="{{ site.url }}/ru/best-practices/reg-in-one.html">Регистрирование интерфейсов</a></li>
-                    <li><a href="{{ site.url }}/ru/best-practices/autocomplete.html">Использование autocomplete</a></li>
+                    <li><a href="{{ site.url }}/di/ru/best-practices/container-creation.html">Создание объекта Container</a>
+                    <li><a href="{{ site.url }}/di/ru/best-practices/class.html">Использования класса</a></li>
+                    <li><a href="{{ site.url }}/di/ru/best-practices/file.html">Использование файла</a></li>
+                    <li><a href="{{ site.url }}/di/ru/best-practices/reg-in-one.html">Регистрирование интерфейсов</a></li>
+                    <li><a href="{{ site.url }}/di/ru/best-practices/autocomplete.html">Использование autocomplete</a></li>
                 </ul>
             </li>
-            <li><span class="site-footer-owner"><a href="{{ site.url }}/ru/feedback.html">Обратная связь</a></span></li>
+            <li><span class="site-footer-owner"><a href="{{ site.url }}/di/ru/feedback.html">Обратная связь</a></span></li>
         </ul>
     </div>
     {% endif %}
@@ -90,9 +90,9 @@
         <span class="site-footer-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a
                 href="https://github.com/smpl">Evgeniy Kuvshinov</a>.</span>
         <ul class="social">
-            <li><a target="_blank" href="https://t.me/dev_ru"><img src="{{ site.url }}/img/tel.webp" alt=""></a></li>
-            <li><a target="_blank" href="https://www.youtube.com/c/EvgeniyKuvshinov"><img src="{{ site.url }}/img/yt.webp" alt=""></a></li>
-            <li><a target="_blank" href="https://twitter.com/KuvshinovEE"><img src="{{ site.url }}/img/twit.webp" alt=""></a></li>
+            <li><a target="_blank" href="https://t.me/dev_ru"><img src="{{ site.url }}/di/img/tel.webp" alt=""></a></li>
+            <li><a target="_blank" href="https://www.youtube.com/c/EvgeniyKuvshinov"><img src="{{ site.url }}/di/img/yt.webp" alt=""></a></li>
+            <li><a target="_blank" href="https://twitter.com/KuvshinovEE"><img src="{{ site.url }}/di/img/twit.webp" alt=""></a></li>
         </ul>
         <span class="site-footer-credits">By <a href="https://github.com/joev1">JoeV</a>.</span>
         <span class="site-footer-credits">Generated by <a href="https://pages.github.com">GitHub Pages</a>.</span>
