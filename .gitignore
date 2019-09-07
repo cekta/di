@@ -1,6 +1,2 @@
-vendor/
-composer.lock
-.bundle
-.jekyll-metadata
-.sass-cache
-_site
+/vendor/
+/composer.lock
