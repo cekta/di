@@ -1,4 +1,9 @@
-## AutowiringSimpleCache
+---
+parent: Провайдеры
+nav_order: 3
+---
+
+# AutowiringSimpleCache
 ---
 Этот провайдер является декоратором, который перед использование Reflection пытается найти значение в
 [psr/simple-cache](https://www.php-fig.org/psr/psr-16/) на продакшене каждое обращение может браться из кэша.
@@ -16,6 +21,9 @@ memcached, file system и тд).
 
 ```php
 <?php
+/** @noinspection PhpParamsInspection */
+/** @noinspection PhpUndefinedClassInspection */
+/** @noinspection PhpUndefinedNamespaceInspection */
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cekta\DI\Container;
 use Cekta\DI\Provider\Autowiring;

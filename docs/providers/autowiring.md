@@ -1,4 +1,9 @@
-## Autowiring
+---
+parent: Провайдеры
+nav_order: 2
+---
+
+# Autowiring
 ---
 Этот провайдер занимает загрузкой объекта по полному имени класса ([FQCN](https://lmgtfy.com/?q=php+fqcn)).
 

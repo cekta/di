@@ -1,9 +1,13 @@
-## Загрузчики
+---
+nav_order: 2
+---
+
+# Загрузчики
 ---
 Если для разрешения одной зависимости требуются другие, то provider возвращает объект реализующий 
-[LoaderInterface](../../src/LoaderInterface.php).
+[LoaderInterface](../src/LoaderInterface.php).
 
-[Container](../../src/Container.php) получив такое от провайдера, передаёт себя для того чтобы загрузить 
+[Container](../src/Container.php) получив такое от провайдера, передаёт себя для того чтобы загрузить 
 нужные зависимости.
 ## Alias
 ---
