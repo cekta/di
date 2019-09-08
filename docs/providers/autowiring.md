@@ -1,10 +1,18 @@
 ---
 parent: Провайдеры
 nav_order: 2
+title: Autowiring
 ---
 
+## Навигация по странице
+{: .no_toc }
+
+1. TOC
+{:toc}
+
 # Autowiring
----
+{: .no_toc }
+
 Этот провайдер занимает загрузкой объекта по полному имени класса ([FQCN](https://lmgtfy.com/?q=php+fqcn)).
 
 Если у класса есть конструктор который принимает аргументы, то провайдер их предоставляет.
@@ -50,8 +58,9 @@ assert($magic->default === 789);
 ```
 
 Можно обращаться в том числе и классы предоставляемые php, например PDO.
+
 ## Autowiring и interface
----
+
 В некоторых случаях объект может зависеть от интерфейса к которому может существовать несколько реализаций, тогда вам
 надо указать какую надо использовать.
 
@@ -87,14 +96,13 @@ assert($demo->driver instanceof DriverInterface);
 assert($demo->driver instanceof FileDriver);
 ```
 
-В этом примере использовался загрузчик [Alias](../../loaders/alias.md).
 ## Autowiring и RuleInterface
----
+
 В некоторых случаях, может существовать два класса которые зависят от username, но одному надо username от mysql,
 другому от redis.
 
-[RuleInterface](/Provider/Autowiring/RuleInterface.php) позволяет задавать правила для загружаемой зависимости,
-чтобы загружать зависимость с другим именем, есть простая реализация в виде [Rule](/Provider/Autowiring/Rule.php).
+RuleInterface позволяет задавать правила для загружаемой зависимости,
+чтобы загружать зависимость с другим именем, есть простая реализация в виде Rule.
 
 ```php
 <?php
@@ -135,3 +143,11 @@ $redis = $container->get(DriverRedis::class);
 assert($redis instanceof DriverRedis);
 assert($redis->username === 'redis username');
 ```
+
+## Autowiring и производительность
+
+Для получения аргументов конструктора, используется [Reflection](https://www.php.net/manual/ru/book.reflection.php).
+
+Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к
+Reflection используя [psr/cache](https://www.php-fig.org/psr/psr-6/) и
+[psr/simple-cache](https://www.php-fig.org/psr/psr-16/).

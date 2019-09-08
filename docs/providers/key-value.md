@@ -1,14 +1,21 @@
 ---
 layout: default
 parent: Провайдеры
+title: KeyValue
 nav_order: 1
 ---
 
-# KeyValue
+## Навигация по странице
+{: .no_toc }
 
+1. TOC
+{:toc}
+
+# KeyValue
 {: .no_toc }
 
 Этот провайдер представляет из себя массив ключ => значение.
+
 Значением может быть что угодно.
 
 ```php
@@ -37,6 +44,7 @@ assert($container->get(stdClass::class) instanceof stdClass);
 3. В случае если 2 провайдера предоставляют одну и туже зависимость используется тот что передан раньше.
 
 Источник данных для провайдера может быть что угодно.
+
 ## KeyValue из environment
 
 ```php
@@ -70,6 +78,7 @@ assert($container->get('username') === 'root');
 ```
 
 ext-json required
+
 ## KeyValue из PHP
 
 /config.php
@@ -119,6 +128,7 @@ $providers[] = new KeyValue(Yaml::parseFile(__DIR__ . '/config.yaml'));
 $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
+
 ## KeyValue return LoaderInterface
 
 В некоторых случаях для загрузки зависимости могут потребоваться другие зависимости.
@@ -144,7 +154,6 @@ $container = new Container(...$providers);
 assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 ```
 
-В этом примере использовался загрузчик [Service](../../loaders/service.md).
 ## KeyValue closureToService
 
 В некоторых случаях людям хочется использовать анонимные функции как Service.
@@ -185,7 +194,6 @@ assert($container->get('example') === 'value');
 <?php
 use Cekta\DI\Container;
 use Cekta\DI\Provider\KeyValue;
-use Psr\Container\ContainerInterface;
 
 interface SomeInterface{}
 
@@ -201,10 +209,3 @@ assert($container->get('example') === 123);
 ```
 
 Во втором провайдере любая строка становится Alias, остальные значения не изменяются.
-## Autowiring и производительность
----
-Для получения аргументов конструктора, используется [Reflection](https://www.php.net/manual/ru/book.reflection.php).
-
-Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к
-Reflection используя [psr/cache](https://www.php-fig.org/psr/psr-6/) и
-[psr/simple-cache](https://www.php-fig.org/psr/psr-16/).
