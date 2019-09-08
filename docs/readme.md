@@ -1,4 +1,5 @@
-# Dependency Injection
+# Getting started with Cekta/DI
+
 
 ## Install via [composer](https://getcomposer.org/)
 
@@ -6,7 +7,7 @@
 composer require cekta/di
 ```
 
-## Getting Started
+## Basic usage 
 
 ```php
 <?php
@@ -46,4 +47,4 @@ $service->bar();
 
 ## Documentation
 
-1. [RU](docs/ru/readme.md)
+1. [RU](ru/readme.md)

@@ -1,5 +1,5 @@
-#### Использования класса
-
+## Использования класса
+---
 Мы наследуемся от Container и переопределяем метод конструктора создавая нужные провайдеры 
 и передавая их в конструктор родителя.
 
@@ -36,10 +36,3 @@ $container = new Vendor\Package\MyContainer();
 
 $container = new Vendor\Package\MyContainer();
 ```
----
-* [Создание объекта Container](container-creation.md)
-* [Использование файла](file.md)
-* [Регистрирование реализации интерфейсов в одном месте](reg-in-one.md)
-* [Использование autocomplete](autocomplete.md)
----
-[Вернуться на главную](../readme.md)
