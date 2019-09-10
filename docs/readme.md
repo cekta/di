@@ -1,5 +1,5 @@
 # Getting started with Cekta/DI
----
+
 ## Install via [composer](https://getcomposer.org/)
 
 ```
@@ -46,15 +46,19 @@ $service->bar();
 
 ## Как работает Container
 
-Cekta\DI\Container реализует \Psr\Container\ContainerInterface который предоставляет возможность:
+[Cekta\DI\Container](https://github.com/cekta/di/blob/master/src/Container.php) 
+реализует 
+[\Psr\Container\ContainerInterface](https://www.php-fig.org/psr/psr-11/){:target="_blank" } 
+который предоставляет возможность:
 
 1. Получить зависимость по id (get)
 2. Проверить может ли быть загружена зависимость по id (has)
 
-Для первого получения зависимости Container использует различные объекты реализующие Cekta\DI\ProviderInterface 
-которые передаются в конструкторе при создание Container. 
-В начале находится провайдер который может предоставить зависимость (canProvide), а потом провайдер 
-получает зависимость (provide). 
+Для первого получения зависимости Container использует различные объекты реализующие 
+[Cekta\DI\ProviderInterface](https://github.com/cekta/di/blob/master/src/ProviderExceptionInterface.php) которые
+передаются в конструкторе при создание Container.  
+В начале находится провайдер который может предоставить зависимость (canProvide), а потом провайдер получает 
+зависимость (provide).  
 Container запоминает результат чтобы в дальнейшем ее получать минуя обращения к провайдерам.
 
 Если два провайдера могут предоставить зависимость с одинаковым id, то будет использоваться тот что передан раньше 
