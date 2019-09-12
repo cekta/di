@@ -1,7 +1,27 @@
-## KeyValue
+---
+layout: default
+parent: Провайдеры
+title: KeyValue
+nav_order: 1
+---
+
+## Навигация по странице
+{: .no_toc }
+
+1. TOC
+{:toc}
+
+# KeyValue
+{: .no_toc }
 
 Этот провайдер представляет из себя массив ключ => значение.
+
 Значением может быть что угодно.
+
+Этот провайдер очень удобно использовать для загрузки различных параметров, которые могут изменятся в различных 
+окружениях.  
+В особых случаях можно вручную сконфигурировать как должна создаваться зависимость, но обычно используется 
+автоматическая конфигурация с использованием [Autowiring](autowiring.md).
 
 ```php
 <?php
@@ -29,6 +49,7 @@ assert($container->get(stdClass::class) instanceof stdClass);
 3. В случае если 2 провайдера предоставляют одну и туже зависимость используется тот что передан раньше.
 
 Источник данных для провайдера может быть что угодно.
+
 ## KeyValue из environment
 
 ```php
@@ -37,7 +58,7 @@ use Cekta\DI\Container;
 use Cekta\DI\Provider\KeyValue;
 
 $providers[] = new KeyValue(getenv());
-$container = new Container(... $providers);
+$container = new Container(...$providers);
 echo $container->get('PATH');
 ```
 ## KeyValue из json
@@ -62,6 +83,7 @@ assert($container->get('username') === 'root');
 ```
 
 ext-json required
+
 ## KeyValue из PHP
 
 /config.php
@@ -111,9 +133,11 @@ $providers[] = new KeyValue(Yaml::parseFile(__DIR__ . '/config.yaml'));
 $container = new Container(...$providers);
 assert($container->get('username') === 'root');
 ```
-## KeyValue return LoaderInterface
 
-В некоторых случаях для загрузки зависимости могут потребоваться другие зависимости.
+## KeyValue и LoaderInterface
+
+В случае если значение реализует [LoaderInterface](https://github.com/cekta/di/blob/master/src/LoaderInterface.php) то 
+его загрузка осуществляется особенным способом, подробней об этом в [загрузчиках](../loaders.md).
 
 ```php
 <?php
@@ -136,12 +160,13 @@ $container = new Container(...$providers);
 assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 ```
 
-В этом примере использовался загрузчик [Service](../../loaders/service.md).
-## KeyValue closureToService
+С помощью таких загрузчиков можно вручную конфигурировать как должна создаваться зависимость.  
+Смотрите загрузчик [Service](../loader/service.md)
 
-В некоторых случаях людям хочется использовать анонимные функции как Service.
+## Метод closureToService
 
-Для реализации этих желаний есть специальный метод, который трансформирует любой Closure в Service.
+Статичный метод closureToService проходит по входящему массиву, 
+превращая анонимную функцию в [загрузчик Service](../loader/service.md)
 
 ```php
 <?php
@@ -166,18 +191,18 @@ assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
 assert($container->get('example') === 'value');
 ```
 
-Во втором провайдере любая анонимная функция становится сервисом, остальные значения не изменяются.
-## KeyValue stringToAlias
+Мы получили небольшой синтаксический сахар и можем описывать сервисы анонимными функциями, например подобный подход 
+применяется в Pimple DI и в других библиотеках.
 
-В некоторых случаях людям хочется вынести список все используемых интерфейсов и их реализаций в отдельный файлик, 
+## Метод stringToAlias
 
-Для реализаций этих потребностей есть специальный метод хелпер.
+stringToAlias это статический метод который во входящем массиве заменяет строки на 
+[загрузчик Alias](../loader/alias.md)
 
 ```php
 <?php
 use Cekta\DI\Container;
 use Cekta\DI\Provider\KeyValue;
-use Psr\Container\ContainerInterface;
 
 interface SomeInterface{}
 
@@ -192,11 +217,5 @@ assert($container->get(SomeInterface::class) instanceof SomeImplementation);
 assert($container->get('example') === 123);
 ```
 
-Во втором провайдере любая строка становится Alias, остальные значения не изменяются.
-## Autowiring и производительность
----
-Для получения аргументов конструктора, используется [Reflection](https://www.php.net/manual/ru/book.reflection.php).
-
-Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к
-Reflection используя [psr/cache](https://www.php-fig.org/psr/psr-6/) и
-[psr/simple-cache](https://www.php-fig.org/psr/psr-16/).
+Это может удобно в случае когда мы хотим в одном месте(например файле implemetation.php) хранить интерфейсы 
+и их реализации и изменять их.

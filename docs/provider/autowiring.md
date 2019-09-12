@@ -1,10 +1,24 @@
-## Autowiring
 ---
+parent: Провайдеры
+nav_order: 2
+title: Autowiring
+---
+
+## Навигация по странице
+{: .no_toc }
+
+1. TOC
+{:toc}
+
+# Autowiring
+{: .no_toc }
+
 Этот провайдер занимает загрузкой объекта по полному имени класса ([FQCN](https://lmgtfy.com/?q=php+fqcn)).
 
-Если у класса есть конструктор который принимает аргументы, то провайдер их предоставляет.
-ID для зависимости он берет на основе типа (если он указан и это не int, string, array, bool), если тип не указан то
-используется имя аргумента, значение по умолчанию никак не учитывается.
+Используя Reflection он пытается найти конструктор и посмотреть какие аргументы ему требуется передать для создания.  
+Если у аргумента указан тип (отличный от примитивных int, string, array и тд) то он пытается передать этот объект.  
+Если тип не указан то он использует имя переменной без $.  
+Значения по умолчанию для аргументов никак не учитываются.
 
 ```php
 <?php
@@ -44,11 +58,12 @@ assert($magic->number === 123);
 assert($magic->default === 789);
 ```
 
-Можно обращаться в том числе и классы предоставляемые php, например PDO.
+Можно обращаться к стандартным классам php, например PDO.
+
 ## Autowiring и interface
----
-В некоторых случаях объект может зависеть от интерфейса к которому может существовать несколько реализаций, тогда вам
-надо указать какую надо использовать.
+
+В некоторых случаях объект может зависеть от интерфейса к которому может существовать несколько реализаций.  
+Каждому интерфейсу необходимо указать какой именно класс его реализует с помощью [KeyValue](key-value.md)
 
 ```php
 <?php
@@ -82,14 +97,15 @@ assert($demo->driver instanceof DriverInterface);
 assert($demo->driver instanceof FileDriver);
 ```
 
-В этом примере использовался загрузчик [Alias](../../loaders/alias.md).
 ## Autowiring и RuleInterface
----
+
+[RuleInterface](https://github.com/cekta/di/blob/master/src/Provider/Autowiring/RuleInterface.php) позволяет 
+переопределять зависимости полученные автоматически, правила можно задавать как для конкретного класса, так и для 
+целого пакеты со всеми его классами.  
+Простейщий пример реализации [Rule](https://github.com/cekta/di/blob/master/src/Provider/Autowiring/Rule.php).
+
 В некоторых случаях, может существовать два класса которые зависят от username, но одному надо username от mysql,
 другому от redis.
-
-[RuleInterface](/Provider/Autowiring/RuleInterface.php) позволяет задавать правила для загружаемой зависимости,
-чтобы загружать зависимость с другим именем, есть простая реализация в виде [Rule](/Provider/Autowiring/Rule.php).
 
 ```php
 <?php
@@ -130,3 +146,10 @@ $redis = $container->get(DriverRedis::class);
 assert($redis instanceof DriverRedis);
 assert($redis->username === 'redis username');
 ```
+
+## Autowiring и производительность
+
+Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к
+Reflection используя 
+[psr/simple-cache](https://www.php-fig.org/psr/psr-16/) и [psr/cache](https://www.php-fig.org/psr/psr-6/)
+это может существенно ускорить производительность на production.

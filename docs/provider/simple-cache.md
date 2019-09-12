@@ -1,7 +1,12 @@
-## AutowiringSimpleCache
 ---
+parent: Провайдеры
+nav_order: 3
+---
+
+# AutowiringSimpleCache
+
 Этот провайдер является декоратором, который перед использование Reflection пытается найти значение в
-[psr/simple-cache](https://www.php-fig.org/psr/psr-16/) на продакшене каждое обращение может браться из кэша.
+[psr/simple-cache](https://www.php-fig.org/psr/psr-16/) это может существенно ускорить production.
 
 1. Выберите реализацию
 [psr/simple-cache-implementation](https://packagist.org/providers/psr/simple-cache-implementation)
@@ -16,6 +21,9 @@ memcached, file system и тд).
 
 ```php
 <?php
+/** @noinspection PhpParamsInspection */
+/** @noinspection PhpUndefinedClassInspection */
+/** @noinspection PhpUndefinedNamespaceInspection */
 use Cache\Adapter\PHPArray\ArrayCachePool;
 use Cekta\DI\Container;
 use Cekta\DI\Provider\Autowiring;
@@ -57,3 +65,9 @@ Output:
 ```
 
 Вывод времени и microtime не совсем корректный bencmark показывающий разницу, но для примера сойдет.
+
+0.00098490715026856 - сколько времени тратит Reflection на получение зависимостей.  
+0.00000500679016113 - время которое требуется Container чтобы повторно получить зависимость 
+(к провайдеру нет обращения).  
+0.00007414817810059 - Мы создали новый экземпляр Container, но передали Provider который не будет обращаться к 
+Reflection, а загрузит их из кэша, в сравнение с первым вариантом разница примерно в 10 раз.
