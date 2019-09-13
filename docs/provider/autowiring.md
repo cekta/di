@@ -4,7 +4,7 @@ nav_order: 2
 title: Autowiring
 ---
 
-## Навигация по странице
+# Навигация по странице
 {: .no_toc }
 
 1. TOC
