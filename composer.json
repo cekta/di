@@ -2,6 +2,13 @@
   "name": "cekta/di",
   "description": "psr/container implementation for humans",
   "type": "library",
+  "keywords": [
+    "psr-11",
+    "psr container",
+    "di",
+    "dependency injection",
+    "container"
+  ],
   "require": {
     "psr/container": "^1.0",
     "php": ">=7.2",
