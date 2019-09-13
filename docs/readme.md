@@ -1,4 +1,4 @@
-# Getting started with Cekta/DI
+# Getting started
 
 ## Install via [composer](https://getcomposer.org/){:target="_blank"} 
 
