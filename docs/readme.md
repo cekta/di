@@ -1,6 +1,6 @@
 # Getting started
 
-## Install via [composer](https://getcomposer.org/) 
+## Install via [composer](https://getcomposer.org/){:target="_blank"}
 
 ```
 composer require cekta/di
@@ -48,7 +48,7 @@ $service->bar();
 
 [Cekta\DI\Container](https://github.com/cekta/di/blob/master/src/Container.php) 
 реализует 
-[\Psr\Container\ContainerInterface](https://www.php-fig.org/psr/psr-11/) 
+[\Psr\Container\ContainerInterface](https://www.php-fig.org/psr/psr-11/){:target="_blank"}
 который предоставляет возможность:
 
 1. Получить зависимость по ее id (get)
