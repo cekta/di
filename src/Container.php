@@ -22,7 +22,7 @@ class Container implements ContainerInterface
      */
     private $calls = [];
 
-    public function __construct(ProviderInterface ... $providers)
+    public function __construct(ProviderInterface ...$providers)
     {
         $this->providers = $providers;
     }
