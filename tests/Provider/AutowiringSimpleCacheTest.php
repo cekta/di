@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cekta\DI\Test\Provider;
@@ -106,11 +107,12 @@ class AutowiringSimpleCacheTest extends TestCase
     {
         $this->expectException(InvalidCacheKey::class);
         $name = 'some_invalide_cache_key';
+        $exception = new class () extends RuntimeException implements InvalidArgumentException
+        {
+        };
         $this->cache->expects($this->once())->method('get')
             ->with($name)
-            ->willThrowException(new class() extends RuntimeException implements InvalidArgumentException
-            {
-            });
+            ->willThrowException($exception);
         assert($this->container instanceof ContainerInterface);
         $this->provider->provide($name);
     }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cekta\DI\Test\Provider;
@@ -65,7 +66,7 @@ class AutowiringTest extends TestCase
      */
     public function testProvideWithArguments(): void
     {
-        $obj = new class(new stdClass(), '123')
+        $obj = new class (new stdClass(), '123')
         {
             /**
              * @var stdClass
@@ -111,7 +112,7 @@ class AutowiringTest extends TestCase
      */
     public function testProvideWithRules()
     {
-        $obj = new class()
+        $obj = new class ()
         {
             /**
              * @var int
