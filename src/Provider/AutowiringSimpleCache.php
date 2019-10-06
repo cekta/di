@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
@@ -40,10 +41,12 @@ class AutowiringSimpleCache implements ProviderInterface
     {
         try {
             $key = AutowiringCache::getCacheKey($id);
-            if (!$this->cache->has($key)) {
-                $this->cache->set($key, $this->autowiring->getDependencies($id));
+            $result = $this->cache->get($id);
+            if ($result === null) {
+                $result = $this->autowiring->getDependencies($id);
+                $this->cache->set($key, $result);
             }
-            return $this->cache->get($id);
+            return $result;
         } catch (InvalidArgumentException $e) {
             throw new InvalidCacheKey($id, $e);
         }
