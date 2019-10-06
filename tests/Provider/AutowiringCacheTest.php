@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider;
+namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Provider\AutowiringCache;

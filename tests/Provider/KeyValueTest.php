@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider;
+namespace Cekta\DI\Test\Provider;
 
+use Cekta\DI\Loader\Alias;
+use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
@@ -66,16 +69,28 @@ class KeyValueTest extends TestCase
     /**
      * @throws ProviderExceptionInterface
      */
-    public function testTransform(): void
+    public function testClosureToService(): void
     {
-        $provider = KeyValue::transform([
+        $provider = KeyValue::closureToService([
             'a' => function () {
                 return new stdClass();
             },
             'b' => 123
         ]);
-        assert($this->container instanceof ContainerInterface);
         $this->assertSame(123, $provider->provide('b'));
-        $this->assertInstanceOf(stdClass::class, $provider->provide('a')($this->container));
+        $this->assertInstanceOf(Service::class, $provider->provide('a'));
+    }
+
+    /**
+     * @throws ProviderExceptionInterface
+     */
+    public function testStringToAlias(): void
+    {
+        $provider = KeyValue::stringToAlias([
+            'a' => stdClass::class,
+            'b' => 123
+        ]);
+        $this->assertSame(123, $provider->provide('b'));
+        $this->assertInstanceOf(Alias::class, $provider->provide('a'));
     }
 }

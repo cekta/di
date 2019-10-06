@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit;
+namespace Cekta\DI\Test;
 
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
@@ -98,11 +99,12 @@ class ContainerTest extends TestCase
         $this->provider->expects($this->once())->method('canProvide')
             ->with('a')
             ->willReturn(true);
+        $exception = new class extends Exception implements ProviderExceptionInterface
+        {
+        };
         $this->provider->expects($this->once())->method('provide')
             ->with('a')
-            ->willThrowException(new class extends Exception implements ProviderExceptionInterface
-            {
-            });
+            ->willThrowException($exception);
         $this->container->get('a');
     }
 }

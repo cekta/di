@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Loader;
+namespace Cekta\DI\Test\Loader;
 
 use Cekta\DI\Loader\Service;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -53,7 +54,7 @@ class ServiceTest extends TestCase
 
     public function testCreateObjectWithArguments()
     {
-        $obj = new class()
+        $obj = new class ()
         {
             private $a;
             private $b;

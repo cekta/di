@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Cekta\DI;
@@ -22,7 +23,7 @@ class Container implements ContainerInterface
      */
     private $calls = [];
 
-    public function __construct(ProviderInterface ... $providers)
+    public function __construct(ProviderInterface ...$providers)
     {
         $this->providers = $providers;
     }

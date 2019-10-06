@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Exception;
+namespace Cekta\DI\Test\Exception;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use PHPUnit\Framework\TestCase;

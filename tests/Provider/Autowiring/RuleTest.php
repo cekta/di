@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Unit\Provider\Autowiring;
+namespace Cekta\DI\Test\Provider\Autowiring;
 
 use Cekta\DI\Provider\Autowiring\Rule;
 use Cekta\DI\Provider\Autowiring\RuleInterface;
