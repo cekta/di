@@ -43,12 +43,8 @@ class Autowiring implements ProviderInterface
     public function getDependencies(string $id): array
     {
         try {
-            $class = new ReflectionClass($id);
-            $constructor = $class->getConstructor();
-            if (null === $constructor) {
-                return [];
-            }
-            return $this->getMethodParameters($id, $constructor);
+            $constructor = (new ReflectionClass($id))->getConstructor();
+            return $constructor ? $this->getMethodParameters($id, $constructor) : [];
         } catch (ReflectionException $e) {
             throw new ClassNotCreated($id, $e);
         }
@@ -56,33 +52,30 @@ class Autowiring implements ProviderInterface
 
     private function getMethodParameters(string $id, ReflectionMethod $method): array
     {
-        $result = [];
         $replaces = $this->getReplaces($id);
-        foreach ($method->getParameters() as $parameter) {
+        $replace = function ($result, $parameter) use ($replaces) {
             $name = $this->getParameterName($parameter);
-            if (array_key_exists($name, $replaces)) {
-                $name = $replaces[$name];
-            }
-            $result[] = $name;
-        }
-        return $result;
+            $result[] = array_key_exists($name, $replaces) ? $replaces[$name] : $name;
+            return $result;
+        };
+
+        return array_reduce($method->getParameters(), $replace->bindTo($this), []);
     }
     private function getParameterName(ReflectionParameter $parameter): string
     {
         $class = $parameter->getClass();
-        if (null !== $class) {
-            return $class->name;
-        }
-        return $parameter->name;
+        return $class ? $class->name : $parameter->name;
     }
-    private function getReplaces(string $id)
+
+    private function getReplaces(string $id): array
     {
-        $result = [];
-        foreach ($this->rules as $rule) {
+        $accept = static function (array $result, RuleInterface $rule) use ($id) {
             if ($rule->acceptable($id)) {
-                $result += $rule->accept();
+                $result = array_merge($result, $rule->accept());
             }
-        }
-        return $result;
+            return $result;
+        };
+
+        return array_reduce($this->rules, $accept, []);
     }
 }

@@ -44,20 +44,14 @@ class AutowiringCache implements ProviderInterface
      */
     public static function getCacheKey(string $id): string
     {
-        if (strlen($id) > 64) {
-            $result = hash('sha256', $id);
-        } else {
-            $result = preg_replace('/[^\w\d_.]/', '_', $id);
-        }
-        assert(is_string($result));
-        return $result;
+        return strlen($id) > 64 ? hash('sha256', $id)
+            : (string) preg_replace('/[^\w_.]/', '_', $id);
     }
 
     private function getDependencies(string $id): array
     {
         try {
-            $key = $this->getCacheKey($id);
-            $item = $this->pool->getItem($key);
+            $item = $this->pool->getItem(self::getCacheKey($id));
             if (!$item->isHit()) {
                 $item->set($this->autowiring->getDependencies($id));
                 $this->pool->save($item);

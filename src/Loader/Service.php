@@ -20,14 +20,13 @@ class Service implements LoaderInterface
         $this->closure = $closure;
     }
 
-    public static function createObject(string $name, array $dependencies)
+    public static function createObject(string $name, array $dependencies): Service
     {
-        $closure = function (ContainerInterface $container) use ($dependencies, $name) {
-            $args = [];
+        $closure = static function (ContainerInterface $container) use ($dependencies, $name) {
             foreach ($dependencies as $dependecy) {
                 $args[] = $container->get($dependecy);
             }
-            return new $name(...$args);
+            return new $name(...$args ?? []);
         };
         return new Service($closure);
     }

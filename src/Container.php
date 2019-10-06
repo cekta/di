@@ -14,11 +14,14 @@ class Container implements ContainerInterface
      * @var ProviderInterface[]
      */
     private $providers;
+
     /**
      * @var array
      */
     private $values = [];
+
     /**
+     * Record call stack to prevent infinite recursion
      * @var string[]
      */
     private $calls = [];
@@ -36,9 +39,9 @@ class Container implements ContainerInterface
         return $this->values[$id];
     }
 
-    public function has($name)
+    public function has($name): bool
     {
-        return !is_null($this->findProvider($name));
+        return $this->findProvider($name) !== null;
     }
 
     private function findProvider(string $name): ?ProviderInterface
@@ -53,7 +56,7 @@ class Container implements ContainerInterface
 
     private function checkInfiniteRecursion(string $id): void
     {
-        if (in_array($id, $this->calls)) {
+        if (in_array($id, $this->calls, true)) {
             throw new InfiniteRecursion($id, $this->calls);
         }
         $this->calls[] = $id;
@@ -78,9 +81,6 @@ class Container implements ContainerInterface
         $this->checkInfiniteRecursion($id);
         $provider = $this->getProvider($id);
         $result = $provider->provide($id);
-        if ($result instanceof LoaderInterface) {
-            $result = $result($this);
-        }
-        return $result;
+        return $result instanceof LoaderInterface ? $result($this) : $result;
     }
 }

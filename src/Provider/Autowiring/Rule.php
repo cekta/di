@@ -23,7 +23,7 @@ class Rule implements RuleInterface
 
     public function acceptable(string $id): bool
     {
-        return $this->prefix === substr($id, 0, strlen($this->prefix));
+        return strpos($id, $this->prefix) === 0;
     }
 
     public function accept(): array
