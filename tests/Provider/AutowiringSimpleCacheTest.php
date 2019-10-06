@@ -74,9 +74,6 @@ class AutowiringSimpleCacheTest extends TestCase
     public function testProvideCacheHit(): void
     {
         $this->autowiring->expects($this->never())->method('getDependencies');
-        $this->cache->expects($this->once())->method('has')
-            ->with(stdClass::class)
-            ->willReturn(true);
         $this->cache->expects($this->once())->method('get')
             ->with(stdClass::class)
             ->willReturn([]);
@@ -92,14 +89,11 @@ class AutowiringSimpleCacheTest extends TestCase
         $this->autowiring->expects($this->once())->method('getDependencies')
             ->with(stdClass::class)
             ->willReturn([]);
-        $this->cache->expects($this->once())->method('has')
-            ->with(stdClass::class)
-            ->willReturn(false);
         $this->cache->expects($this->once())->method('set')
             ->with(stdClass::class, []);
         $this->cache->expects($this->once())->method('get')
             ->with(stdClass::class)
-            ->willReturn([]);
+            ->willReturn(null);
         assert($this->container instanceof ContainerInterface);
         $result = $this->provider->provide(stdClass::class)($this->container);
         $this->assertInstanceOf(stdClass::class, $result);
@@ -112,7 +106,7 @@ class AutowiringSimpleCacheTest extends TestCase
     {
         $this->expectException(InvalidCacheKey::class);
         $name = 'some_invalide_cache_key';
-        $this->cache->expects($this->once())->method('has')
+        $this->cache->expects($this->once())->method('get')
             ->with($name)
             ->willThrowException(new class() extends RuntimeException implements InvalidArgumentException
             {
