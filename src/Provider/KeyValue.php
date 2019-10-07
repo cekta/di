@@ -12,12 +12,14 @@ use Closure;
 
 class KeyValue implements ProviderInterface
 {
-    /**
-     * @var array
-     */
+    public const STRING_TO_ALIAS = 1;
+
+    public const CLOSURE_TO_SERVICE = 2;
+
+    /** @var array */
     private $values;
 
-    public static function closureToService(array $values): self
+    protected function closureToService(array $values): array
     {
         $result = [];
         foreach ($values as $key => $value) {
@@ -26,10 +28,10 @@ class KeyValue implements ProviderInterface
             }
             $result[$key] = $value;
         }
-        return new self($result);
+        return $result;
     }
 
-    public static function stringToAlias(array $values): self
+    protected function stringToAlias(array $values): array
     {
         $result = [];
         foreach ($values as $key => $value) {
@@ -38,12 +40,22 @@ class KeyValue implements ProviderInterface
             }
             $result[$key] = $value;
         }
-        return new self($result);
+        return $result;
     }
 
-    public function __construct(array $values)
+    public function __construct(array $values, array $transformations = [])
     {
         $this->values = $values;
+        foreach ($transformations as $transformation) {
+            switch ($transformation) {
+                case static::CLOSURE_TO_SERVICE:
+                    $this->values = $this->closureToService($this->values);
+                // no break
+                case static::STRING_TO_ALIAS:
+                    $this->values = $this->stringToAlias($this->values);
+                    break;
+            }
+        }
     }
 
     public function provide(string $id)
