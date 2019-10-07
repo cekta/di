@@ -71,12 +71,12 @@ class KeyValueTest extends TestCase
      */
     public function testClosureToService(): void
     {
-        $provider = KeyValue::closureToService([
+        $provider = new KeyValue([
             'a' => function () {
                 return new stdClass();
             },
             'b' => 123
-        ]);
+        ], [KeyValue::CLOSURE_TO_SERVICE]);
         $this->assertSame(123, $provider->provide('b'));
         $this->assertInstanceOf(Service::class, $provider->provide('a'));
     }
@@ -86,10 +86,10 @@ class KeyValueTest extends TestCase
      */
     public function testStringToAlias(): void
     {
-        $provider = KeyValue::stringToAlias([
+        $provider = new KeyValue([
             'a' => stdClass::class,
             'b' => 123
-        ]);
+        ], [KeyValue::STRING_TO_ALIAS]);
         $this->assertSame(123, $provider->provide('b'));
         $this->assertInstanceOf(Alias::class, $provider->provide('a'));
     }
