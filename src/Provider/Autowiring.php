@@ -11,7 +11,6 @@ use Cekta\DI\ProviderInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use ReflectionParameter;
 
 class Autowiring implements ProviderInterface
 {
@@ -53,18 +52,15 @@ class Autowiring implements ProviderInterface
     private function getMethodParameters(string $id, ReflectionMethod $method): array
     {
         $replaces = $this->getReplaces($id);
-        $replace = function ($result, $parameter) use ($replaces) {
-            $name = $this->getParameterName($parameter);
-            $result[] = array_key_exists($name, $replaces) ? $replaces[$name] : $name;
-            return $result;
-        };
+        $result = [];
 
-        return array_reduce($method->getParameters(), $replace->bindTo($this), []);
-    }
-    private function getParameterName(ReflectionParameter $parameter): string
-    {
-        $class = $parameter->getClass();
-        return $class ? $class->name : $parameter->name;
+        foreach ($method->getParameters() as $parameter) {
+            $class = $parameter->getClass();
+            $name = $class ? $class->name : $parameter->name;
+            $result[] = array_key_exists($name, $replaces) ? $replaces[$name] : $name;
+        }
+
+        return $result;
     }
 
     private function getReplaces(string $id): array
