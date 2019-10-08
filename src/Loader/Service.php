@@ -22,13 +22,12 @@ class Service implements LoaderInterface
 
     public static function createObject(string $name, array $dependencies): Service
     {
-        $closure = static function (ContainerInterface $container) use ($dependencies, $name) {
+        return new Service(static function (ContainerInterface $container) use ($dependencies, $name) {
             foreach ($dependencies as $dependecy) {
                 $args[] = $container->get($dependecy);
             }
             return new $name(...$args ?? []);
-        };
-        return new Service($closure);
+        });
     }
 
     public function __invoke(ContainerInterface $container)
