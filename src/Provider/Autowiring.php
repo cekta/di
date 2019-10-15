@@ -43,12 +43,8 @@ class Autowiring implements ProviderInterface
     public function getDependencies(string $id): array
     {
         try {
-            $class = new ReflectionClass($id);
-            $constructor = $class->getConstructor();
-            if (null === $constructor) {
-                return [];
-            }
-            return $this->getMethodParameters($id, $constructor);
+            $constructor = (new ReflectionClass($id))->getConstructor();
+            return $constructor ? $this->getMethodParameters($id, $constructor) : [];
         } catch (ReflectionException $e) {
             throw new ClassNotCreated($id, $e);
         }
@@ -59,22 +55,13 @@ class Autowiring implements ProviderInterface
         $result = [];
         $replaces = $this->getReplaces($id);
         foreach ($method->getParameters() as $parameter) {
-            $name = $this->getParameterName($parameter);
-            if (array_key_exists($name, $replaces)) {
-                $name = $replaces[$name];
-            }
-            $result[] = $name;
+            $class = $parameter->getClass();
+            $name = $class ? $class->name : $parameter->name;
+            $result[] = array_key_exists($name, $replaces) ? $replaces[$name] : $name;
         }
         return $result;
     }
-    private function getParameterName(ReflectionParameter $parameter): string
-    {
-        $class = $parameter->getClass();
-        if (null !== $class) {
-            return $class->name;
-        }
-        return $parameter->name;
-    }
+
     private function getReplaces(string $id)
     {
         $result = [];

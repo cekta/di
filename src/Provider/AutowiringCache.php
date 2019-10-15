@@ -56,8 +56,7 @@ class AutowiringCache implements ProviderInterface
     private function getDependencies(string $id): array
     {
         try {
-            $key = $this->getCacheKey($id);
-            $item = $this->pool->getItem($key);
+            $item = $this->pool->getItem($this->getCacheKey($id));
             if (!$item->isHit()) {
                 $item->set($this->autowiring->getDependencies($id));
                 $this->pool->save($item);

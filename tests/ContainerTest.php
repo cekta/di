@@ -79,7 +79,7 @@ class ContainerTest extends TestCase
         $this->container->get('FooA');
     }
 
-    public function testGetFindProviderOnce()
+    public function testGetFindProviderOnce(): void
     {
         $this->provider->expects($this->once())->method('provide')
             ->with('a')
@@ -93,7 +93,7 @@ class ContainerTest extends TestCase
         static::assertSame($a1, $a2);
     }
 
-    public function testGetNotFoundInProvider()
+    public function testGetNotFoundInProvider(): void
     {
         $this->expectException(ProviderExceptionInterface::class);
         $this->provider->expects($this->once())->method('canProvide')

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Provider\Exception;
 
-use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderExceptionInterface;
 use PHPUnit\Framework\MockObject\MockObject;
