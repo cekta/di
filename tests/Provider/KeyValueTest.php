@@ -69,21 +69,6 @@ class KeyValueTest extends TestCase
     /**
      * @throws ProviderExceptionInterface
      */
-    public function testClosureToService(): void
-    {
-        $provider = KeyValue::closureToService([
-            'a' => function () {
-                return new stdClass();
-            },
-            'b' => 123
-        ]);
-        $this->assertSame(123, $provider->provide('b'));
-        $this->assertInstanceOf(Service::class, $provider->provide('a'));
-    }
-
-    /**
-     * @throws ProviderExceptionInterface
-     */
     public function testStringToAlias(): void
     {
         $provider = KeyValue::stringToAlias([
