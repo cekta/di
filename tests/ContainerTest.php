@@ -107,4 +107,24 @@ class ContainerTest extends TestCase
             ->willThrowException($exception);
         $this->container->get('a');
     }
+
+    public function testGetClosure(): void
+    {
+        $closure = function (ContainerInterface $c) {
+            $this->assertNotEmpty($c);
+            return 123;
+        };
+        $this->provider->method('canProvide')->willReturn(true);
+        $this->provider->method('provide')->willReturn($closure);
+        $this->assertSame(123, $this->container->get('test'));
+    }
+
+    public function testGetLoader(): void
+    {
+        $loader = $this->createMock(LoaderInterface::class);
+        $loader->method('__invoke')->willReturn('123');
+        $this->provider->method('canProvide')->willReturn(true);
+        $this->provider->method('provide')->with('test')->willReturn($loader);
+        $this->assertSame('123', $this->container->get('test'));
+    }
 }

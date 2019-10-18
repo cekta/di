@@ -8,10 +8,11 @@ use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Autowiring\RuleInterface;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\ProviderInterface;
+use Closure;
+use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use ReflectionParameter;
 
 class Autowiring implements ProviderInterface
 {
@@ -27,7 +28,7 @@ class Autowiring implements ProviderInterface
 
     public function provide(string $id)
     {
-        return Service::createObject($id, $this->getDependencies($id));
+        return Autowiring::createObject($id, $this->getDependencies($id));
     }
 
     public function canProvide(string $id): bool
@@ -48,6 +49,17 @@ class Autowiring implements ProviderInterface
         } catch (ReflectionException $e) {
             throw new ClassNotCreated($id, $e);
         }
+    }
+
+    public static function createObject(string $name, array $dependencies): Closure
+    {
+        return function (ContainerInterface $container) use ($dependencies, $name) {
+            $args = [];
+            foreach ($dependencies as $dependecy) {
+                $args[] = $container->get($dependecy);
+            }
+            return new $name(...$args);
+        };
     }
 
     private function getMethodParameters(string $id, ReflectionMethod $method): array

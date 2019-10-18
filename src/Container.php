@@ -6,6 +6,7 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
+use Closure;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -78,7 +79,10 @@ class Container implements ContainerInterface
         $this->checkInfiniteRecursion($id);
         $provider = $this->getProvider($id);
         $result = $provider->provide($id);
-        if ($result instanceof LoaderInterface) {
+        if (
+            $result instanceof LoaderInterface
+            || $result instanceof Closure
+        ) {
             $result = $result($this);
         }
         return $result;

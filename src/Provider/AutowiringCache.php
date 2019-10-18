@@ -29,7 +29,7 @@ class AutowiringCache implements ProviderInterface
 
     public function provide(string $id)
     {
-        return Service::createObject($id, $this->getDependencies($id));
+        return Autowiring::createObject($id, $this->getDependencies($id));
     }
 
     public function canProvide(string $id): bool

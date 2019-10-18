@@ -17,18 +17,6 @@ class KeyValue implements ProviderInterface
      */
     private $values;
 
-    public static function closureToService(array $values): self
-    {
-        $result = [];
-        foreach ($values as $key => $value) {
-            if ($value instanceof Closure) {
-                $value = new Service($value);
-            }
-            $result[$key] = $value;
-        }
-        return new self($result);
-    }
-
     public static function stringToAlias(array $values): self
     {
         $result = [];
