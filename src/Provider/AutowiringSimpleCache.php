@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderInterface;
 use Psr\SimpleCache\CacheInterface;

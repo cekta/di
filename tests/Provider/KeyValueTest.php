@@ -5,26 +5,19 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Loader\Alias;
-use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Exception\NotFound;
-use Cekta\DI\LoaderInterface;
 use Cekta\DI\Provider\KeyValue;
 use Cekta\DI\ProviderExceptionInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
 use stdClass;
 
 class KeyValueTest extends TestCase
 {
-    /** @var MockObject */
-    private $container;
-
-    public function setUp(): void
+    public function testMustBeProvider(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
+        $this->assertInstanceOf(ProviderInterface::class, new KeyValue([]));
     }
-
     public function testCanProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
@@ -38,7 +31,6 @@ class KeyValueTest extends TestCase
     public function testProvide(): void
     {
         $provider = new KeyValue(['key' => 'value']);
-        assert($this->container instanceof ContainerInterface);
         static::assertEquals('value', $provider->provide('key'));
     }
 
@@ -48,22 +40,7 @@ class KeyValueTest extends TestCase
     public function testProvideNotFound(): void
     {
         $this->expectException(NotFound::class);
-        assert($this->container instanceof ContainerInterface);
         (new KeyValue([]))->provide('magic');
-    }
-
-    /**
-     * @throws ProviderExceptionInterface
-     */
-    public function testProvideLoader(): void
-    {
-        $loader = $this->createMock(LoaderInterface::class);
-        $loader->method('__invoke')->willReturn('test');
-        $provider = new KeyValue(['key' => $loader]);
-        $result = $provider->provide('key');
-        $this->assertInstanceOf(LoaderInterface::class, $result);
-        assert($this->container instanceof ContainerInterface);
-        $this->assertEquals('test', $result($this->container));
     }
 
     /**

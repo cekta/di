@@ -31,9 +31,9 @@ class AutowiringTest extends TestCase
         $this->provider = new Autowiring();
     }
 
-    public function testMustBeProvider()
+    public function testMustBeProvider(): void
     {
-        $this->assertInstanceOf(ProviderInterface::class, new Autowiring());
+        $this->assertInstanceOf(ProviderInterface::class, $this->provider);
     }
 
     public function testCanProvide(): void
@@ -51,6 +51,11 @@ class AutowiringTest extends TestCase
         $this->assertFalse($this->provider->canProvide(Throwable::class));
     }
 
+    public function getGetDependencies(): void
+    {
+        $this->assertSame([], $this->provider->getDependencies(stdClass::class));
+    }
+
     /**
      * @throws ProviderExceptionInterface
      */
@@ -58,7 +63,6 @@ class AutowiringTest extends TestCase
     {
         assert($this->container instanceof ContainerInterface);
         $this->assertEquals(new stdClass(), $this->provider->provide(stdClass::class)($this->container));
-        $this->assertSame([], $this->provider->getDependencies(stdClass::class));
     }
 
     /**
@@ -85,9 +89,9 @@ class AutowiringTest extends TestCase
         };
         $name = get_class($obj);
         $this->container->method('get')->will($this->returnValueMap([
-                [stdClass::class, new stdClass()],
-                ['str', 'magic']
-            ]));
+            [stdClass::class, new stdClass()],
+            ['str', 'magic']
+        ]));
         assert($this->container instanceof ContainerInterface);
         $result = $this->provider->provide($name)($this->container);
         $this->assertInstanceOf($name, $result);
@@ -98,12 +102,10 @@ class AutowiringTest extends TestCase
     /**
      * @throws ProviderExceptionInterface
      */
-    public function testProvideReflectionClassNotCreatebale()
+    public function testProvideInvalidName()
     {
         $this->expectException(ClassNotCreated::class);
         $provider = new Autowiring();
-        $container = $this->createMock(ContainerInterface::class);
-        assert($container instanceof ContainerInterface);
         $provider->provide('invalid name');
     }
 

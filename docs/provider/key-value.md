@@ -14,9 +14,9 @@ nav_order: 1
 # KeyValue
 {: .no_toc }
 
-Этот провайдер представляет из себя массив ключ => значение.
+Этот провайдер представляет из себя массив ключ => значение, значением может быть что угодно.
 
-Значением может быть что угодно.
+Массив задается при создание провайдера.
 
 Этот провайдер очень удобно использовать для загрузки различных параметров, которые могут изменятся в различных 
 окружениях.  
@@ -61,6 +61,10 @@ $providers[] = new KeyValue(getenv());
 $container = new Container(...$providers);
 echo $container->get('PATH');
 ```
+
+Не забывайте что в переменных окружения могут быть только строки и значения вроде 'true' надо конвертировать в 
+bool(true) в подобных случаях.
+
 ## KeyValue из json
 
 /config.json
@@ -136,37 +140,12 @@ assert($container->get('username') === 'root');
 
 ## KeyValue и LoaderInterface
 
-В случае если значение реализует [LoaderInterface](https://github.com/cekta/di/blob/master/src/LoaderInterface.php) то 
-его загрузка осуществляется особенным способом, подробней об этом в [загрузчиках](../loaders.md).
-
-```php
-<?php
-use Cekta\DI\Container;
-use Cekta\DI\Loader\Service;
-use Cekta\DI\Provider\KeyValue;
-use Psr\Container\ContainerInterface;
-
-$providers[] = new KeyValue([
-    'type' => 'mysql',
-    'host' => '127.0.0.1',
-    'dbName' => 'test'
-]);
-$providers[] = new KeyValue([
-    'dsn' => new Service(function (ContainerInterface $c) {
-        return "{$c->get('type')}:dbname={$c->get('dbName')};host={$c->get('host')}";
-    })
-]);
-$container = new Container(...$providers);
-assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
-```
-
-С помощью таких загрузчиков можно вручную конфигурировать как должна создаваться зависимость.  
-Смотрите загрузчик [Service](../loader/service.md)
-
-## Метод closureToService
-
-Статичный метод closureToService проходит по входящему массиву, 
-превращая анонимную функцию в [загрузчик Service](../loader/service.md)
+В некоторых случаях для создания зависимости могут потребоваться другие зависимости, например чтобы создать 
+dsn строку подключения надо знать: тип, имя, адрес хоста и тд.  
+Провайдер может вернуть [анонимную функцию](https://www.php.net/manual/ru/functions.anonymous.php) или объект 
+реализующий [LoaderInterface](https://github.com/cekta/di/blob/master/src/LoaderInterface.php)
+тогда это значение будет загружено и в процессе загрузки оно будет иметь доступ к container для получения необходимых 
+зависимостей.
 
 ```php
 <?php
@@ -179,25 +158,21 @@ $providers[] = new KeyValue([
     'host' => '127.0.0.1',
     'dbName' => 'test'
 ]);
-$providers[] = KeyValue::closureToService([
+$providers[] = new KeyValue([
     'dsn' => function (ContainerInterface $c) {
-        // можно вернуть что угодно и создавать как угодно.
         return "{$c->get('type')}:dbname={$c->get('dbName')};host={$c->get('host')}";
-    },
-    'example' => 'value'
+    }
 ]);
 $container = new Container(...$providers);
 assert($container->get('dsn') ==='mysql:dbname=test;host=127.0.0.1');
-assert($container->get('example') === 'value');
 ```
 
-Мы получили небольшой синтаксический сахар и можем описывать сервисы анонимными функциями, например подобный подход 
-применяется в Pimple DI и в других библиотеках.
+[Другие загрузчики](../loaders.md)
 
 ## Метод stringToAlias
 
 stringToAlias это статический метод который во входящем массиве заменяет строки на 
-[загрузчик Alias](../loader/alias.md)
+[загрузчик Alias](../loader/alias.md) и возвращает **KeyValue**.
 
 ```php
 <?php
@@ -208,7 +183,7 @@ interface SomeInterface{}
 
 class SomeImplementation implements SomeInterface{}
 
-$providers[] = KeyValue::closureToService([
+$providers[] = KeyValue::stringToAlias([
     SomeInterface::class => SomeImplementation::class,
     'example' => 123
 ]);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Autowiring\RuleInterface;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\ProviderInterface;

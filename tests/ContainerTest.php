@@ -37,8 +37,7 @@ class ContainerTest extends TestCase
     public function testGetInvalidName(): void
     {
         $this->expectException(ProviderNotFound::class);
-        $container = new Container(...[]);
-        $container->get('invalid name');
+        $this->container->get('invalid name');
     }
 
     public function testGet(): void
@@ -93,7 +92,7 @@ class ContainerTest extends TestCase
         static::assertSame($a1, $a2);
     }
 
-    public function testGetNotFoundInProvider(): void
+    public function testGetExceptionInProvider(): void
     {
         $this->expectException(ProviderExceptionInterface::class);
         $this->provider->expects($this->once())->method('canProvide')

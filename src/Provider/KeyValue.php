@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Provider;
 
 use Cekta\DI\Loader\Alias;
-use Cekta\DI\Loader\Service;
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\ProviderInterface;
-use Closure;
 
 class KeyValue implements ProviderInterface
 {
