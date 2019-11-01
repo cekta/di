@@ -37,8 +37,7 @@ class KeyValue implements ProviderInterface
         if (!$this->canProvide($id)) {
             throw new NotFound($id);
         }
-        $result = $this->values[$id];
-        return $result;
+        return $this->values[$id];
     }
 
     public function canProvide(string $id): bool

@@ -12,7 +12,7 @@ use Psr\Container\ContainerInterface;
 class Container implements ContainerInterface
 {
     /**
-     * @var ProviderInterface[]
+     * @var array<ProviderInterface>
      */
     private $providers;
     /**
@@ -20,7 +20,7 @@ class Container implements ContainerInterface
      */
     private $values = [];
     /**
-     * @var string[]
+     * @var array<string>
      */
     private $calls = [];
 
@@ -63,22 +63,14 @@ class Container implements ContainerInterface
     private function getProvider(string $id): ProviderInterface
     {
         $provider = $this->findProvider($id);
-        if (null === $provider) {
+        if ($provider === null) {
             throw new ProviderNotFound($id);
         }
         return $provider;
     }
 
-    /**
-     * @param string $id
-     * @return mixed
-     * @throws ProviderExceptionInterface
-     */
-    private function getValue(string $id)
+    private function load($result)
     {
-        $this->checkInfiniteRecursion($id);
-        $provider = $this->getProvider($id);
-        $result = $provider->provide($id);
         if (
             $result instanceof LoaderInterface
             || $result instanceof Closure
@@ -86,5 +78,12 @@ class Container implements ContainerInterface
             $result = $result($this);
         }
         return $result;
+    }
+
+    private function getValue(string $id)
+    {
+        $this->checkInfiniteRecursion($id);
+        $provider = $this->getProvider($id);
+        return $this->load($provider->provide($id));
     }
 }

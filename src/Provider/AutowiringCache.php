@@ -61,8 +61,8 @@ class AutowiringCache implements ProviderInterface
                 $this->pool->save($item);
             }
             return $item->get();
-        } catch (InvalidArgumentException $e) {
-            throw new InvalidCacheKey($id, $e);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            throw new InvalidCacheKey($id, $invalidArgumentException);
         }
     }
 }

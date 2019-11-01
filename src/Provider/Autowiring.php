@@ -16,7 +16,7 @@ use ReflectionMethod;
 class Autowiring implements ProviderInterface
 {
     /**
-     * @var RuleInterface[]
+     * @var array<RuleInterface>
      */
     private $rules;
 
@@ -35,24 +35,19 @@ class Autowiring implements ProviderInterface
         return class_exists($id);
     }
 
-    /**
-     * @internal
-     * @param string $id
-     * @return string[]
-     */
     public function getDependencies(string $id): array
     {
         try {
             $constructor = (new ReflectionClass($id))->getConstructor();
             return $constructor ? $this->getMethodParameters($id, $constructor) : [];
-        } catch (ReflectionException $e) {
-            throw new ClassNotCreated($id, $e);
+        } catch (ReflectionException $reflectionException) {
+            throw new ClassNotCreated($id, $reflectionException);
         }
     }
 
     public static function createObject(string $name, array $dependencies): Closure
     {
-        return function (ContainerInterface $container) use ($dependencies, $name) {
+        return static function (ContainerInterface $container) use ($dependencies, $name) {
             $args = [];
             foreach ($dependencies as $dependecy) {
                 $args[] = $container->get($dependecy);
