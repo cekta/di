@@ -11,7 +11,7 @@ class NotFoundTest extends TestCase
 {
     public function testMessage()
     {
-        $e = new NotFound('id');
-        $this->assertSame('Container `id` not found', $e->getMessage());
+        $exception = new NotFound('id');
+        $this->assertSame('Container `id` not found', $exception->getMessage());
     }
 }

@@ -86,10 +86,10 @@ class ContainerTest extends TestCase
         $this->provider->expects($this->once())->method('canProvide')
             ->with('a')
             ->willReturn(true);
-        $a1 = $this->container->get('a');
-        $a2 = $this->container->get('a');
-        static::assertEquals(new stdClass(), $a1);
-        static::assertSame($a1, $a2);
+        $result = $this->container->get('a');
+        $result2 = $this->container->get('a');
+        static::assertEquals(new stdClass(), $result);
+        static::assertSame($result, $result2);
     }
 
     public function testGetExceptionInProvider(): void
@@ -109,8 +109,8 @@ class ContainerTest extends TestCase
 
     public function testGetClosure(): void
     {
-        $closure = function (ContainerInterface $c) {
-            $this->assertNotEmpty($c);
+        $closure = function (ContainerInterface $container) {
+            $this->assertNotEmpty($container);
             return 123;
         };
         $this->provider->method('canProvide')->willReturn(true);
