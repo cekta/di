@@ -37,17 +37,16 @@ class AutowiringCache implements ProviderInterface
     }
 
     /**
-     * @internal
      * @param string $id
      * @return string
+     * @internal
      */
     public static function getCacheKey(string $id): string
     {
         if (strlen($id) > 64) {
-            $result = hash('sha256', $id);
-        } else {
-            $result = preg_replace('/[^\w\d_.]/', '_', $id);
+            return hash('sha256', $id);
         }
+        $result = preg_replace('/[^\w\d_.]/', '_', $id);
         assert(is_string($result));
         return $result;
     }
@@ -61,8 +60,8 @@ class AutowiringCache implements ProviderInterface
                 $this->pool->save($item);
             }
             return $item->get();
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            throw new InvalidCacheKey($id, $invalidArgumentException);
+        } catch (InvalidArgumentException $exception) {
+            throw new InvalidCacheKey($id, $exception);
         }
     }
 }

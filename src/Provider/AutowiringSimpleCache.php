@@ -46,8 +46,8 @@ class AutowiringSimpleCache implements ProviderInterface
                 $this->cache->set($key, $result);
             }
             return $result;
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            throw new InvalidCacheKey($id, $invalidArgumentException);
+        } catch (InvalidArgumentException $exception) {
+            throw new InvalidCacheKey($id, $exception);
         }
     }
 }

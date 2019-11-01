@@ -119,40 +119,40 @@ class AutowiringTest extends TestCase
             /**
              * @var int
              */
-            public $a;
+            public $var1;
             /**
              * @var int
              */
-            public $b;
+            public $var2;
             /**
              * @var int
              */
-            private $c;
+            private $var3;
 
-            public function __construct(int $a = 1, int $b = 2, int $c = 3)
+            public function __construct(int $var1 = 1, int $var2 = 2, int $var3 = 3)
             {
-                $this->a = $a;
-                $this->b = $b;
-                $this->c = $c;
+                $this->var1 = $var1;
+                $this->var2 = $var2;
+                $this->var3 = $var3;
             }
         };
         $name = get_class($obj);
         $rule = $this->createMock(Autowiring\RuleInterface::class);
         $rule->method('acceptable')->with($name)->willReturn(true);
-        $rule->method('accept')->willReturn(['a' => 'c']);
+        $rule->method('accept')->willReturn(['var1' => 'var3']);
         $rule2 = $this->createMock(Autowiring\RuleInterface::class);
         $rule2->method('acceptable')->with($name)->willReturn(true);
-        $rule2->method('accept')->willReturn(['b' => 'c']);
+        $rule2->method('accept')->willReturn(['var2' => 'var3']);
         assert($rule instanceof Autowiring\RuleInterface);
         assert($rule2 instanceof Autowiring\RuleInterface);
         $provider = new Autowiring($rule, $rule2);
         $this->container->method('get')->willReturnMap([
-            ['c', 5],
+            ['var3', 5],
         ]);
         assert($this->container instanceof ContainerInterface);
         $result = $provider->provide($name)($this->container);
-        $this->assertSame(5, $result->a);
-        $this->assertSame(5, $result->b);
-        $this->assertSame(['c', 'c', 'c'], $provider->getDependencies($name));
+        $this->assertSame(5, $result->var1);
+        $this->assertSame(5, $result->var2);
+        $this->assertSame(['var3', 'var3', 'var3'], $provider->getDependencies($name));
     }
 }

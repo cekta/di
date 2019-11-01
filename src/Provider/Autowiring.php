@@ -27,7 +27,7 @@ class Autowiring implements ProviderInterface
 
     public function provide(string $id)
     {
-        return Autowiring::createObject($id, $this->getDependencies($id));
+        return self::createObject($id, $this->getDependencies($id));
     }
 
     public function canProvide(string $id): bool

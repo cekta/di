@@ -11,7 +11,7 @@ class InfiniteRecursionTest extends TestCase
 {
     public function testMessage(): void
     {
-        $e = new InfiniteRecursion('test', ['test', 'foo']);
-        $this->assertSame('Infinite recursion for `test`, calls: `test, foo`', $e->getMessage());
+        $exception = new InfiniteRecursion('test', ['test', 'foo']);
+        $this->assertSame('Infinite recursion for `test`, calls: `test, foo`', $exception->getMessage());
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
@@ -37,7 +38,7 @@ return [
             'linesCountAfterLastContent' => 0,
             'annotationsGroups' => [],
         ],
-        \NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh::class => [
+        CyclomaticComplexityIsHigh::class => [
             'maxComplexity' => 10,
         ],
     ],
