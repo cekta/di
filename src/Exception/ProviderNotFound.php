@@ -11,6 +11,6 @@ class ProviderNotFound extends RuntimeException implements NotFoundExceptionInte
 {
     public function __construct(string $id)
     {
-        parent::__construct("Provider not found for `$id`");
+        parent::__construct("Provider not found for `${id}`");
     }
 }

@@ -40,7 +40,7 @@ class AutowiringSimpleCache implements ProviderInterface
     {
         try {
             $key = AutowiringCache::getCacheKey($id);
-            $result = $this->cache->get($id);
+            $result = $this->cache->get($key);
             if ($result === null) {
                 $result = $this->autowiring->getDependencies($id);
                 $this->cache->set($key, $result);
