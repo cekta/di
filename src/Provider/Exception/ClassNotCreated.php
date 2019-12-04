@@ -12,7 +12,7 @@ class ClassNotCreated extends RuntimeException implements ProviderExceptionInter
 {
     public function __construct(string $id, Throwable $previous)
     {
-        $message = "ReflectionClass not createable for `$id`";
+        $message = "ReflectionClass not createable for `{$id}`";
         parent::__construct($message, 0, $previous);
     }
 }

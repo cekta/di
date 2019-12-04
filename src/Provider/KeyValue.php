@@ -15,6 +15,11 @@ class KeyValue implements ProviderInterface
      */
     private $values;
 
+    public function __construct(array $values)
+    {
+        $this->values = $values;
+    }
+
     public static function stringToAlias(array $values): self
     {
         $result = [];
@@ -25,11 +30,6 @@ class KeyValue implements ProviderInterface
             $result[$key] = $value;
         }
         return new self($result);
-    }
-
-    public function __construct(array $values)
-    {
-        $this->values = $values;
     }
 
     public function provide(string $id)

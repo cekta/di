@@ -11,6 +11,6 @@ class NotFound extends RuntimeException implements ProviderExceptionInterface
 {
     public function __construct(string $id)
     {
-        parent::__construct("Container `$id` not found");
+        parent::__construct("Container `${id}` not found");
     }
 }

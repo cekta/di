@@ -12,7 +12,7 @@ class InvalidCacheKey extends RuntimeException implements ProviderExceptionInter
 {
     public function __construct(string $id, Throwable $previous)
     {
-        $message = "Invalide cache key `$id`";
+        $message = "Invalide cache key `{$id}`";
         parent::__construct($message, 0, $previous);
     }
 }

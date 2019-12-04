@@ -5,11 +5,7 @@ php:
   - "7.3"
 
 install:
-  - composer install
+  - make install
 
 script:
-  - ./vendor/bin/phpcs
-  - ./vendor/bin/phpstan analyse
-  - ./vendor/bin/phpinsights --min-quality=100 --min-complexity=80 --min-architecture=100 --min-style=100 --no-interaction
-  - ./vendor/bin/phpunit
-  - ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100
+  - make test
