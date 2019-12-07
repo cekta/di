@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Autowiring;
+use Cekta\DI\Provider\AutowiringCache;
 use Cekta\DI\Provider\AutowiringSimpleCache;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderExceptionInterface;
@@ -103,12 +104,42 @@ class AutowiringSimpleCacheTest extends TestCase
     /**
      * @throws ProviderExceptionInterface
      */
+    public function testProvideWithArguments()
+    {
+        $obj = new class () {
+            public $a;
+            public $b;
+
+            public function __construct($a = 1, $b = 2)
+            {
+                $this->a = $a;
+                $this->b = $b;
+            }
+        };
+        $this->cache->method('get')
+            ->with(AutowiringCache::getCacheKey(get_class($obj)))
+            ->willReturn(['a', 'b']);
+        $this->container->method('get')
+            ->willReturnCallback(function (string $name) {
+                $a = [
+                    'a' => 5,
+                    'b' => 6
+                ];
+                return $a[$name];
+            });
+        $result = $this->provider->provide(get_class($obj))($this->container);
+        $this->assertSame(5, $result->a);
+        $this->assertSame(6, $result->b);
+    }
+
+    /**
+     * @throws ProviderExceptionInterface
+     */
     public function testProvideInvalidCacheKey(): void
     {
         $this->expectException(InvalidCacheKey::class);
         $name = 'some_invalide_cache_key';
-        $exception = new class () extends RuntimeException implements InvalidArgumentException
-        {
+        $exception = new class () extends RuntimeException implements InvalidArgumentException {
         };
         $this->cache->expects($this->once())->method('get')
             ->with($name)
