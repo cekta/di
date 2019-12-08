@@ -97,56 +97,6 @@ assert($demo->driver instanceof DriverInterface);
 assert($demo->driver instanceof FileDriver);
 ```
 
-## Autowiring и RuleInterface
-
-[RuleInterface](https://github.com/cekta/di/blob/master/src/Provider/Autowiring/RuleInterface.php) позволяет 
-переопределять зависимости полученные автоматически, правила можно задавать как для конкретного класса, так и для 
-целого пакеты со всеми его классами.  
-Простейщий пример реализации [Rule](https://github.com/cekta/di/blob/master/src/Provider/Autowiring/Rule.php).
-
-В некоторых случаях, может существовать два класса которые зависят от username, но одному надо username от mysql,
-другому от redis.
-
-```php
-<?php
-use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\Container;
-
-class DriverMysql
-{
-    public $username;
-
-    public function __construct(string $username)
-    {
-        $this->username = $username;
-    }
-}
-class DriverRedis
-{
-    public $username;
-
-    public function __construct(string $username)
-    {
-        $this->username = $username;
-    }
-}
-
-$providers[] = new KeyValue([
-    'username' => 'mysql username',
-    'redis.username' => 'redis username'
-]);
-$providers[] = new Autowiring(new Autowiring\Rule(DriverRedis::class, ['username' => 'redis.username']));
-$container = new Container(...$providers);
-
-$mysql = $container->get(DriverMysql::class);
-assert($mysql instanceof DriverMysql);
-assert($mysql->username === 'mysql username');
-$redis = $container->get(DriverRedis::class);
-assert($redis instanceof DriverRedis);
-assert($redis->username === 'redis username');
-```
-
 ## Autowiring и производительность
 
 Reflection в PHP не слишком быстрый, существуют провайдеры позволяющие кэшировать обращения к

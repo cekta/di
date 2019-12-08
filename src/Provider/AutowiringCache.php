@@ -15,14 +15,9 @@ class AutowiringCache implements ProviderInterface
      * @var CacheItemPoolInterface
      */
     private $pool;
-    /**
-     * @var Autowiring
-     */
-    private $autowiring;
 
-    public function __construct(CacheItemPoolInterface $pool, Autowiring $autowiring)
+    public function __construct(CacheItemPoolInterface $pool)
     {
-        $this->autowiring = $autowiring;
         $this->pool = $pool;
     }
 
@@ -56,7 +51,7 @@ class AutowiringCache implements ProviderInterface
         try {
             $item = $this->pool->getItem($this->getCacheKey($id));
             if (!$item->isHit()) {
-                $item->set($this->autowiring->getDependencies($id));
+                $item->set(Autowiring::getDependencies($id));
                 $this->pool->save($item);
             }
             return $item->get();
