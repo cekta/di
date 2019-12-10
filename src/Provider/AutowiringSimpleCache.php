@@ -15,14 +15,9 @@ class AutowiringSimpleCache implements ProviderInterface
      * @var CacheInterface
      */
     private $cache;
-    /**
-     * @var Autowiring
-     */
-    private $autowiring;
 
-    public function __construct(CacheInterface $cache, Autowiring $autowiring)
+    public function __construct(CacheInterface $cache)
     {
-        $this->autowiring = $autowiring;
         $this->cache = $cache;
     }
 
@@ -42,7 +37,7 @@ class AutowiringSimpleCache implements ProviderInterface
             $key = AutowiringCache::getCacheKey($id);
             $result = $this->cache->get($key);
             if ($result === null) {
-                $result = $this->autowiring->getDependencies($id);
+                $result = Autowiring::getDependencies($id);
                 $this->cache->set($key, $result);
             }
             return $result;

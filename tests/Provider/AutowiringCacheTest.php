@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Provider;
 
-use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Provider\AutowiringCache;
 use Cekta\DI\Provider\Exception\InvalidCacheKey;
 use Cekta\DI\ProviderExceptionInterface;
@@ -36,20 +35,14 @@ class AutowiringCacheTest extends TestCase
      * @var AutowiringCache
      */
     private $provider;
-    /**
-     * @var MockObject
-     */
-    private $autowiring;
 
     protected function setUp(): void
     {
         $this->pool = $this->createMock(CacheItemPoolInterface::class);
         $this->item = $this->createMock(CacheItemInterface::class);
         $this->container = $this->createMock(ContainerInterface::class);
-        $this->autowiring = $this->createMock(Autowiring::class);
         assert($this->pool instanceof CacheItemPoolInterface);
-        assert($this->autowiring instanceof Autowiring);
-        $this->provider = new AutowiringCache($this->pool, $this->autowiring);
+        $this->provider = new AutowiringCache($this->pool);
     }
 
     public function testMustBeProvider(): void
@@ -93,9 +86,6 @@ class AutowiringCacheTest extends TestCase
      */
     public function testProvideCacheMiss(): void
     {
-        $this->autowiring->expects($this->once())->method('getDependencies')
-            ->with(stdClass::class)
-            ->willReturn([]);
         $this->item->expects($this->once())->method('isHit')->willReturn(false);
         $this->item->expects($this->once())->method('get')->willReturn([]);
         $this->item->expects($this->once())->method('set')->with([]);

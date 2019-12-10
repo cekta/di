@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
-use Cekta\DI\Provider\Autowiring\RuleInterface;
 use Cekta\DI\Provider\Exception\ClassNotCreated;
 use Cekta\DI\ProviderInterface;
 use Closure;
@@ -15,16 +14,6 @@ use ReflectionMethod;
 
 class Autowiring implements ProviderInterface
 {
-    /**
-     * @var array<RuleInterface>
-     */
-    private $rules;
-
-    public function __construct(RuleInterface ...$rules)
-    {
-        $this->rules = $rules;
-    }
-
     public function provide(string $id)
     {
         return self::createObject($id, $this->getDependencies($id));
@@ -35,11 +24,11 @@ class Autowiring implements ProviderInterface
         return class_exists($id);
     }
 
-    public function getDependencies(string $id): array
+    public static function getDependencies(string $id): array
     {
         try {
             $constructor = (new ReflectionClass($id))->getConstructor();
-            return $constructor ? $this->getMethodParameters($id, $constructor) : [];
+            return $constructor ? self::getMethodParameters($constructor) : [];
         } catch (ReflectionException $reflectionException) {
             throw new ClassNotCreated($id, $reflectionException);
         }
@@ -56,25 +45,12 @@ class Autowiring implements ProviderInterface
         };
     }
 
-    private function getMethodParameters(string $id, ReflectionMethod $method): array
+    private static function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
-        $replaces = $this->getReplaces($id);
         foreach ($method->getParameters() as $parameter) {
             $class = $parameter->getClass();
-            $name = $class ? $class->name : $parameter->name;
-            $result[] = array_key_exists($name, $replaces) ? $replaces[$name] : $name;
-        }
-        return $result;
-    }
-
-    private function getReplaces(string $id)
-    {
-        $result = [];
-        foreach ($this->rules as $rule) {
-            if ($rule->acceptable($id)) {
-                $result += $rule->accept();
-            }
+            $result[] = $class ? $class->name : $parameter->name;
         }
         return $result;
     }
