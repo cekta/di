@@ -8,7 +8,7 @@ phpcs:
 phpstan:
 	./vendor/bin/phpstan analyse
 phpinsights:
-	./vendor/bin/phpinsights --min-quality=100 --min-complexity=80 --min-architecture=100 --min-style=100 --no-interaction
+	./vendor/bin/phpinsights --min-quality=100 --min-complexity=70 --min-architecture=100 --min-style=100 --no-interaction -vvv
 phpunit:
 	./vendor/bin/phpunit
 infection:
