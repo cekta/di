@@ -6,7 +6,6 @@ namespace Cekta\DI\Provider;
 
 use Cekta\DI\Loader\Obj;
 use Cekta\DI\Provider\Autowiring\Reflection;
-use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\ProviderInterface;
 
 class Autowiring implements ProviderInterface
@@ -23,15 +22,11 @@ class Autowiring implements ProviderInterface
 
     public function provide(string $id)
     {
-        if (!$this->canProvide($id)) {
-            throw new NotFound($id);
-        }
-        /** @noinspection PhpUnhandledExceptionInspection */
-        return new Obj($id, $this->reflection->getDependencies($id));
+        return new Obj($id, $this->reflection->getClass($id)->getDependencies());
     }
 
     public function canProvide(string $id): bool
     {
-        return class_exists($id);
+        return $this->reflection->getClass($id)->isInstantiable();
     }
 }

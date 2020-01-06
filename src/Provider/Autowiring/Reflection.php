@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowiring;
 
-use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 
+/**
+ * @internal
+ */
 class Reflection
 {
-    /**
-     * @param string $name
-     * @return array<string>
-     * @throws ReflectionException
-     * @internal
-     */
-    public function getDependencies(string $name): array
+    private static $classes = [];
+
+    public function getClass(string $name): ReflectionClass
     {
-        $constructor = (new ReflectionClass($name))->getConstructor();
-        return $constructor ? $this->getMethodParameters($constructor) : [];
+        if (!array_key_exists($name, self::$classes)) {
+            try {
+                $class = new \ReflectionClass($name);
+                $instantiable = $class->isInstantiable();
+                $constructor = $class->getConstructor();
+                $dependencies = $constructor ? self::getMethodParameters($constructor) : [];
+                self::$classes[$name] = new ReflectionClass($instantiable, ...$dependencies);
+            } catch (ReflectionException $exception) {
+                self::$classes[$name] = new ReflectionClass();
+            }
+        }
+        return self::$classes[$name];
     }
 
-    private function getMethodParameters(ReflectionMethod $method): array
+    private static function getMethodParameters(ReflectionMethod $method): array
     {
         $result = [];
         foreach ($method->getParameters() as $parameter) {
