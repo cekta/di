@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Loader;
 
-use Cekta\DI\Loader\Obj;
+use Cekta\DI\Loader\Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
-class ObjTest extends TestCase
+class FactoryTest extends TestCase
 {
     public function testWithoutArgument()
     {
-        $loader = new Obj(stdClass::class, []);
+        $loader = new Factory(stdClass::class, []);
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
         $this->assertInstanceOf(stdClass::class, $loader($container));
@@ -32,7 +32,7 @@ class ObjTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $loader = new Obj($name, ['a', 'b']);
+        $loader = new Factory($name, ['a', 'b']);
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')
             ->willReturnMap(

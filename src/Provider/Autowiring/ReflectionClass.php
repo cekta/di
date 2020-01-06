@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowiring;
 
+/**
+ * @internal
+ */
 class ReflectionClass
 {
     private $dependencies;
     private $instantiable;
 
-    public function __construct(bool $instantiable = false, string ...$dependencies)
+    public function __construct(bool $instantiable, string ...$dependencies)
     {
         $this->instantiable = $instantiable;
         $this->dependencies = $dependencies;

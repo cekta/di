@@ -7,7 +7,7 @@ namespace Cekta\DI\Loader;
 use Cekta\DI\LoaderInterface;
 use Psr\Container\ContainerInterface;
 
-class Obj implements LoaderInterface
+class Factory implements LoaderInterface
 {
     /**
      * @var string

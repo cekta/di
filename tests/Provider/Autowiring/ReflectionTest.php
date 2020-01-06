@@ -46,4 +46,11 @@ class ReflectionTest extends TestCase
         $this->assertFalse($this->service->getClass(TestCase::class)->isInstantiable());
         $this->assertFalse($this->service->getClass(ProviderInterface::class)->isInstantiable());
     }
+
+    public function testGetClass()
+    {
+        $nullResult = $this->service->getClass('invalide name');
+        $this->assertFalse($nullResult->isInstantiable());
+        $this->assertSame([], $nullResult->getDependencies());
+    }
 }

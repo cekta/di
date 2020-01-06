@@ -24,7 +24,7 @@ class Reflection
                 $dependencies = $constructor ? self::getMethodParameters($constructor) : [];
                 self::$classes[$name] = new ReflectionClass($instantiable, ...$dependencies);
             } catch (ReflectionException $exception) {
-                self::$classes[$name] = new ReflectionClass();
+                self::$classes[$name] = new ReflectionClass(false);
             }
         }
         return self::$classes[$name];
