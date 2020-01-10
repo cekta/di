@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\Provider\Exception\ClassNotCreated;
+use Cekta\DI\Provider\Autowiring\Reflection;
 use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
-use Throwable;
 
 class AutowiringTest extends TestCase
 {
@@ -24,11 +23,17 @@ class AutowiringTest extends TestCase
      * @var MockObject
      */
     private $container;
+    /**
+     * @var MockObject
+     */
+    private $reflection;
 
     protected function setUp(): void
     {
         $this->container = $this->createMock(ContainerInterface::class);
-        $this->provider = new Autowiring();
+        $this->reflection = $this->createMock(Reflection::class);
+        assert($this->reflection instanceof Reflection);
+        $this->provider = new Autowiring($this->reflection);
     }
 
     public function testMustBeProvider(): void
@@ -38,74 +43,24 @@ class AutowiringTest extends TestCase
 
     public function testCanProvide(): void
     {
-        $this->assertTrue($this->provider->canProvide(stdClass::class));
-    }
-
-    public function testCanProvideInvalidName(): void
-    {
-        $this->assertFalse($this->provider->canProvide('invalid name'));
-    }
-
-    public function testCanProvideInterface(): void
-    {
-        $this->assertFalse($this->provider->canProvide(Throwable::class));
-    }
-
-    public function getGetDependencies(): void
-    {
-        $this->assertSame([], $this->provider->getDependencies(stdClass::class));
+        $class = $this->createMock(Autowiring\ReflectionClass::class);
+        $class->method('isInstantiable')->willReturn(true);
+        $this->reflection->expects($this->once())
+            ->method('getClass')
+            ->with('test')
+            ->willReturn($class);
+        $this->assertTrue($this->provider->canProvide('test'));
     }
 
     /**
      * @throws ProviderExceptionInterface
      */
-    public function testProvideWithoutArguments(): void
+    public function testProvide(): void
     {
+        $class = $this->createMock(Autowiring\ReflectionClass::class);
+        $class->method('getDependencies')->willReturn([]);
+        $this->reflection->method('getClass')->with(stdClass::class)->willReturn($class);
         assert($this->container instanceof ContainerInterface);
         $this->assertEquals(new stdClass(), $this->provider->provide(stdClass::class)($this->container));
-    }
-
-    /**
-     * @throws ProviderExceptionInterface
-     */
-    public function testProvideWithArguments(): void
-    {
-        $obj = new class (new stdClass(), '123')
-        {
-            /**
-             * @var stdClass
-             */
-            public $class;
-            /**
-             * @var string
-             */
-            public $str;
-
-            public function __construct(stdClass $class, string $str)
-            {
-                $this->class = $class;
-                $this->str = $str;
-            }
-        };
-        $name = get_class($obj);
-        $this->container->method('get')->will($this->returnValueMap([
-            [stdClass::class, new stdClass()],
-            ['str', 'magic']
-        ]));
-        assert($this->container instanceof ContainerInterface);
-        $result = $this->provider->provide($name)($this->container);
-        $this->assertInstanceOf($name, $result);
-        $this->assertSame('magic', $result->str);
-        $this->assertSame([stdClass::class, 'str'], $this->provider->getDependencies($name));
-    }
-
-    /**
-     * @throws ProviderExceptionInterface
-     */
-    public function testProvideInvalidName()
-    {
-        $this->expectException(ClassNotCreated::class);
-        $provider = new Autowiring();
-        $provider->provide('invalid name');
     }
 }
