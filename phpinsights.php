@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-use NunoMaduro\PhpInsights\Domain\Insights\CyclomaticComplexityIsHigh;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\ForLoopWithTestFunctionCallSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PhpCsFixer\Fixer\StringNotation\ExplicitStringVariableFixer;
@@ -26,24 +24,14 @@ return [
         SuperfluousInterfaceNamingSniff::class,
         SpaceAfterNotSniff::class,
         ExplicitStringVariableFixer::class,
-        ForLoopWithTestFunctionCallSniff::class,
     ],
     'config' => [
         LineLengthSniff::class => [
             'lineLimit' => 120,
-            'absoluteLineLimit' => 0,
-            'ignoreComments' => false,
+            'absoluteLineLimit' => 120,
         ],
         DocCommentSpacingSniff::class => [
-            'linesCountBeforeFirstContent' => 0,
-            'linesCountBetweenDescriptionAndAnnotations' => 1,
             'linesCountBetweenDifferentAnnotationsTypes' => 0,
-            'linesCountBetweenAnnotationsGroups' => 0,
-            'linesCountAfterLastContent' => 0,
-            'annotationsGroups' => [],
-        ],
-        CyclomaticComplexityIsHigh::class => [
-            'maxComplexity' => 10,
         ],
     ],
 ];

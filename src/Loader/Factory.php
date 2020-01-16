@@ -12,19 +12,15 @@ class Factory implements LoaderInterface
     /**
      * @var string
      */
-    private $name;
+    private $className;
     /**
      * @var array<string>
      */
     private $dependencies;
 
-    /**
-     * @param string $name
-     * @param array<string> $dependencies
-     */
-    public function __construct(string $name, array $dependencies)
+    public function __construct(string $className, string ...$dependencies)
     {
-        $this->name = $name;
+        $this->className = $className;
         $this->dependencies = $dependencies;
     }
 
@@ -34,6 +30,6 @@ class Factory implements LoaderInterface
         foreach ($this->dependencies as $dependecy) {
             $args[] = $container->get($dependecy);
         }
-        return new $this->name(...$args);
+        return new $this->className(...$args);
     }
 }

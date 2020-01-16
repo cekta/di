@@ -13,10 +13,11 @@ class FactoryTest extends TestCase
 {
     public function testWithoutArgument()
     {
-        $loader = new Factory(stdClass::class, []);
+        $name = stdClass::class;
+        $loader = new Factory($name);
         $container = $this->createMock(ContainerInterface::class);
         assert($container instanceof ContainerInterface);
-        $this->assertInstanceOf(stdClass::class, $loader($container));
+        $this->assertInstanceOf($name, $loader($container));
     }
 
     public function testWithArguments()
@@ -32,7 +33,7 @@ class FactoryTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $loader = new Factory($name, ['a', 'b']);
+        $loader = new Factory($name, 'a', 'b');
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')
             ->willReturnMap(

@@ -43,12 +43,10 @@ class AutowiringTest extends TestCase
 
     public function testCanProvide(): void
     {
-        $class = $this->createMock(Autowiring\ReflectionClass::class);
-        $class->method('isInstantiable')->willReturn(true);
         $this->reflection->expects($this->once())
-            ->method('getClass')
+            ->method('isInstantiable')
             ->with('test')
-            ->willReturn($class);
+            ->willReturn(true);
         $this->assertTrue($this->provider->canProvide('test'));
     }
 
@@ -57,9 +55,7 @@ class AutowiringTest extends TestCase
      */
     public function testProvide(): void
     {
-        $class = $this->createMock(Autowiring\ReflectionClass::class);
-        $class->method('getDependencies')->willReturn([]);
-        $this->reflection->method('getClass')->with(stdClass::class)->willReturn($class);
+        $this->reflection->method('getDependencies')->with(stdClass::class)->willReturn([]);
         assert($this->container instanceof ContainerInterface);
         $this->assertEquals(new stdClass(), $this->provider->provide(stdClass::class)($this->container));
     }

@@ -20,7 +20,7 @@ class ReflectionTest extends TestCase
 
     public function testGetDependenciesWithoutConstructor()
     {
-        $this->assertSame([], $this->service->getClass(stdClass::class)->getDependencies());
+        $this->assertSame([], $this->service->getDependencies(stdClass::class));
     }
 
     public function testGetDepndenciesWithContructorArguments()
@@ -37,20 +37,19 @@ class ReflectionTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $this->assertSame([stdClass::class, 'a', 'b'], $this->service->getClass($name)->getDependencies());
+        $this->assertSame([stdClass::class, 'a', 'b'], $this->service->getDependencies($name));
     }
 
     public function testIsInstantiable()
     {
-        $this->assertTrue($this->service->getClass(stdClass::class)->isInstantiable());
-        $this->assertFalse($this->service->getClass(TestCase::class)->isInstantiable());
-        $this->assertFalse($this->service->getClass(ProviderInterface::class)->isInstantiable());
+        $this->assertTrue($this->service->isInstantiable(stdClass::class));
+        $this->assertFalse($this->service->isInstantiable(TestCase::class));
+        $this->assertFalse($this->service->isInstantiable(ProviderInterface::class));
     }
 
     public function testGetClass()
     {
-        $nullResult = $this->service->getClass('invalide name');
-        $this->assertFalse($nullResult->isInstantiable());
-        $this->assertSame([], $nullResult->getDependencies());
+        $this->assertFalse($this->service->isInstantiable('invalide name'));
+        $this->assertSame([], $this->service->getDependencies('invalide name'));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider\Autowiring;
 
+use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 
@@ -12,22 +13,36 @@ use ReflectionMethod;
  */
 class Reflection
 {
-    private static $classes = [];
+    private static $dependencies = [];
+    private static $instantiable = [];
 
-    public function getClass(string $name): ReflectionClass
+    public function getDependencies(string $name)
     {
-        if (!array_key_exists($name, self::$classes)) {
-            try {
-                $class = new \ReflectionClass($name);
-                $instantiable = $class->isInstantiable();
-                $constructor = $class->getConstructor();
-                $dependencies = $constructor ? self::getMethodParameters($constructor) : [];
-                self::$classes[$name] = new ReflectionClass($instantiable, ...$dependencies);
-            } catch (ReflectionException $exception) {
-                self::$classes[$name] = new ReflectionClass(false);
-            }
+        if (!array_key_exists($name, self::$dependencies)) {
+            $this->load($name);
         }
-        return self::$classes[$name];
+        return self::$dependencies[$name];
+    }
+
+    public function isInstantiable(string $name): bool
+    {
+        if (!array_key_exists($name, self::$instantiable)) {
+            $this->load($name);
+        }
+        return self::$instantiable[$name];
+    }
+
+    private function load(string $name): void
+    {
+        try {
+            $class = new ReflectionClass($name);
+            self::$instantiable[$name] = $class->isInstantiable();
+            $constructor = $class->getConstructor();
+            self::$dependencies[$name] = $constructor ? self::getMethodParameters($constructor) : [];
+        } catch (ReflectionException $exception) {
+            self::$dependencies[$name] = [];
+            self::$instantiable[$name] = false;
+        }
     }
 
     private static function getMethodParameters(ReflectionMethod $method): array
