@@ -22,11 +22,11 @@ class Autowiring implements ProviderInterface
 
     public function provide(string $id)
     {
-        return new Factory($id, $this->reflection->getClass($id)->getDependencies());
+        return new Factory($id, ...$this->reflection->getDependencies($id));
     }
 
     public function canProvide(string $id): bool
     {
-        return $this->reflection->getClass($id)->isInstantiable();
+        return $this->reflection->isInstantiable($id);
     }
 }

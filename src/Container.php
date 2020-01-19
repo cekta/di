@@ -32,14 +32,19 @@ class Container implements ContainerInterface
     public function get($id)
     {
         if (!array_key_exists($id, $this->values)) {
-            $this->values[$id] = $this->getValue($id);
+            $this->checkInfiniteRecursion($id);
+            $provider = $this->findProvider($id);
+            if ($provider === null) {
+                throw new ProviderNotFound($id);
+            }
+            $this->values[$id] = $this->load($provider->provide($id));
         }
         return $this->values[$id];
     }
 
     public function has($name)
     {
-        return !is_null($this->findProvider($name));
+        return array_key_exists($name, $this->values) || $this->findProvider($name) !== null;
     }
 
     private function findProvider(string $name): ?ProviderInterface
@@ -60,15 +65,6 @@ class Container implements ContainerInterface
         $this->calls[] = $id;
     }
 
-    private function getProvider(string $id): ProviderInterface
-    {
-        $provider = $this->findProvider($id);
-        if ($provider === null) {
-            throw new ProviderNotFound($id);
-        }
-        return $provider;
-    }
-
     private function load($result)
     {
         if (
@@ -78,12 +74,5 @@ class Container implements ContainerInterface
             $result = $result($this);
         }
         return $result;
-    }
-
-    private function getValue(string $id)
-    {
-        $this->checkInfiniteRecursion($id);
-        $provider = $this->getProvider($id);
-        return $this->load($provider->provide($id));
     }
 }
