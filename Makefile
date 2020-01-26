@@ -1,6 +1,6 @@
 install:
 	composer install
-test: phpcs phpstan phpinsights phpunit infection
+test: phpcs phpmd phpstan phpinsights phpunit infection
 update:
 	composer update
 phpcs:
@@ -11,9 +11,11 @@ phpinsights:
 	./vendor/bin/phpinsights --min-quality=100 --min-architecture=100 --min-style=100 --no-interaction -vvv
 phpunit:
 	./vendor/bin/phpunit
+phpmd:
+	./vendor/bin/phpmd src ansi phpmd.ruleset.xml
 infection:
 	./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100
-docs:
+page:
 	docker run \
 		--rm \
 		-it \
