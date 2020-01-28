@@ -8,15 +8,17 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 
-/**
- * @internal
- */
 class Reflection
 {
     private static $dependencies = [];
     private static $instantiable = [];
 
-    public function getDependencies(string $name)
+    /**
+     * @param string $name
+     * @return array<string>
+     * @internal
+     */
+    public function getDependencies(string $name): array
     {
         if (!array_key_exists($name, self::$dependencies)) {
             $this->load($name);
@@ -24,6 +26,11 @@ class Reflection
         return self::$dependencies[$name];
     }
 
+    /**
+     * @param string $name
+     * @return bool
+     * @internal
+     */
     public function isInstantiable(string $name): bool
     {
         if (!array_key_exists($name, self::$instantiable)) {
@@ -37,20 +44,21 @@ class Reflection
         try {
             $class = new ReflectionClass($name);
             self::$instantiable[$name] = $class->isInstantiable();
-            $constructor = $class->getConstructor();
-            self::$dependencies[$name] = $constructor ? self::getMethodParameters($constructor) : [];
+            self::$dependencies[$name] = self::getMethodParameters($class->getConstructor());
         } catch (ReflectionException $exception) {
             self::$dependencies[$name] = [];
             self::$instantiable[$name] = false;
         }
     }
 
-    private static function getMethodParameters(ReflectionMethod $method): array
+    private static function getMethodParameters(?ReflectionMethod $method): array
     {
         $result = [];
-        foreach ($method->getParameters() as $parameter) {
-            $class = $parameter->getClass();
-            $result[] = $class ? $class->name : $parameter->name;
+        if ($method !== null) {
+            foreach ($method->getParameters() as $parameter) {
+                $class = $parameter->getClass();
+                $result[] = $class ? $class->name : $parameter->name;
+            }
         }
         return $result;
     }
