@@ -53,7 +53,7 @@ class Compiler
 declare(strict_types=1);
 
 use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factor;
+use \Cekta\DI\Loader\Factory;
 
 return [$result
 ];";

@@ -37,7 +37,7 @@ class CompilerTest extends TestCase
 declare(strict_types=1);
 
 use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factor;
+use \Cekta\DI\Loader\Factory;
 
 return [
     'test' => new Factory('test'),
@@ -57,7 +57,7 @@ COMPILED;
 declare(strict_types=1);
 
 use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factor;
+use \Cekta\DI\Loader\Factory;
 
 return [
     'test' => new Alias('value'),
@@ -80,7 +80,7 @@ COMPILED;
 declare(strict_types=1);
 
 use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factor;
+use \Cekta\DI\Loader\Factory;
 
 return [
     'test2' => new Factory('test2', 'a', 'b'),
