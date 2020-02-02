@@ -15,4 +15,4 @@ script:
   - make script
 
 after_script:
-  - make after-script
+  - make after_script
