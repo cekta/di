@@ -12,7 +12,7 @@ scrutinizer_install:
 	wget https://scrutinizer-ci.com/ocular.phar
 after_script:
 	./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT} clover.xml
-	php ocular.phar code-coverage:upload --format=php-clover coverage.xml
+	php ocular.phar code-coverage:upload --format=php-clover clover.xml
 update:
 	composer update
 phpcs:
