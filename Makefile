@@ -2,12 +2,17 @@ install:
 	composer install
 test: phpcs phpmd phpstan phpinsights phpunit infection
 script: phpcs phpmd phpstan phpinsights phpunit_with_clover infection
-before_script:
+before_script: codeclimate_before scrutinizer_install
+codeclimate_install:
 	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 	chmod +x ./cc-test-reporter
+codeclimate_before: codeclimate_install
 	./cc-test-reporter before-build
+scrutinizer_install:
+	wget https://scrutinizer-ci.com/ocular.phar
 after_script:
-	./cc-test-reporter after-build --exit-code 0 -r f398f5a0839235aed75d94c5f6dc7dcb3de22e95f5104adbabcabd480bc819bd clover.xml
+	./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT clover.xml
+	php ocular.phar code-coverage:upload --format=php-clover coverage.xml
 update:
 	composer update
 phpcs:
