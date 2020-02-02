@@ -11,7 +11,7 @@ codeclimate_before: codeclimate_install
 scrutinizer_install:
 	wget https://scrutinizer-ci.com/ocular.phar
 after_script:
-	./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT clover.xml
+	./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT} clover.xml
 	php ocular.phar code-coverage:upload --format=php-clover coverage.xml
 update:
 	composer update
