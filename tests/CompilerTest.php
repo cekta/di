@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\Provider\Autowiring\Reflection;
+use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +36,6 @@ class CompilerTest extends TestCase
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Alias;
 use \Cekta\DI\Loader\Factory;
 
 return [
@@ -57,7 +56,6 @@ COMPILED;
 declare(strict_types=1);
 
 use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factory;
 
 return [
     'test' => new Alias('value'),
@@ -79,7 +77,6 @@ COMPILED;
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Alias;
 use \Cekta\DI\Loader\Factory;
 
 return [

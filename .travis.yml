@@ -4,8 +4,15 @@ php:
   - "7.2"
   - "7.3"
   - "7.4"
+
 install:
   - make install
 
+before_script:
+  - make before_script
+
 script:
-  - make test
+  - make script
+
+after_script:
+  - make after-script

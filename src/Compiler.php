@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Provider\Autowiring\Reflection;
-
 class Compiler
 {
     /**
@@ -39,23 +37,53 @@ class Compiler
 
     public function compile(): string
     {
-        $result = '';
-        foreach ($this->alias as $name => $implementation) {
-            $result .= "\n    '$name' => new Alias('$implementation'),";
-        }
-        foreach ($this->classes as $name => $dependencies) {
-            $arguments = implode('\', \'', $dependencies);
-            $arguments = strlen($arguments) > 0 ? "'$name', '$arguments'" : "'$name'";
-            $result .= "\n    '$name' => new Factory($arguments),";
-        }
         return "<?php
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Alias;
-use \Cekta\DI\Loader\Factory;
-
-return [$result
+{$this->getHeader()}
+return [{$this->compileAlias()}{$this->compileClasses()}
 ];";
+    }
+
+    private function compileAlias(): string
+    {
+        $compiledContainers = '';
+        foreach ($this->alias as $name => $implementation) {
+            $compiledContainers .= "\n    '$name' => new Alias('$implementation'),";
+        }
+        return $compiledContainers;
+    }
+
+    private function compileClasses(): string
+    {
+        $compiledContainers = '';
+        foreach ($this->classes as $name => $dependencies) {
+            $arguments = implode('\', \'', $dependencies);
+            $arguments = strlen($arguments) > 0 ? "'$name', '$arguments'" : "'$name'";
+            $compiledContainers .= "\n    '$name' => new Factory($arguments),";
+        }
+        return $compiledContainers;
+    }
+
+    private function getHeader(): string
+    {
+        return $this->getAliasHeader() . $this->getFactoryHeader();
+    }
+
+    private function getAliasHeader(): string
+    {
+        if (count($this->alias) > 0) {
+            return 'use \Cekta\DI\Loader\Alias;' . PHP_EOL;
+        }
+        return '';
+    }
+
+    private function getFactoryHeader(): string
+    {
+        if (count($this->classes) > 0) {
+            return 'use \Cekta\DI\Loader\Factory;' . PHP_EOL;
+        }
+        return '';
     }
 }

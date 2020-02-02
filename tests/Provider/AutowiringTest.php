@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\Provider\Autowiring\Reflection;
+use Cekta\DI\Reflection;
 use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;

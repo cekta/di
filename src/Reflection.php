@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\Autowiring;
+namespace Cekta\DI;
 
 use ReflectionClass;
 use ReflectionException;
