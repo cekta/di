@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Provider\Autowiring;
+namespace Cekta\DI\Test;
 
-use Cekta\DI\Provider\Autowiring\Reflection;
+use Cekta\DI\Reflection;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\TestCase;
 use stdClass;
