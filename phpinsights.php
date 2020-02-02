@@ -9,7 +9,9 @@ use PhpCsFixer\Fixer\StringNotation\ExplicitStringVariableFixer;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\DocCommentSpacingSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
-use SlevomatCodingStandard\Sniffs\TypeHints\TypeHintDeclarationSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\PropertyTypeHintSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\ReturnTypeHintSniff;
 
 return [
     'preset' => 'default',
@@ -19,7 +21,9 @@ return [
     ],
     'remove' => [
         DisallowMixedTypeHintSniff::class,
-        TypeHintDeclarationSniff::class,
+        ParameterTypeHintSniff::class,
+        PropertyTypeHintSniff::class,
+        ReturnTypeHintSniff::class,
         ForbiddenNormalClasses::class,
         SuperfluousInterfaceNamingSniff::class,
         SpaceAfterNotSniff::class,
