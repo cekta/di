@@ -10,8 +10,8 @@ use ReflectionMethod;
 
 class Reflection
 {
-    private static $dependencies = [];
-    private static $instantiable = [];
+    private $instantiable = [];
+    private $dependencies = [];
 
     /**
      * @param string $name
@@ -20,10 +20,10 @@ class Reflection
      */
     public function getDependencies(string $name): array
     {
-        if (!array_key_exists($name, self::$dependencies)) {
+        if (!array_key_exists($name, $this->dependencies)) {
             $this->load($name);
         }
-        return self::$dependencies[$name];
+        return $this->dependencies[$name];
     }
 
     /**
@@ -33,21 +33,21 @@ class Reflection
      */
     public function isInstantiable(string $name): bool
     {
-        if (!array_key_exists($name, self::$instantiable)) {
+        if (!array_key_exists($name, $this->instantiable)) {
             $this->load($name);
         }
-        return self::$instantiable[$name];
+        return $this->instantiable[$name];
     }
 
     private function load(string $name): void
     {
         try {
             $class = new ReflectionClass($name);
-            self::$instantiable[$name] = $class->isInstantiable();
-            self::$dependencies[$name] = self::getMethodParameters($class->getConstructor());
+            $this->instantiable[$name] = $class->isInstantiable();
+            $this->dependencies[$name] = self::getMethodParameters($class->getConstructor());
         } catch (ReflectionException $exception) {
-            self::$dependencies[$name] = [];
-            self::$instantiable[$name] = false;
+            $this->dependencies[$name] = [];
+            $this->instantiable[$name] = false;
         }
     }
 
