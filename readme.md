@@ -1,4 +1,5 @@
 # Getting started with Cekta/DI
+[![Telegram chat](https://img.shields.io/badge/telegram-RU%20chat-179cde.svg?logo=telegram)](https://t.me/dev_ru)
 [![Build Status](https://travis-ci.com/cekta/di.svg?branch=master)](https://travis-ci.com/cekta/di)
 [![Maintainability](https://api.codeclimate.com/v1/badges/71ecfc66e6100d3ffa0d/maintainability)](https://codeclimate.com/github/cekta/di/maintainability)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/cekta/di/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/cekta/di/?branch=master)
