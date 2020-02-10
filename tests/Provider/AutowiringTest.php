@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Provider;
 
+use Cekta\DI\Loader\Factory;
+use Cekta\DI\Loader\FactoryVariadic;
 use Cekta\DI\Provider\Autowiring;
 use Cekta\DI\Reflection;
 use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
-use stdClass;
 
 class AutowiringTest extends TestCase
 {
@@ -22,15 +22,10 @@ class AutowiringTest extends TestCase
     /**
      * @var MockObject
      */
-    private $container;
-    /**
-     * @var MockObject
-     */
     private $reflection;
 
     protected function setUp(): void
     {
-        $this->container = $this->createMock(ContainerInterface::class);
         $this->reflection = $this->createMock(Reflection::class);
         assert($this->reflection instanceof Reflection);
         $this->provider = new Autowiring($this->reflection);
@@ -55,8 +50,16 @@ class AutowiringTest extends TestCase
      */
     public function testProvide(): void
     {
-        $this->reflection->method('getDependencies')->with(stdClass::class)->willReturn([]);
-        assert($this->container instanceof ContainerInterface);
-        $this->assertEquals(new stdClass(), $this->provider->provide(stdClass::class)($this->container));
+        $this->reflection->method('getDependencies')->with('test')->willReturn([]);
+        $this->assertInstanceOf(Factory::class, $this->provider->provide('test'));
+    }
+
+    /**
+     * @throws ProviderExceptionInterface
+     */
+    public function testProvideVariadic(): void
+    {
+        $this->reflection->method('isVariadic')->with('test')->willReturn(true);
+        $this->assertInstanceOf(FactoryVariadic::class, $this->provider->provide('test'));
     }
 }

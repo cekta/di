@@ -23,7 +23,7 @@ class ReflectionTest extends TestCase
         $this->assertSame([], $this->service->getDependencies(stdClass::class));
     }
 
-    public function testGetDepndenciesWithContructorArguments()
+    public function testGetDependenciesWithContructorArguments()
     {
         $obj = new class (new stdClass()) {
             public $class;
@@ -40,6 +40,31 @@ class ReflectionTest extends TestCase
         $this->assertSame([stdClass::class, 'a', 'b'], $this->service->getDependencies($name));
     }
 
+    public function testGetDependenciesWithVariadic()
+    {
+        $obj = new class (new stdClass()) {
+            public $args;
+            public function __construct(stdClass ...$args)
+            {
+                $this->args = $args;
+            }
+        };
+        $this->assertSame(['args'], $this->service->getDependencies(get_class($obj)));
+    }
+
+    public function testIsVariadic()
+    {
+        $obj = new class () {
+            public $args;
+            public function __construct(...$args)
+            {
+                $this->args = $args;
+            }
+        };
+        $this->assertTrue($this->service->isVariadic(get_class($obj)));
+        $this->assertFalse($this->service->isVariadic(stdClass::class));
+    }
+
     public function testIsInstantiable()
     {
         $this->assertTrue($this->service->isInstantiable(stdClass::class));
@@ -47,9 +72,10 @@ class ReflectionTest extends TestCase
         $this->assertFalse($this->service->isInstantiable(ProviderInterface::class));
     }
 
-    public function testGetClass()
+    public function testInvalideClass()
     {
         $this->assertFalse($this->service->isInstantiable('invalide name'));
         $this->assertSame([], $this->service->getDependencies('invalide name'));
+        $this->assertFalse($this->service->isVariadic('invalide name'));
     }
 }

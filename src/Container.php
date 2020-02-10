@@ -6,7 +6,6 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
-use Closure;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -67,11 +66,8 @@ class Container implements ContainerInterface
 
     private function load($result)
     {
-        if (
-            $result instanceof LoaderInterface
-            || $result instanceof Closure
-        ) {
-            $result = $result($this);
+        if (is_callable($result)) {
+            $result = call_user_func($result, $this);
         }
         return $result;
     }

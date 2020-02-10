@@ -7,20 +7,10 @@ namespace Cekta\DI\Test\Loader;
 use Cekta\DI\Loader\Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use stdClass;
 
 class FactoryTest extends TestCase
 {
-    public function testWithoutArgument()
-    {
-        $name = stdClass::class;
-        $loader = new Factory($name);
-        $container = $this->createMock(ContainerInterface::class);
-        assert($container instanceof ContainerInterface);
-        $this->assertInstanceOf($name, $loader($container));
-    }
-
-    public function testWithArguments()
+    public function testWithArguments(): void
     {
         $obj = new class () {
             public $a;

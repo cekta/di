@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Loader\Alias;
+use Cekta\DI\Loader\Factory;
+use Cekta\DI\Loader\FactoryVariadic;
+
 class Compiler
 {
     /**
@@ -12,6 +16,7 @@ class Compiler
     private $reflection;
     private $classes = [];
     private $alias = [];
+    private $variadic = [];
 
     public function __construct(Reflection $reflection)
     {
@@ -20,10 +25,16 @@ class Compiler
 
     public function autowire(string $name): self
     {
-        return $this->registerClass($name, $this->reflection->getDependencies($name));
+        if ($this->reflection->isVariadic($name)) {
+            $this->variadic[] = true;
+        }
+        return $this->registerClass(
+            $name,
+            ...$this->reflection->getDependencies($name)
+        );
     }
 
-    public function registerClass(string $name, array $dependencies): self
+    public function registerClass(string $name, string ...$dependencies): self
     {
         $this->classes[$name] = $dependencies;
         return $this;
@@ -41,7 +52,6 @@ class Compiler
 
 declare(strict_types=1);
 
-{$this->getHeader()}
 return [{$this->compileAlias()}{$this->compileClasses()}
 ];";
     }
@@ -49,8 +59,9 @@ return [{$this->compileAlias()}{$this->compileClasses()}
     private function compileAlias(): string
     {
         $compiledContainers = '';
+        $class = Alias::class;
         foreach ($this->alias as $name => $implementation) {
-            $compiledContainers .= "\n    '$name' => new Alias('$implementation'),";
+            $compiledContainers .= "\n    '$name' => new $class('$implementation'),";
         }
         return $compiledContainers;
     }
@@ -59,31 +70,19 @@ return [{$this->compileAlias()}{$this->compileClasses()}
     {
         $compiledContainers = '';
         foreach ($this->classes as $name => $dependencies) {
-            $arguments = implode('\', \'', $dependencies);
-            $arguments = strlen($arguments) > 0 ? "'$name', '$arguments'" : "'$name'";
-            $compiledContainers .= "\n    '$name' => new Factory($arguments),";
+            $class = Factory::class;
+            if (in_array($name, $this->variadic)) {
+                $class = FactoryVariadic::class;
+            }
+            $dependenciesExported = str_replace(PHP_EOL, '', var_export($dependencies, true));
+            $compiledContainers .= <<<TAG
+
+    '$name' => new $class(
+        '$name', 
+        ...$dependenciesExported
+    ),
+TAG;
         }
         return $compiledContainers;
-    }
-
-    private function getHeader(): string
-    {
-        return $this->getAliasHeader() . $this->getFactoryHeader();
-    }
-
-    private function getAliasHeader(): string
-    {
-        if (count($this->alias) > 0) {
-            return 'use \Cekta\DI\Loader\Alias;' . PHP_EOL;
-        }
-        return '';
-    }
-
-    private function getFactoryHeader(): string
-    {
-        if (count($this->classes) > 0) {
-            return 'use \Cekta\DI\Loader\Factory;' . PHP_EOL;
-        }
-        return '';
     }
 }
