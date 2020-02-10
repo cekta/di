@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
+use Cekta\DI\Loader\Factory;
+use Cekta\DI\Loader\FactoryVariadic;
 use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -29,18 +31,23 @@ class CompilerTest extends TestCase
 
     public function testRegisterClass(): void
     {
-        $this->compiler->registerClass('test', []);
-        $this->compiler->registerClass('test2', ['a', 'b']);
+        $this->compiler->registerClass('test');
+        $this->compiler->registerClass('test2', 'a', 'b');
+        $class = Factory::class;
         $expected = <<<"COMPILED"
 <?php
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Factory;
-
 return [
-    'test' => new Factory('test'),
-    'test2' => new Factory('test2', 'a', 'b'),
+    'test' => new $class(
+        'test', 
+        ...array ()
+    ),
+    'test2' => new $class(
+        'test2', 
+        ...array (  0 => 'a',  1 => 'b',)
+    ),
 ];
 COMPILED;
         $this->assertSame($expected, $this->compiler->compile());
@@ -55,11 +62,9 @@ COMPILED;
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Alias;
-
 return [
-    'test' => new Alias('value'),
-    'test2' => new Alias('value2'),
+    'test' => new Cekta\DI\Loader\Alias('value'),
+    'test2' => new Cekta\DI\Loader\Alias('value2'),
 ];
 COMPILED;
         $this->assertSame($expected, $this->compiler->compile());
@@ -72,15 +77,38 @@ COMPILED;
             ->with('test2')
             ->willReturn(['a', 'b']);
         $this->compiler->autowire('test2');
+        $class = Factory::class;
         $expected = <<<"COMPILED"
 <?php
 
 declare(strict_types=1);
 
-use \Cekta\DI\Loader\Factory;
+return [
+    'test2' => new $class(
+        'test2', 
+        ...array (  0 => 'a',  1 => 'b',)
+    ),
+];
+COMPILED;
+        $this->assertSame($expected, $this->compiler->compile());
+    }
+
+    public function testAutowiringWithVariadic(): void
+    {
+        $this->reflection->method('getDependencies')->willReturn(['a', 'b']);
+        $this->reflection->method('isVariadic')->willReturn(true);
+        $this->compiler->autowire('test2');
+        $class = FactoryVariadic::class;
+        $expected = <<<"COMPILED"
+<?php
+
+declare(strict_types=1);
 
 return [
-    'test2' => new Factory('test2', 'a', 'b'),
+    'test2' => new $class(
+        'test2', 
+        ...array (  0 => 'a',  1 => 'b',)
+    ),
 ];
 COMPILED;
         $this->assertSame($expected, $this->compiler->compile());

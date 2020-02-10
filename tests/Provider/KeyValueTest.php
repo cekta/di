@@ -12,7 +12,6 @@ use Cekta\DI\ProviderInterface;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class KeyValueTest extends TestCase
 {
@@ -53,7 +52,7 @@ class KeyValueTest extends TestCase
     {
         $provider = KeyValue::stringToAlias(
             [
-                'a' => stdClass::class,
+                'a' => 'string',
                 'b' => 123
             ]
         );
@@ -104,7 +103,7 @@ class KeyValueTest extends TestCase
         $compiledFile = __DIR__ . '/compiled.php';
         $provider = KeyValue::compile(
             $compiledFile,
-            function () {
+            static function () {
                 return <<<"COMPILED"
 <?php
 
@@ -125,7 +124,7 @@ COMPILED;
     {
         $provider = KeyValue::compile(
             $compiledFile,
-            function () {
+            static function () {
                 throw new LogicException("function not be called, compiled file exists");
             }
         );
@@ -139,7 +138,7 @@ COMPILED;
         $this->expectExceptionMessage('`/notWritable` must be writable');
         KeyValue::compile(
             '/notWritable',
-            function () {
+            static function () {
             }
         );
     }
