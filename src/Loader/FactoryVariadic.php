@@ -15,7 +15,7 @@ class FactoryVariadic implements LoaderInterface
      */
     private $className;
     /**
-     * @var array<string>
+     * @var string[]
      */
     private $dependencies;
 

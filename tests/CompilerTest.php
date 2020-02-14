@@ -76,6 +76,7 @@ COMPILED;
             ->method('getDependencies')
             ->with('test2')
             ->willReturn(['a', 'b']);
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->compiler->autowire('test2');
         $class = Factory::class;
         $expected = <<<"COMPILED"
@@ -97,6 +98,7 @@ COMPILED;
     {
         $this->reflection->method('getDependencies')->willReturn(['a', 'b']);
         $this->reflection->method('isVariadic')->willReturn(true);
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->compiler->autowire('test2');
         $class = FactoryVariadic::class;
         $expected = <<<"COMPILED"

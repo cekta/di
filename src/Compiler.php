@@ -25,6 +25,9 @@ class Compiler
 
     public function autowire(string $name): self
     {
+        if (!$this->reflection->isInstantiable($name)) {
+            return $this;
+        }
         if ($this->reflection->isVariadic($name)) {
             $this->variadic[] = true;
         }

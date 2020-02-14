@@ -16,7 +16,7 @@ class Reflection
 
     /**
      * @param string $name
-     * @return array<string>
+     * @return string[]
      * @internal
      */
     public function getDependencies(string $name): array
