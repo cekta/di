@@ -52,6 +52,26 @@ class ReflectionTest extends TestCase
         $this->assertSame(['args'], $this->service->getDependencies(get_class($obj)));
     }
 
+    public function testGetDependenciesWithTransform()
+    {
+        $obj = new class () {
+            private $a;
+            private $b;
+
+            public function __construct($a = 1, $b = 2)
+            {
+                $this->a = $a;
+                $this->b = $b;
+            }
+        };
+        $name = get_class($obj);
+        $transform = $this->createMock(Reflection\ParamTranfromer::class);
+        $transform->expects($this->once())->method('transform')->with($name, ['a', 'b'])->willReturn(['c', 'b']);
+        assert($transform instanceof Reflection\ParamTranfromer);
+        $reflection = new Reflection($transform);
+        $this->assertSame(['c', 'b'], $reflection->getDependencies($name));
+    }
+
     public function testIsVariadic()
     {
         $obj = new class () {

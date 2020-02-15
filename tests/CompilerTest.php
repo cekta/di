@@ -115,4 +115,20 @@ return [
 COMPILED;
         $this->assertSame($expected, $this->compiler->compile());
     }
+
+    public function testAutowiringNotInstantiable()
+    {
+        $name = 'test';
+        $this->reflection->method('isInstantiable')->with($name)->willReturn(false);
+        $this->compiler->autowire($name);
+        $expected = <<<"COMPILED"
+<?php
+
+declare(strict_types=1);
+
+return [
+];
+COMPILED;
+        $this->assertSame($expected, $this->compiler->compile());
+    }
 }
