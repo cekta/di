@@ -82,20 +82,24 @@ class KeyValue implements ProviderInterface
 
     private static function transformString(string $value)
     {
-        $result = $value;
-        $valueLower = strtolower($value);
-        if (in_array($valueLower, ['true', '(true)'])) {
-            $result = true;
+        switch (strtolower($value)) {
+            case '(true)':
+            case 'true':
+                $value = true;
+                break;
+            case '(false)':
+            case 'false':
+                $value = false;
+                break;
+            case '(null)':
+            case 'null':
+                $value = null;
+                break;
+            case '(empty)':
+            case 'empty':
+                $value = '';
+                break;
         }
-        if (in_array($valueLower, ['false', '(false)'])) {
-            $result = false;
-        }
-        if (in_array($valueLower, ['empty', '(empty)'])) {
-            $result = '';
-        }
-        if (in_array($valueLower, ['null', '(null)'])) {
-            $result = null;
-        }
-        return $result;
+        return $value;
     }
 }
