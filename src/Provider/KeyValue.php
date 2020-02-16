@@ -11,6 +11,16 @@ use InvalidArgumentException;
 
 class KeyValue implements ProviderInterface
 {
+    private const TRANSFORM = [
+        'true' => true,
+        '(true)' => true,
+        'false' => false,
+        '(false)' => false,
+        'null' => null,
+        '(null)' => null,
+        'empty' => '',
+        '(empty)' => '',
+    ];
     /**
      * @var array
      */
@@ -82,24 +92,9 @@ class KeyValue implements ProviderInterface
 
     private static function transformString(string $value)
     {
-        switch (strtolower($value)) {
-            case '(true)':
-            case 'true':
-                $value = true;
-                break;
-            case '(false)':
-            case 'false':
-                $value = false;
-                break;
-            case '(null)':
-            case 'null':
-                $value = null;
-                break;
-            case '(empty)':
-            case 'empty':
-                $value = '';
-                break;
-        }
-        return $value;
+        $lower = strtolower($value);
+        return array_key_exists($lower, self::TRANSFORM)
+            ? self::TRANSFORM[$lower]
+            : $value;
     }
 }
