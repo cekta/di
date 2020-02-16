@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Reflection\ParamTranfromer;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -13,10 +14,19 @@ class Reflection
     private $instantiable = [];
     private $dependencies = [];
     private $variadic = [];
+    /**
+     * @var ParamTranfromer[]
+     */
+    private $transformers;
+
+    public function __construct(ParamTranfromer ...$tranfromers)
+    {
+        $this->transformers = $tranfromers;
+    }
 
     /**
      * @param string $name
-     * @return array<string>
+     * @return string[]
      * @internal
      */
     public function getDependencies(string $name): array
@@ -58,9 +68,9 @@ class Reflection
         try {
             $class = new ReflectionClass($name);
             $this->instantiable[$name] = $class->isInstantiable();
-            $params = self::getMethodParameters($class->getConstructor());
-            $this->variadic[$name] = $params[0];
-            $this->dependencies[$name] = $params[1];
+            $dependencies = self::getMethodDependencies($class->getConstructor());
+            $this->variadic[$name] = $dependencies[0];
+            $this->dependencies[$name] = $this->tranform($class->getName(), $dependencies[1]);
         } catch (ReflectionException $exception) {
             $this->dependencies[$name] = [];
             $this->instantiable[$name] = false;
@@ -68,7 +78,7 @@ class Reflection
         }
     }
 
-    private static function getMethodParameters(?ReflectionMethod $method): array
+    private static function getMethodDependencies(?ReflectionMethod $method): array
     {
         $variadic = false;
         $parameters = [];
@@ -80,5 +90,13 @@ class Reflection
             }
         }
         return [$variadic, $parameters];
+    }
+
+    private function tranform(string $name, array $params)
+    {
+        foreach ($this->transformers as $tranfromer) {
+            $params = $tranfromer->transform($name, $params);
+        }
+        return $params;
     }
 }

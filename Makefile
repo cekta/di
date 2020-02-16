@@ -28,7 +28,7 @@ phpunit_with_clover:
 phpmd:
 	./vendor/bin/phpmd src ansi phpmd.ruleset.xml
 infection:
-	./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100
+	./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
 page:
 	docker run \
 		--rm \

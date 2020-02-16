@@ -8,6 +8,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PhpCsFixer\Fixer\StringNotation\ExplicitStringVariableFixer;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousInterfaceNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\DocCommentSpacingSniff;
+use SlevomatCodingStandard\Sniffs\TypeHints\DisallowArrayTypeHintSyntaxSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\PropertyTypeHintSniff;
@@ -28,6 +29,7 @@ return [
         SuperfluousInterfaceNamingSniff::class,
         SpaceAfterNotSniff::class,
         ExplicitStringVariableFixer::class,
+        DisallowArrayTypeHintSyntaxSniff::class,
     ],
     'config' => [
         LineLengthSniff::class => [

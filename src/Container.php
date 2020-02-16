@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface;
 class Container implements ContainerInterface
 {
     /**
-     * @var array<ProviderInterface>
+     * @var ProviderInterface[]
      */
     private $providers;
     /**
@@ -19,7 +19,7 @@ class Container implements ContainerInterface
      */
     private $values = [];
     /**
-     * @var array<string>
+     * @var string[]
      */
     private $calls = [];
 
@@ -66,7 +66,7 @@ class Container implements ContainerInterface
 
     private function load($result)
     {
-        if (is_callable($result)) {
+        if (is_callable($result)) {// disable __invoke call
             $result = call_user_func($result, $this);
         }
         return $result;

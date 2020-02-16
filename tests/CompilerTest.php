@@ -76,6 +76,7 @@ COMPILED;
             ->method('getDependencies')
             ->with('test2')
             ->willReturn(['a', 'b']);
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->compiler->autowire('test2');
         $class = Factory::class;
         $expected = <<<"COMPILED"
@@ -97,6 +98,7 @@ COMPILED;
     {
         $this->reflection->method('getDependencies')->willReturn(['a', 'b']);
         $this->reflection->method('isVariadic')->willReturn(true);
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->compiler->autowire('test2');
         $class = FactoryVariadic::class;
         $expected = <<<"COMPILED"
@@ -109,6 +111,22 @@ return [
         'test2', 
         ...array (  0 => 'a',  1 => 'b',)
     ),
+];
+COMPILED;
+        $this->assertSame($expected, $this->compiler->compile());
+    }
+
+    public function testAutowiringNotInstantiable()
+    {
+        $name = 'test';
+        $this->reflection->method('isInstantiable')->with($name)->willReturn(false);
+        $this->compiler->autowire($name);
+        $expected = <<<"COMPILED"
+<?php
+
+declare(strict_types=1);
+
+return [
 ];
 COMPILED;
         $this->assertSame($expected, $this->compiler->compile());
