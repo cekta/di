@@ -73,19 +73,31 @@ return [{$this->compileAlias()}{$this->compileClasses()}
     {
         $compiledContainers = '';
         foreach ($this->classes as $name => $dependencies) {
-            $class = Factory::class;
-            if (in_array($name, $this->variadic)) {
-                $class = FactoryVariadic::class;
-            }
-            $dependenciesExported = str_replace(PHP_EOL, '', var_export($dependencies, true));
+            $class = $this->getClass($name);
             $compiledContainers .= <<<TAG
 
     '$name' => new $class(
-        '$name', 
-        ...$dependenciesExported
+        '$name',{$this->getDependenciesString(...$dependencies)}
     ),
 TAG;
         }
         return $compiledContainers;
+    }
+
+    private function getClass($name): string
+    {
+        if (in_array($name, $this->variadic)) {
+            return FactoryVariadic::class;
+        }
+        return Factory::class;
+    }
+
+    private function getDependenciesString(string ...$dependencies): string
+    {
+        $result = '';
+        foreach ($dependencies as $dependency) {
+            $result .= PHP_EOL . "        '$dependency',";
+        }
+        return $result;
     }
 }
