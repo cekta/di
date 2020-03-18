@@ -53,13 +53,10 @@ class KeyValue implements ProviderInterface
 
     public static function compile(string $compiledFile, callable $callable): self
     {
-        if (
-            (!file_exists($compiledFile) && !is_writable(dirname($compiledFile)))
-            || (file_exists($compiledFile) && !is_writable($compiledFile))
-        ) {
-            throw new InvalidArgumentException("`$compiledFile` must be writable");
-        }
         if (!is_readable($compiledFile)) {
+            if (!is_writable(dirname($compiledFile))) {
+                throw new InvalidArgumentException("`$compiledFile` must be writable");
+            }
             file_put_contents($compiledFile, call_user_func($callable));
         }
         /** @noinspection PhpIncludeInspection */

@@ -41,12 +41,12 @@ declare(strict_types=1);
 
 return [
     'test' => new $class(
-        'test', 
-        ...array ()
+        'test',
     ),
     'test2' => new $class(
-        'test2', 
-        ...array (  0 => 'a',  1 => 'b',)
+        'test2',
+        'a',
+        'b',
     ),
 ];
 COMPILED;
@@ -86,8 +86,9 @@ declare(strict_types=1);
 
 return [
     'test2' => new $class(
-        'test2', 
-        ...array (  0 => 'a',  1 => 'b',)
+        'test2',
+        'a',
+        'b',
     ),
 ];
 COMPILED;
@@ -108,8 +109,9 @@ declare(strict_types=1);
 
 return [
     'test2' => new $class(
-        'test2', 
-        ...array (  0 => 'a',  1 => 'b',)
+        'test2',
+        'a',
+        'b',
     ),
 ];
 COMPILED;
