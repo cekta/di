@@ -6,6 +6,7 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Reflection;
 use Cekta\DI\ProviderInterface;
+use Cekta\DI\ReflectionTransformerInterface;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -65,9 +66,9 @@ class ReflectionTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $transform = $this->createMock(Reflection\ParamTranfromer::class);
+        $transform = $this->createMock(ReflectionTransformerInterface::class);
         $transform->expects($this->once())->method('transform')->with($name, ['a', 'b'])->willReturn(['c', 'b']);
-        assert($transform instanceof Reflection\ParamTranfromer);
+        assert($transform instanceof ReflectionTransformerInterface);
         $reflection = new Reflection($transform);
         $this->assertSame(['c', 'b'], $reflection->getDependencies($name));
     }

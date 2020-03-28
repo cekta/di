@@ -7,9 +7,9 @@ namespace Cekta\DI\Test\Provider;
 use Cekta\DI\Loader\Factory;
 use Cekta\DI\Loader\FactoryVariadic;
 use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\Reflection;
 use Cekta\DI\ProviderExceptionInterface;
 use Cekta\DI\ProviderInterface;
+use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

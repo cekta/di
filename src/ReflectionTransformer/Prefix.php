@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Reflection;
+namespace Cekta\DI\ReflectionTransformer;
 
-class ParamTranfromer
+use Cekta\DI\ReflectionTransformerInterface;
+
+class Prefix implements ReflectionTransformerInterface
 {
     /**
      * @var string
