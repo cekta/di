@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Reflection\ParamTranfromer;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -15,11 +14,11 @@ class Reflection
     private $dependencies = [];
     private $variadic = [];
     /**
-     * @var ParamTranfromer[]
+     * @var ReflectionTransformerInterface[]
      */
     private $transformers;
 
-    public function __construct(ParamTranfromer ...$tranfromers)
+    public function __construct(ReflectionTransformerInterface ...$tranfromers)
     {
         $this->transformers = $tranfromers;
     }
