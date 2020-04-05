@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Environment;
-use Cekta\DI\ProviderExceptionInterface;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\ProviderException;
+use Cekta\DI\Provider;
 use PHPUnit\Framework\TestCase;
 
 class EnvironmentTest extends TestCase
 {
     public function testMustBeProvider(): void
     {
-        $this->assertInstanceOf(ProviderInterface::class, new Environment([]));
+        $this->assertInstanceOf(Provider::class, new Environment([]));
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvideAndCanProvide(): void
     {

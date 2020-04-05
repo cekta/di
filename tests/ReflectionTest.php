@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Reflection;
-use Cekta\DI\ProviderInterface;
-use Cekta\DI\ReflectionTransformerInterface;
+use Cekta\DI\Provider;
+use Cekta\DI\ReflectionTransformer;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -66,9 +66,9 @@ class ReflectionTest extends TestCase
             }
         };
         $name = get_class($obj);
-        $transform = $this->createMock(ReflectionTransformerInterface::class);
+        $transform = $this->createMock(ReflectionTransformer::class);
         $transform->expects($this->once())->method('transform')->with($name, ['a', 'b'])->willReturn(['c', 'b']);
-        assert($transform instanceof ReflectionTransformerInterface);
+        assert($transform instanceof ReflectionTransformer);
         $reflection = new Reflection($transform);
         $this->assertSame(['c', 'b'], $reflection->getDependencies($name));
     }
@@ -90,7 +90,7 @@ class ReflectionTest extends TestCase
     {
         $this->assertTrue($this->service->isInstantiable(stdClass::class));
         $this->assertFalse($this->service->isInstantiable(TestCase::class));
-        $this->assertFalse($this->service->isInstantiable(ProviderInterface::class));
+        $this->assertFalse($this->service->isInstantiable(Provider::class));
     }
 
     public function testInvalideClass()

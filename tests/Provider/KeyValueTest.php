@@ -6,15 +6,15 @@ namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\ProviderExceptionInterface;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\ProviderException;
+use Cekta\DI\Provider;
 use PHPUnit\Framework\TestCase;
 
 class KeyValueTest extends TestCase
 {
     public function testMustBeProvider(): void
     {
-        $this->assertInstanceOf(ProviderInterface::class, new KeyValue([]));
+        $this->assertInstanceOf(Provider::class, new KeyValue([]));
     }
 
     public function testCanProvide(): void
@@ -25,7 +25,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvide(): void
     {
@@ -34,7 +34,7 @@ class KeyValueTest extends TestCase
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvideNotFound(): void
     {

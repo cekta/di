@@ -7,8 +7,8 @@ namespace Cekta\DI\Test\Provider;
 use Cekta\DI\Loader\Factory;
 use Cekta\DI\Loader\FactoryVariadic;
 use Cekta\DI\Provider\Autowiring;
-use Cekta\DI\ProviderExceptionInterface;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\ProviderException;
+use Cekta\DI\Provider;
 use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +33,7 @@ class AutowiringTest extends TestCase
 
     public function testMustBeProvider(): void
     {
-        $this->assertInstanceOf(ProviderInterface::class, $this->provider);
+        $this->assertInstanceOf(Provider::class, $this->provider);
     }
 
     public function testCanProvide(): void
@@ -46,7 +46,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvide(): void
     {
@@ -55,7 +55,7 @@ class AutowiringTest extends TestCase
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvideVariadic(): void
     {
