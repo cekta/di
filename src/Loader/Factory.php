@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Loader;
 
-use Cekta\DI\LoaderInterface;
+use Cekta\DI\Loader;
 use Psr\Container\ContainerInterface;
 
-class Factory implements LoaderInterface
+class Factory implements Loader
 {
     /**
      * @var string

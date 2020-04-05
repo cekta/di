@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Loader;
 
-use Cekta\DI\LoaderInterface;
+use Cekta\DI\Loader;
 use Psr\Container\ContainerInterface;
 
-class Alias implements LoaderInterface
+class Alias implements Loader
 {
     /**
      * @var string

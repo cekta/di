@@ -7,9 +7,9 @@ namespace Cekta\DI\Test;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\ProviderNotFound;
-use Cekta\DI\LoaderInterface;
-use Cekta\DI\ProviderExceptionInterface;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\Loader;
+use Cekta\DI\ProviderException;
+use Cekta\DI\Provider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -29,8 +29,8 @@ class ContainerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->provider = $this->createMock(ProviderInterface::class);
-        assert($this->provider instanceof ProviderInterface);
+        $this->provider = $this->createMock(Provider::class);
+        assert($this->provider instanceof Provider);
         $this->container = new Container($this->provider);
     }
 
@@ -61,11 +61,11 @@ class ContainerTest extends TestCase
     public function testInfiniteRecursion(): void
     {
         $this->expectException(InfiniteRecursion::class);
-        $fooA = $this->createMock(LoaderInterface::class);
+        $fooA = $this->createMock(Loader::class);
         $fooA->expects($this->once())->method('__invoke')->willReturnCallback(function (ContainerInterface $c) {
             return $c->get('FooB');
         });
-        $fooB = $this->createMock(LoaderInterface::class);
+        $fooB = $this->createMock(Loader::class);
         $fooB->expects($this->once())->method('__invoke')->willReturnCallback(function (ContainerInterface $c) {
             return $c->get('FooA');
         });
@@ -94,11 +94,11 @@ class ContainerTest extends TestCase
 
     public function testGetExceptionInProvider(): void
     {
-        $this->expectException(ProviderExceptionInterface::class);
+        $this->expectException(ProviderException::class);
         $this->provider->expects($this->once())->method('canProvide')
             ->with('a')
             ->willReturn(true);
-        $exception = new class extends Exception implements ProviderExceptionInterface
+        $exception = new class extends Exception implements ProviderException
         {
         };
         $this->provider->expects($this->once())->method('provide')
@@ -120,7 +120,7 @@ class ContainerTest extends TestCase
 
     public function testGetLoader(): void
     {
-        $loader = $this->createMock(LoaderInterface::class);
+        $loader = $this->createMock(Loader::class);
         $loader->method('__invoke')->willReturn('123');
         $this->provider->method('canProvide')->willReturn(true);
         $this->provider->method('provide')->with('test')->willReturn($loader);

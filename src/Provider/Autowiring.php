@@ -6,10 +6,10 @@ namespace Cekta\DI\Provider;
 
 use Cekta\DI\Loader\Factory;
 use Cekta\DI\Loader\FactoryVariadic;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\Provider;
 use Cekta\DI\Reflection;
 
-class Autowiring implements ProviderInterface
+class Autowiring implements Provider
 {
     /**
      * @var Reflection

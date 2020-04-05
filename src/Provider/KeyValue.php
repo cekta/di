@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Provider;
 
+use Cekta\DI\Provider;
 use Cekta\DI\Provider\Exception\NotFound;
-use Cekta\DI\ProviderInterface;
 
-class KeyValue implements ProviderInterface
+class KeyValue implements Provider
 {
     /**
      * @var array

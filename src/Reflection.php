@@ -14,11 +14,11 @@ class Reflection
     private $dependencies = [];
     private $variadic = [];
     /**
-     * @var ReflectionTransformerInterface[]
+     * @var ReflectionTransformer[]
      */
     private $transformers;
 
-    public function __construct(ReflectionTransformerInterface ...$tranfromers)
+    public function __construct(ReflectionTransformer ...$tranfromers)
     {
         $this->transformers = $tranfromers;
     }

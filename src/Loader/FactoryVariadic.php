@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Loader;
 
-use Cekta\DI\LoaderInterface;
+use Cekta\DI\Loader;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 
-class FactoryVariadic implements LoaderInterface
+class FactoryVariadic implements Loader
 {
     /**
      * @var string

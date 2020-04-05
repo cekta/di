@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\ReflectionTransformer;
 
-use Cekta\DI\ReflectionTransformerInterface;
+use Cekta\DI\ReflectionTransformer;
 use Cekta\DI\ReflectionTransformer\Prefix;
 use PHPUnit\Framework\TestCase;
 
@@ -24,6 +24,6 @@ class PrefixTest extends TestCase
 
     public function testMustBeReflectionTransformer()
     {
-        $this->assertInstanceOf(ReflectionTransformerInterface::class, new Prefix('\other', ['a' => 'b']));
+        $this->assertInstanceOf(ReflectionTransformer::class, new Prefix('\other', ['a' => 'b']));
     }
 }

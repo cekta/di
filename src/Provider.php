@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-interface ProviderInterface
+interface Provider
 {
     /**
      * @param string $id
      * @return mixed
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function provide(string $id);
 

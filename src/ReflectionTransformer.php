@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-interface ReflectionTransformerInterface
+interface ReflectionTransformer
 {
     public function transform(string $name, array $params): array;
 }

@@ -6,19 +6,19 @@ namespace Cekta\DI\Test\Provider;
 
 use Cekta\DI\Loader\Alias;
 use Cekta\DI\Provider\Implementation;
-use Cekta\DI\ProviderExceptionInterface;
-use Cekta\DI\ProviderInterface;
+use Cekta\DI\ProviderException;
+use Cekta\DI\Provider;
 use PHPUnit\Framework\TestCase;
 
 class ImplementationTest extends TestCase
 {
     public function testMustBeProvider(): void
     {
-        $this->assertInstanceOf(ProviderInterface::class, new Implementation([]));
+        $this->assertInstanceOf(Provider::class, new Implementation([]));
     }
 
     /**
-     * @throws ProviderExceptionInterface
+     * @throws ProviderException
      */
     public function testProvideAndCanProvide(): void
     {

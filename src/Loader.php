@@ -6,7 +6,7 @@ namespace Cekta\DI;
 
 use Psr\Container\ContainerInterface;
 
-interface LoaderInterface
+interface Loader
 {
     public function __invoke(ContainerInterface $container);
 }

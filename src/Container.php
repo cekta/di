@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface;
 class Container implements ContainerInterface
 {
     /**
-     * @var ProviderInterface[]
+     * @var Provider[]
      */
     private $providers;
     /**
@@ -23,7 +23,7 @@ class Container implements ContainerInterface
      */
     private $calls = [];
 
-    public function __construct(ProviderInterface ...$providers)
+    public function __construct(Provider ...$providers)
     {
         $this->providers = $providers;
     }
@@ -46,7 +46,7 @@ class Container implements ContainerInterface
         return array_key_exists($name, $this->values) || $this->findProvider($name) !== null;
     }
 
-    private function findProvider(string $name): ?ProviderInterface
+    private function findProvider(string $name): ?Provider
     {
         foreach ($this->providers as $provider) {
             if ($provider->canProvide($name)) {
