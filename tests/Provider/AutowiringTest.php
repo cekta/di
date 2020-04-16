@@ -7,6 +7,7 @@ namespace Cekta\DI\Test\Provider;
 use Cekta\DI\Loader\Factory;
 use Cekta\DI\Loader\FactoryVariadic;
 use Cekta\DI\Provider\Autowiring;
+use Cekta\DI\Provider\Exception\NotFound;
 use Cekta\DI\ProviderException;
 use Cekta\DI\Provider;
 use Cekta\DI\Reflection;
@@ -50,6 +51,7 @@ class AutowiringTest extends TestCase
      */
     public function testProvide(): void
     {
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->reflection->method('getDependencies')->with('test')->willReturn([]);
         $this->assertInstanceOf(Factory::class, $this->provider->provide('test'));
     }
@@ -57,8 +59,18 @@ class AutowiringTest extends TestCase
     /**
      * @throws ProviderException
      */
+    public function testProvideNotFound(): void
+    {
+        $this->expectException(NotFound::class);
+        $this->provider->provide('magic');
+    }
+
+    /**
+     * @throws ProviderException
+     */
     public function testProvideVariadic(): void
     {
+        $this->reflection->method('isInstantiable')->willReturn(true);
         $this->reflection->method('isVariadic')->with('test')->willReturn(true);
         $this->assertInstanceOf(FactoryVariadic::class, $this->provider->provide('test'));
     }
