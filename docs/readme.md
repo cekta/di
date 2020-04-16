@@ -1,4 +1,4 @@
-# С чего начать
+# Начало
 
 ## Установка используя [composer](https://getcomposer.org/){:target="_blank"}
 
@@ -6,75 +6,110 @@
 composer require cekta/di
 ```
 
-## Пример использования
+## Использование
 
-```php
+Рассмотрим ситуацию:
+ * Необходимо сделать AuthHandler для входа на сайт по username и password.
+ * AuthHandler для работы с БД будет использовать PDO для примера.
+ * Параметры для подключения к бд будут лежать в config.json для примера.
+ 
+/public/index.php - основная точка входа для демонстрации работы
+```php 
 <?php
-/** @noinspection PhpComposerExtensionStubsInspection */
+
+declare(strict_types=1);
+
+use App\AuthHandler;
+use App\MyContainer;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$container = new MyContainer();
+/** @var AuthHandler $auth */
+$auth = $container->get(AuthHandler::class);
+var_dump($auth->handle('test', '12345'));
+```
+
+/src/MyContainer.php - здесь лежит основная настройка иньекции зависимостей
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App;
 
 use Cekta\DI\Container;
-use Cekta\DI\Provider\KeyValue;
-use Cekta\DI\Provider\Autowiring;
+use Cekta\DI\Provider;
+use Cekta\DI\Reflection;
 
-class SomeService
+class MyContainer extends Container
+{
+    public function __construct()
+    {
+        $reflection = new Reflection();
+        $providers[] = new Provider\KeyValue(
+            json_decode(file_get_contents(__DIR__ . '/../config.json'), true)
+        );
+        $providers[] = new Provider\Autowiring($reflection);
+        parent::__construct(...$providers);
+    }
+}
+```
+
+/src/AuthHandler.php - пример кода куда надо внедрить зависимости
+```php 
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use PDO;
+
+class AuthHandler
 {
     private $pdo;
 
-    public function __construct(PDO $pdo) 
+    public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
     }
 
-    public function bar()
+    public function handle(string $username, string $password): bool
     {
-        // you have access to db via $this->pdo
+        // просто пример
+        $sth = $this->pdo->prepare('SELECT * FROM users WHERE username = ?');
+        $sth->execute([$username]);
+        $user = $sth->fetch(PDO::FETCH_ASSOC);
+        return !empty($user) && password_verify($password, $user['password']);
     }
 }
-
-$providers[] = new KeyValue([
-    "dsn" => "mysql:dbname=testdb;host=127.0.0.1",
-    "username" => "root",
-    "passwd" => "secret",
-    "options" => []
-]);
-$providers[] = new Autowiring();
-$container = new Container(...$providers);
-$service = $container->get(SomeService::class);
-assert($service instanceof SomeService);
-$service->bar();
 ```
 
-Для создания [Container](https://github.com/cekta/di/blob/master/src/Container.php) требуется передать объкты 
-реализующие [ProviderInterface](https://github.com/cekta/di/blob/master/src/ProviderInterface.php) их может быть любое 
-количество, именно они и занимаются загрузкой зависимостей.  
-[Подробней о провайдерах](providers.md)
+/config.json - параметры для подключения к бд
+```json
+{
+  "dsn": "mysql:dbname=testdb;host=127.0.0.1",
+  "username": "root",
+  "passwd": "1234",
+  "options": {}
+}
+```
 
-Когда мы запрашиваем **SomeService::class**, container загружает ее используя 
-[Autowiring](provider/autowiring.md), который анализирует аргументы конструктора и понимает что для создания 
-требуется PDO::class.  
-Загружая **PDO::class**, container использует Autowiring, анализируя аргументы конструтора он видит что для создания 
-требуется 4 аргумента (dsn, username, passwd, options).  
-Загружая **dsn** container использует KeyValue и предоставляет значение "mysql:dbname=testdb;host=127.0.0.1".  
-Подобным образом загружается **username, passwd, options**.  
-Все аргументы для создания PDO::class предоставленны и container создаст его.  
-Все аргументы для создания SomeService::class предоставленные и container создаст его.  
-У созданного объекта может быть вызван любой метод (например bar) который может иметь доступ ко всем 
-аргументам конструктора.
+Если поднять БД, создать таблицу users и вписать туда пользователя test и пароль password_hash('12345', PASSWORD_DEFAULT).
 
-Если повторно запрашиваются данные из container, то контейнер их предоставляет не обращаясь провайдерам, а из 
-in memory cache для ускорения работы.
+```
+$ php -f public/index.php 
+/public/index.php:13:
+bool(true)
+```
 
-### Преимущества
+## Полезное
 
-1. [Autowiring](provider/autowiring.md) позволяет загружать зависимости без конфигурации.
-2. [KeyValue](provider/key-value.md) позволяет вручную конфигурировать любую зависимость (по необходимости).
-3. Неограниченная вложенность зависимостей.
-4. Переиспользование контейнеров(один раз объявил другие могут переиспользовать).
-5. Возможность кэшировать обращения к 
-[ReflectionClass](https://www.php.net/manual/ru/class.reflectionclass.php) 
-используя [psr/cache](provider/cache.md) 
-и [psr/simple-cache](provider/simple-cache.md)
-6. Гибкость в расширение [собственными провайдерами](provider/custom.md).
-7. Высокое качества библиотеки (100 code coverage, infection msi 100, статический анализ и тд).
-8. В пакете есть все необходимое.
-9. Другие преимущества.
+ * MyContainer может содержать любое число провайдеров.
+ * MyContainer хранит основные настройки cekta/di.
+ * Расширение функционала и возможностей осуществляются с помощью провайдеров
+ * Порядок провайдеров важен, если два провайдера предоставляют контейнер с одинаковыми именами, 
+    используется тот что добавлен раньше.
+
+Смотрите другие разделы для знакомства с другими возможностями.

@@ -8,6 +8,18 @@
 [![Latest Stable Version](https://poser.pugx.org/cekta/di/v/stable)](https://packagist.org/packages/cekta/di)
 [![License](https://poser.pugx.org/cekta/di/license)](https://packagist.org/packages/cekta/di)
 
+psr/container implementation for humans
+
+## Features
+
+ * Support Autowiring. Constructor-based automatic configuration
+ * Autowiring support variadic arguments.
+ * Allows you to manually configure any dependency (using closure).
+ * Easy to improve and extend.
+ * Contain everything you need.
+ * Support opcache compilation (fast)
+ * High code quality (see badges)
+
 ## Install via [composer](https://getcomposer.org/)
 
 ```
