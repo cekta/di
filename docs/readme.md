@@ -19,8 +19,8 @@ composer require cekta/di
 
 declare(strict_types=1);
 
-use App\AuthHandler;
-use App\MyContainer;
+use Cekta\DI\AuthHandler;
+use Cekta\DI\MyContainer;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -36,7 +36,7 @@ var_dump($auth->handle('test', '12345'));
 
 declare(strict_types=1);
 
-namespace App;
+namespace Cekta\DI;
 
 use Cekta\DI\Container;
 use Cekta\DI\Provider;
@@ -62,7 +62,7 @@ class MyContainer extends Container
 
 declare(strict_types=1);
 
-namespace App;
+namespace Cekta\DI;
 
 use PDO;
 

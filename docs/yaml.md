@@ -27,7 +27,12 @@ use Cekta\DI\MyContainer;
 require __DIR__ . '/vendor/autoload.php';
 
 $container = new MyContainer();
-var_dump($container->get('dsn'), $container->get('username'), $container->get('passwd'), $container->get('options'));
+var_dump(
+    $container->get('dsn'), 
+    $container->get('username'), 
+    $container->get('passwd'), 
+    $container->get('options')
+);
 ```
 
 /config.yaml
