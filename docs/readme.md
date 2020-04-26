@@ -47,9 +47,7 @@ class MyContainer extends Container
     public function __construct()
     {
         $reflection = new Reflection();
-        $providers[] = new Provider\KeyValue(
-            json_decode(file_get_contents(__DIR__ . '/../config.json'), true)
-        );
+        $providers[] = new Provider\FileJSON(__DIR__ . '/../config.json');
         $providers[] = new Provider\Autowiring($reflection);
         parent::__construct(...$providers);
     }
