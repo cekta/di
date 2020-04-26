@@ -87,11 +87,13 @@ var_dump($container->get(\Cekta\DI\Example::class));
 Выполнение кода:
 ``` 
 $ php public/index.php 
-/src/Example.php:11:
-class Cekta\DI\A#7 (0) {
+/src/Example.php:18:
+class Cekta\DI\A#11 (0) {
 }
-/src/Example.php:11:
+/src/Example.php:18:
 int(123)
+/src/Example.php:18:
+string(20) "its magic annotation"
 /public/index.php:10:
 class Cekta\DI\Example#9 (0) {
 }
