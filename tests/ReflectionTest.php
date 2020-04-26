@@ -30,6 +30,7 @@ class ReflectionTest extends TestCase
             public $class;
             public $a;
             public $b;
+
             public function __construct(stdClass $class, int $a = 1, $b = 2)
             {
                 $this->class = $class;
@@ -45,6 +46,7 @@ class ReflectionTest extends TestCase
     {
         $obj = new class (new stdClass()) {
             public $args;
+
             public function __construct(stdClass ...$args)
             {
                 $this->args = $args;
@@ -77,6 +79,7 @@ class ReflectionTest extends TestCase
     {
         $obj = new class () {
             public $args;
+
             public function __construct(...$args)
             {
                 $this->args = $args;
@@ -98,5 +101,33 @@ class ReflectionTest extends TestCase
         $this->assertFalse($this->service->isInstantiable('invalide name'));
         $this->assertSame([], $this->service->getDependencies('invalide name'));
         $this->assertFalse($this->service->isVariadic('invalide name'));
+    }
+
+    public function testInjection()
+    {
+        $obj = new class (1) {
+            private $a;
+
+            /**
+             * @param int $a
+             * @inject b\magic $a
+             */
+            public function __construct(int $a)
+            {
+                $this->a = $a;
+            }
+        };
+        $class = get_class($obj);
+        $this->assertSame(['b\magic'], $this->service->getDependencies($class));
+    }
+
+    public function testIsVariadicWithoutParams()
+    {
+        $obj = new class () {
+            public function __construct()
+            {
+            }
+        };
+        $this->assertSame(false, $this->service->isVariadic(get_class($obj)));
     }
 }

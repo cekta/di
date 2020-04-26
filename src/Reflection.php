@@ -10,9 +10,6 @@ use ReflectionMethod;
 
 class Reflection
 {
-    private $instantiable = [];
-    private $dependencies = [];
-    private $variadic = [];
     /**
      * @var ReflectionTransformer[]
      */
@@ -30,10 +27,13 @@ class Reflection
      */
     public function getDependencies(string $name): array
     {
-        if (!array_key_exists($name, $this->dependencies)) {
-            $this->load($name);
+        try {
+            $class = new ReflectionClass($name);
+            $dependencies = self::getMethodDependencies($class->getConstructor());
+            return $this->tranform($class->getName(), $dependencies);
+        } catch (ReflectionException $exception) {
+            return [];
         }
-        return $this->dependencies[$name];
     }
 
     /**
@@ -43,10 +43,17 @@ class Reflection
      */
     public function isVariadic(string $name): bool
     {
-        if (!array_key_exists($name, $this->variadic)) {
-            $this->load($name);
+        try {
+            $class = new ReflectionClass($name);
+            if ($class->getConstructor() !== null) {
+                $parameters = $class->getConstructor()->getParameters();
+                $count = count($parameters);
+                return $count > 0 ? $parameters[$count - 1]->isVariadic() : false;
+            }
+            return false;
+        } catch (ReflectionException $exception) {
+            return false;
         }
-        return $this->variadic[$name];
     }
 
     /**
@@ -56,39 +63,26 @@ class Reflection
      */
     public function isInstantiable(string $name): bool
     {
-        if (!array_key_exists($name, $this->instantiable)) {
-            $this->load($name);
-        }
-        return $this->instantiable[$name];
-    }
-
-    private function load(string $name): void
-    {
         try {
             $class = new ReflectionClass($name);
-            $this->instantiable[$name] = $class->isInstantiable();
-            $dependencies = self::getMethodDependencies($class->getConstructor());
-            $this->variadic[$name] = $dependencies[0];
-            $this->dependencies[$name] = $this->tranform($class->getName(), $dependencies[1]);
+            return $class->isInstantiable();
         } catch (ReflectionException $exception) {
-            $this->dependencies[$name] = [];
-            $this->instantiable[$name] = false;
-            $this->variadic[$name] = false;
+            return false;
         }
     }
 
     private static function getMethodDependencies(?ReflectionMethod $method): array
     {
-        $variadic = false;
         $parameters = [];
         if ($method !== null) {
+            $annotations = self::getAnnotationParameters((string) $method->getDocComment());
             foreach ($method->getParameters() as $parameter) {
-                $variadic = $parameter->isVariadic();
                 $class = $parameter->getClass();
-                $parameters[] = $class && $variadic !== true ? $class->name : $parameter->name;
+                $name = $class && $parameter->isVariadic() !== true ? $class->name : $parameter->name;
+                $parameters[$name] = array_key_exists($name, $annotations) ? $annotations[$name] : $name;
             }
         }
-        return [$variadic, $parameters];
+        return array_values($parameters);
     }
 
     private function tranform(string $name, array $params)
@@ -97,5 +91,16 @@ class Reflection
             $params = $tranfromer->transform($name, $params);
         }
         return $params;
+    }
+
+    private static function getAnnotationParameters(string $comment)
+    {
+        $result = [];
+        $matches = [];
+        preg_match_all("/@inject \\\\?([\w\d\\\\]*) \\$([\w\d]*)/", $comment, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $result[$match[2]] = $match[1];
+        }
+        return $result;
     }
 }

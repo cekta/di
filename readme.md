@@ -8,7 +8,7 @@
 [![Latest Stable Version](https://poser.pugx.org/cekta/di/v/stable)](https://packagist.org/packages/cekta/di)
 [![License](https://poser.pugx.org/cekta/di/license)](https://packagist.org/packages/cekta/di)
 
-psr/container implementation for humans
+[psr/container](https://www.php-fig.org/psr/psr-11/) implementation for humans
 
 ## Features
 
