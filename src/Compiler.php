@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Loader\Alias;
 use Cekta\DI\Loader\Factory;
 use Cekta\DI\Loader\FactoryVariadic;
 
@@ -15,7 +14,6 @@ class Compiler
      */
     private $reflection;
     private $classes = [];
-    private $alias = [];
     private $variadic = [];
 
     public function __construct(Reflection $reflection)
@@ -29,23 +27,9 @@ class Compiler
             return $this;
         }
         if ($this->reflection->isVariadic($name)) {
-            $this->variadic[] = true;
+            $this->variadic[] = $name;
         }
-        return $this->registerClass(
-            $name,
-            ...$this->reflection->getDependencies($name)
-        );
-    }
-
-    public function registerClass(string $name, string ...$dependencies): self
-    {
-        $this->classes[$name] = $dependencies;
-        return $this;
-    }
-
-    public function registerInterface(string $name, string $implementation): self
-    {
-        $this->alias[$name] = $implementation;
+        $this->classes[$name] = $this->reflection->getDependencies($name);
         return $this;
     }
 
@@ -55,18 +39,8 @@ class Compiler
 
 declare(strict_types=1);
 
-return [{$this->compileAlias()}{$this->compileClasses()}
+return [{$this->compileClasses()}
 ];";
-    }
-
-    private function compileAlias(): string
-    {
-        $compiledContainers = '';
-        $class = Alias::class;
-        foreach ($this->alias as $name => $implementation) {
-            $compiledContainers .= "\n    '$name' => new $class('$implementation'),";
-        }
-        return $compiledContainers;
     }
 
     private function compileClasses(): string
@@ -74,10 +48,12 @@ return [{$this->compileAlias()}{$this->compileClasses()}
         $compiledContainers = '';
         foreach ($this->classes as $name => $dependencies) {
             $class = $this->getClass($name);
+            $dependenciesString = str_replace("\n", "\n        ", var_export($dependencies, true));
             $compiledContainers .= <<<TAG
 
     '$name' => new $class(
-        '$name',{$this->getDependenciesString(...$dependencies)}
+        '$name',
+        ...$dependenciesString
     ),
 TAG;
         }
@@ -90,14 +66,5 @@ TAG;
             return FactoryVariadic::class;
         }
         return Factory::class;
-    }
-
-    private function getDependenciesString(string ...$dependencies): string
-    {
-        $result = '';
-        foreach ($dependencies as $dependency) {
-            $result .= PHP_EOL . "        '$dependency',";
-        }
-        return $result;
     }
 }

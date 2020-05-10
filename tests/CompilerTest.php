@@ -29,55 +29,19 @@ class CompilerTest extends TestCase
         $this->compiler = new Compiler($this->reflection);
     }
 
-    public function testRegisterClass(): void
-    {
-        $this->compiler->registerClass('test');
-        $this->compiler->registerClass('test2', 'a', 'b');
-        $class = Factory::class;
-        $expected = <<<"COMPILED"
-<?php
-
-declare(strict_types=1);
-
-return [
-    'test' => new $class(
-        'test',
-    ),
-    'test2' => new $class(
-        'test2',
-        'a',
-        'b',
-    ),
-];
-COMPILED;
-        $this->assertSame($expected, $this->compiler->compile());
-    }
-
-    public function testRegisterInterface(): void
-    {
-        $this->compiler->registerInterface('test', 'value');
-        $this->compiler->registerInterface('test2', 'value2');
-        $expected = <<<"COMPILED"
-<?php
-
-declare(strict_types=1);
-
-return [
-    'test' => new Cekta\DI\Loader\Alias('value'),
-    'test2' => new Cekta\DI\Loader\Alias('value2'),
-];
-COMPILED;
-        $this->assertSame($expected, $this->compiler->compile());
-    }
-
     public function testAutowiringWithArguments(): void
     {
         $this->reflection
             ->method('getDependencies')
-            ->with('test2')
-            ->willReturn(['a', 'b']);
+            ->willReturnMap(
+                [
+                    ['test2', ['a', 'b']],
+                    ['test3', []]
+                ]
+            );
         $this->reflection->method('isInstantiable')->willReturn(true);
         $this->compiler->autowire('test2');
+        $this->compiler->autowire('test3');
         $class = Factory::class;
         $expected = <<<"COMPILED"
 <?php
@@ -87,8 +51,15 @@ declare(strict_types=1);
 return [
     'test2' => new $class(
         'test2',
-        'a',
-        'b',
+        ...array (
+          0 => 'a',
+          1 => 'b',
+        )
+    ),
+    'test3' => new $class(
+        'test3',
+        ...array (
+        )
     ),
 ];
 COMPILED;
@@ -110,8 +81,10 @@ declare(strict_types=1);
 return [
     'test2' => new $class(
         'test2',
-        'a',
-        'b',
+        ...array (
+          0 => 'a',
+          1 => 'b',
+        )
     ),
 ];
 COMPILED;
