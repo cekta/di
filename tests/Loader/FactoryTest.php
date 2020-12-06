@@ -13,10 +13,16 @@ class FactoryTest extends TestCase
     public function testWithArguments(): void
     {
         $obj = new class () {
+            /**
+             * @var int
+             */
             public $a;
+            /**
+             * @var int
+             */
             public $b;
 
-            public function __construct($a = 1, $b = 2)
+            public function __construct(int $a = 1, int $b = 2)
             {
                 $this->a = $a;
                 $this->b = $b;

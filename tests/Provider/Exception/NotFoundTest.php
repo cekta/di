@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class NotFoundTest extends TestCase
 {
-    public function testMessage()
+    public function testMessage(): void
     {
         $exception = new NotFound('id');
         $this->assertSame('Container `id` not found', $exception->getMessage());

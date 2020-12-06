@@ -13,7 +13,13 @@ class Compiler
      * @var Reflection
      */
     private $reflection;
+    /**
+     * @var array<string, array<string>>
+     */
     private $classes = [];
+    /**
+     * @var array<string>
+     */
     private $variadic = [];
 
     public function __construct(Reflection $reflection)
@@ -60,7 +66,7 @@ TAG;
         return $compiledContainers;
     }
 
-    private function getClass($name): string
+    private function getClass(string $name): string
     {
         if (in_array($name, $this->variadic)) {
             return FactoryVariadic::class;

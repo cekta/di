@@ -1,6 +1,9 @@
 parameters:
-    level: 7
+    level: 8
     paths:
-      - src
-      - tests
+        - src
+        - tests
     inferPrivatePropertyTypeFromConstructor: true
+    ignoreErrors:
+        - '#Parameter \#1 $argument of class ReflectionClass constructor expects class-string<T of object>|T of object, string given.#'
+

@@ -9,6 +9,10 @@ use RuntimeException;
 
 class InfiniteRecursion extends RuntimeException implements ContainerExceptionInterface
 {
+    /**
+     * @param string $id
+     * @param array<string> $calls
+     */
     public function __construct(string $id, array $calls)
     {
         $callsString = implode(', ', $calls);

@@ -91,7 +91,7 @@ COMPILED;
         $this->assertSame($expected, $this->compiler->compile());
     }
 
-    public function testAutowiringNotInstantiable()
+    public function testAutowiringNotInstantiable(): void
     {
         $name = 'test';
         $this->reflection->method('isInstantiable')->with($name)->willReturn(false);
