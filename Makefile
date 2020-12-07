@@ -30,11 +30,3 @@ phpmd:
 	./vendor/bin/phpmd src ansi phpmd.ruleset.xml
 infection:
 	XDEBUG_MODE=coverage ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
-page:
-	docker run \
-		--rm \
-		-it \
-		-v "$$PWD/docs":/srv/jekyll \
-		-v "$$PWD/bundle":/usr/local/bundle \
-		-p 4000:4000 \
-		jekyll/jekyll jekyll serve

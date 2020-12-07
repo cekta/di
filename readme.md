@@ -25,5 +25,3 @@
 ```
 composer require cekta/di
 ```
-
-* [Russian documentation](https://cekta.github.io/di)
