@@ -15,7 +15,7 @@ class Container implements ContainerInterface
      */
     private $providers;
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     private $values = [];
     /**
@@ -64,9 +64,13 @@ class Container implements ContainerInterface
         $this->calls[] = $id;
     }
 
+    /**
+     * @param mixed|callable$result
+     * @return mixed
+     */
     private function load($result)
     {
-        if (is_callable($result)) {// disable __invoke call
+        if (is_callable($result)) {
             $result = call_user_func($result, $this);
         }
         return $result;

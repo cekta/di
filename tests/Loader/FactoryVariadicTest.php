@@ -16,7 +16,13 @@ class FactoryVariadicTest extends TestCase
     public function testInvoke(): void
     {
         $obj = new class (1) {
+            /**
+             * @var stdClass[]
+             */
             public $variadic;
+            /**
+             * @var int
+             */
             public $a;
 
             public function __construct(int $a, stdClass ...$variadic)
@@ -41,9 +47,12 @@ class FactoryVariadicTest extends TestCase
         $this->assertSame(123, $result->a);
     }
 
-    public function testInvokeWithoutArguments()
+    public function testInvokeWithoutArguments(): void
     {
         $obj = new class () {
+            /**
+             * @var stdClass[]
+             */
             public $classes;
 
             public function __construct(stdClass ...$classes)
@@ -64,6 +73,9 @@ class FactoryVariadicTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $obj = new class () {
+            /**
+             * @var stdClass[]
+             */
             public $variadic;
 
             public function __construct(stdClass ...$variadic)

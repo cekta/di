@@ -10,10 +10,13 @@ use Cekta\DI\Provider\Exception\NotFound;
 class KeyValue implements Provider
 {
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     private $values;
 
+    /**
+     * @param array<string, mixed> $values
+     */
     public function __construct(array $values)
     {
         $this->values = $values;

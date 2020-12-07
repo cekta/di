@@ -11,16 +11,6 @@ use ReflectionMethod;
 class Reflection
 {
     /**
-     * @var ReflectionTransformer[]
-     */
-    private $transformers;
-
-    public function __construct(ReflectionTransformer ...$tranfromers)
-    {
-        $this->transformers = $tranfromers;
-    }
-
-    /**
      * @param string $name
      * @return string[]
      * @internal
@@ -29,8 +19,7 @@ class Reflection
     {
         try {
             $class = new ReflectionClass($name);
-            $dependencies = self::getMethodDependencies($class->getConstructor());
-            return $this->tranform($class->getName(), $dependencies);
+            return self::getMethodDependencies($class->getConstructor());
         } catch (ReflectionException $exception) {
             return [];
         }
@@ -71,6 +60,10 @@ class Reflection
         }
     }
 
+    /**
+     * @param ReflectionMethod|null $method
+     * @return array<string>
+     */
     private static function getMethodDependencies(?ReflectionMethod $method): array
     {
         $parameters = [];
@@ -85,15 +78,11 @@ class Reflection
         return array_values($parameters);
     }
 
-    private function tranform(string $name, array $params)
-    {
-        foreach ($this->transformers as $tranfromer) {
-            $params = $tranfromer->transform($name, $params);
-        }
-        return $params;
-    }
-
-    private static function getAnnotationParameters(string $comment)
+    /**
+     * @param string $comment
+     * @return array<string>
+     */
+    private static function getAnnotationParameters(string $comment): array
     {
         $result = [];
         $matches = [];

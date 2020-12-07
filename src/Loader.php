@@ -8,5 +8,9 @@ use Psr\Container\ContainerInterface;
 
 interface Loader
 {
+    /**
+     * @param ContainerInterface $container
+     * @return mixed
+     */
     public function __invoke(ContainerInterface $container);
 }

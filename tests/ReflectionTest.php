@@ -6,12 +6,14 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Reflection;
 use Cekta\DI\Provider;
-use Cekta\DI\ReflectionTransformer;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class ReflectionTest extends TestCase
 {
+    /**
+     * @var Reflection
+     */
     private $service;
 
     protected function setUp(): void
@@ -19,19 +21,28 @@ class ReflectionTest extends TestCase
         $this->service = new Reflection();
     }
 
-    public function testGetDependenciesWithoutConstructor()
+    public function testGetDependenciesWithoutConstructor(): void
     {
         $this->assertSame([], $this->service->getDependencies(stdClass::class));
     }
 
-    public function testGetDependenciesWithContructorArguments()
+    public function testGetDependenciesWithContructorArguments(): void
     {
         $obj = new class (new stdClass()) {
+            /**
+             * @var stdClass
+             */
             public $class;
+            /**
+             * @var int
+             */
             public $a;
+            /**
+             * @var int
+             */
             public $b;
 
-            public function __construct(stdClass $class, int $a = 1, $b = 2)
+            public function __construct(stdClass $class, int $a = 1, int $b = 2)
             {
                 $this->class = $class;
                 $this->a = $a;
@@ -42,9 +53,12 @@ class ReflectionTest extends TestCase
         $this->assertSame([stdClass::class, 'a', 'b'], $this->service->getDependencies($name));
     }
 
-    public function testGetDependenciesWithVariadic()
+    public function testGetDependenciesWithVariadic(): void
     {
         $obj = new class (new stdClass()) {
+            /**
+             * @var stdClass[]
+             */
             public $args;
 
             public function __construct(stdClass ...$args)
@@ -55,32 +69,15 @@ class ReflectionTest extends TestCase
         $this->assertSame(['args'], $this->service->getDependencies(get_class($obj)));
     }
 
-    public function testGetDependenciesWithTransform()
+    public function testIsVariadic(): void
     {
         $obj = new class () {
-            private $a;
-            private $b;
-
-            public function __construct($a = 1, $b = 2)
-            {
-                $this->a = $a;
-                $this->b = $b;
-            }
-        };
-        $name = get_class($obj);
-        $transform = $this->createMock(ReflectionTransformer::class);
-        $transform->expects($this->once())->method('transform')->with($name, ['a', 'b'])->willReturn(['c', 'b']);
-        assert($transform instanceof ReflectionTransformer);
-        $reflection = new Reflection($transform);
-        $this->assertSame(['c', 'b'], $reflection->getDependencies($name));
-    }
-
-    public function testIsVariadic()
-    {
-        $obj = new class () {
+            /**
+             * @var int[]
+             */
             public $args;
 
-            public function __construct(...$args)
+            public function __construct(int ...$args)
             {
                 $this->args = $args;
             }
@@ -89,39 +86,49 @@ class ReflectionTest extends TestCase
         $this->assertFalse($this->service->isVariadic(stdClass::class));
     }
 
-    public function testIsInstantiable()
+    public function testIsInstantiable(): void
     {
         $this->assertTrue($this->service->isInstantiable(stdClass::class));
         $this->assertFalse($this->service->isInstantiable(TestCase::class));
         $this->assertFalse($this->service->isInstantiable(Provider::class));
     }
 
-    public function testInvalideClass()
+    public function testInvalideClass(): void
     {
         $this->assertFalse($this->service->isInstantiable('invalide name'));
         $this->assertSame([], $this->service->getDependencies('invalide name'));
         $this->assertFalse($this->service->isVariadic('invalide name'));
     }
 
-    public function testInjection()
+    public function testInjection(): void
     {
-        $obj = new class (1) {
+        $obj = new class (1, 2) {
+            /**
+             * @var int
+             */
             private $a;
+            /**
+             * @var int
+             */
+            private $b;
 
             /**
              * @param int $a
-             * @inject b\magic $a
+             * @param int $b
+             * @inject a\magic $a
+             * @inject b\magic $b
              */
-            public function __construct(int $a)
+            public function __construct(int $a, int $b)
             {
                 $this->a = $a;
+                $this->b = $b;
             }
         };
         $class = get_class($obj);
-        $this->assertSame(['b\magic'], $this->service->getDependencies($class));
+        $this->assertSame(['a\magic', 'b\magic'], $this->service->getDependencies($class));
     }
 
-    public function testIsVariadicWithoutParams()
+    public function testIsVariadicWithoutParams(): void
     {
         $obj = new class () {
             public function __construct()

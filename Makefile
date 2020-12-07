@@ -1,3 +1,4 @@
+XDEBUG_MODE ?=coverage
 install:
 	composer install
 test: phpcs phpmd phpstan phpinsights phpunit infection
@@ -24,11 +25,11 @@ phpinsights:
 phpunit:
 	./vendor/bin/phpunit
 phpunit_with_clover:
-	./vendor/bin/phpunit --coverage-clover clover.xml
+	XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover clover.xml
 phpmd:
 	./vendor/bin/phpmd src ansi phpmd.ruleset.xml
 infection:
-	./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
+	XDEBUG_MODE=coverage ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
 page:
 	docker run \
 		--rm \
