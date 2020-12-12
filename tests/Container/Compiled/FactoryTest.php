@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Loader;
+namespace Cekta\DI\Test\Container\Compiled;
 
-use Cekta\DI\Loader\Factory;
+use Cekta\DI\Container\Compiled\Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

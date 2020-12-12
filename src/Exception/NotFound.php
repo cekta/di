@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider\Exception;
+namespace Cekta\DI\Exception;
 
-use Cekta\DI\ProviderException;
+use Psr\Container\NotFoundExceptionInterface;
 use RuntimeException;
 
-class NotFound extends RuntimeException implements ProviderException
+class NotFound extends RuntimeException implements NotFoundExceptionInterface
 {
     public function __construct(string $id)
     {
