@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Provider;
+namespace Cekta\DI\Container;
 
-use Cekta\DI\Provider;
-use Cekta\DI\Provider\Exception\NotFound;
+use Cekta\DI\Exception\NotFound;
+use Psr\Container\ContainerInterface;
 
-class KeyValue implements Provider
+class KeyValue implements ContainerInterface
 {
     /**
      * @var array<string, mixed>
@@ -22,15 +22,15 @@ class KeyValue implements Provider
         $this->values = $values;
     }
 
-    public function provide(string $id)
+    public function get($id)
     {
-        if (!$this->canProvide($id)) {
+        if (!$this->has($id)) {
             throw new NotFound($id);
         }
         return $this->values[$id];
     }
 
-    public function canProvide(string $id): bool
+    public function has($id): bool
     {
         return array_key_exists($id, $this->values);
     }

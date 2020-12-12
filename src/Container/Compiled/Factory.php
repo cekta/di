@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Loader;
+namespace Cekta\DI\Container\Compiled;
 
-use Cekta\DI\Loader;
 use Psr\Container\ContainerInterface;
 
-class Factory implements Loader
+class Factory
 {
     /**
      * @var string
@@ -24,6 +23,10 @@ class Factory implements Loader
         $this->dependencies = $dependencies;
     }
 
+    /**
+     * @param ContainerInterface $container
+     * @return mixed
+     */
     public function __invoke(ContainerInterface $container)
     {
         $args = [];

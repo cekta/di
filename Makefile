@@ -19,7 +19,7 @@ update:
 phpcs:
 	./vendor/bin/phpcs
 phpstan:
-	./vendor/bin/phpstan analyse
+	./vendor/bin/phpstan analyse --memory-limit=-1
 phpinsights:
 	./vendor/bin/phpinsights --min-quality=100 --min-architecture=100 --min-style=100 --no-interaction -vvv
 phpunit:

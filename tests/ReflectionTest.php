@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Reflection;
-use Cekta\DI\Provider;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use stdClass;
 
 class ReflectionTest extends TestCase
@@ -24,6 +24,11 @@ class ReflectionTest extends TestCase
     public function testGetDependenciesWithoutConstructor(): void
     {
         $this->assertSame([], $this->service->getDependencies(stdClass::class));
+    }
+
+    public function testGetDependenciesInvalidClass(): void
+    {
+        $this->assertSame([], $this->service->getDependencies('invalid name'));
     }
 
     public function testGetDependenciesWithContructorArguments(): void
@@ -53,51 +58,12 @@ class ReflectionTest extends TestCase
         $this->assertSame([stdClass::class, 'a', 'b'], $this->service->getDependencies($name));
     }
 
-    public function testGetDependenciesWithVariadic(): void
-    {
-        $obj = new class (new stdClass()) {
-            /**
-             * @var stdClass[]
-             */
-            public $args;
-
-            public function __construct(stdClass ...$args)
-            {
-                $this->args = $args;
-            }
-        };
-        $this->assertSame(['args'], $this->service->getDependencies(get_class($obj)));
-    }
-
-    public function testIsVariadic(): void
-    {
-        $obj = new class () {
-            /**
-             * @var int[]
-             */
-            public $args;
-
-            public function __construct(int ...$args)
-            {
-                $this->args = $args;
-            }
-        };
-        $this->assertTrue($this->service->isVariadic(get_class($obj)));
-        $this->assertFalse($this->service->isVariadic(stdClass::class));
-    }
-
     public function testIsInstantiable(): void
     {
         $this->assertTrue($this->service->isInstantiable(stdClass::class));
         $this->assertFalse($this->service->isInstantiable(TestCase::class));
-        $this->assertFalse($this->service->isInstantiable(Provider::class));
-    }
-
-    public function testInvalideClass(): void
-    {
-        $this->assertFalse($this->service->isInstantiable('invalide name'));
-        $this->assertSame([], $this->service->getDependencies('invalide name'));
-        $this->assertFalse($this->service->isVariadic('invalide name'));
+        $this->assertFalse($this->service->isInstantiable(ContainerInterface::class));
+        $this->assertFalse($this->service->isInstantiable('invalid name'));
     }
 
     public function testInjection(): void
@@ -126,15 +92,5 @@ class ReflectionTest extends TestCase
         };
         $class = get_class($obj);
         $this->assertSame(['a\magic', 'b\magic'], $this->service->getDependencies($class));
-    }
-
-    public function testIsVariadicWithoutParams(): void
-    {
-        $obj = new class () {
-            public function __construct()
-            {
-            }
-        };
-        $this->assertSame(false, $this->service->isVariadic(get_class($obj)));
     }
 }
