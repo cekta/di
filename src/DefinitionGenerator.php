@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Container\Compiled\Factory;
+use Cekta\DI\Strategy\Definition\Factory;
 
-class Compiler
+class DefinitionGenerator
 {
     /**
      * @var Reflection
@@ -18,7 +18,7 @@ class Compiler
         $this->reflection = $reflection;
     }
 
-    public function compile(string ...$classes): string
+    public function __invoke(string ...$classes): string
     {
         $factory = Factory::class;
         $body = '';

@@ -6,6 +6,9 @@ namespace Cekta\DI\Reflection;
 
 use ReflectionMethod;
 
+/**
+ * @internal
+ */
 class MethodService
 {
     /**

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Container;
+namespace Cekta\DI\Test\Strategy;
 
-use Cekta\DI\Container\Compiled;
+use Cekta\DI\Strategy\Definition;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
-class CompiledTest extends TestCase
+class DefinitionTest extends TestCase
 {
     /**
      * @var MockObject
@@ -26,7 +26,7 @@ class CompiledTest extends TestCase
     {
         $this->container->method('get')->willReturn(123);
         assert($this->container instanceof ContainerInterface);
-        $compile = new Compiled(
+        $compile = new Definition(
             [
                 'a' => function (ContainerInterface $container) {
                     $result = new stdClass();
@@ -44,7 +44,7 @@ class CompiledTest extends TestCase
     public function testGetNotClosure(): void
     {
         assert($this->container instanceof ContainerInterface);
-        $compile = new Compiled(['a' => 123], $this->container);
+        $compile = new Definition(['a' => 123], $this->container);
         $this->assertSame(123, $compile->get('a'));
     }
 }

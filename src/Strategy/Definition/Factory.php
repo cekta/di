@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Container\Compiled;
+namespace Cekta\DI\Strategy\Definition;
 
 use Psr\Container\ContainerInterface;
 

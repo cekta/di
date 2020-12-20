@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Compiler;
-use Cekta\DI\Container\Compiled\Factory;
+use Cekta\DI\DefinitionGenerator;
+use Cekta\DI\Strategy\Definition\Factory;
 use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class CompilerTest extends TestCase
+class DefinitionGeneratorTest extends TestCase
 {
     /**
      * @var MockObject
@@ -32,7 +32,7 @@ class CompilerTest extends TestCase
             ]
         );
         assert($this->reflection instanceof Reflection);
-        $compile = new Compiler($this->reflection);
+        $generator = new DefinitionGenerator($this->reflection);
         $factory = Factory::class;
         $expected = <<<"COMPILED"
 <?php
@@ -50,14 +50,14 @@ return [
 ];
 COMPILED;
 
-        $this->assertSame($expected, $compile->compile(...['a', 'b']));
+        $this->assertSame($expected, $generator(...['a', 'b']));
     }
 
     public function testCompileNotInstantiable(): void
     {
         $this->reflection->method('isInstantiable')->willReturn(false);
         assert($this->reflection instanceof Reflection);
-        $compile = new Compiler($this->reflection);
+        $generator = new DefinitionGenerator($this->reflection);
         $expected = <<<"COMPILED"
 <?php
 
@@ -66,6 +66,6 @@ declare(strict_types=1);
 return [];
 COMPILED;
 
-        $this->assertSame($expected, $compile->compile(...['a', 'b']));
+        $this->assertSame($expected, $generator(...['a', 'b']));
     }
 }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Container;
+namespace Cekta\DI\Test\Strategy;
 
-use Cekta\DI\Container\Autowiring;
+use Cekta\DI\Strategy\Autowiring;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Reflection;
 use PHPUnit\Framework\MockObject\MockObject;

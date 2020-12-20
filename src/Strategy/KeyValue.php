@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Container;
+namespace Cekta\DI\Strategy;
 
 use Cekta\DI\Exception\NotFound;
 use Psr\Container\ContainerInterface;
