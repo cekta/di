@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Container;
+namespace Cekta\DI\Strategy;
 
-use Cekta\DI\Container\Compiled\Factory;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Reflection;
+use Cekta\DI\Strategy\Definition\Factory;
 use Psr\Container\ContainerInterface;
 
 class Autowiring implements ContainerInterface

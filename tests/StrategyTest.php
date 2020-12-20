@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Exception\ProviderNotFound;
+use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Strategy;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +43,7 @@ class StrategyTest extends TestCase
 
     public function testGetNotFound(): void
     {
-        $this->expectException(ProviderNotFound::class);
+        $this->expectException(NotFound::class);
         $this->container->get('invalid name');
     }
 }

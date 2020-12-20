@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Container;
+namespace Cekta\DI\Test\Strategy;
 
-use Cekta\DI\Container\KeyValue;
+use Cekta\DI\Strategy\KeyValue;
 use Cekta\DI\Exception\NotFound;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;

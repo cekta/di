@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\ProviderNotFound;
+use Cekta\DI\Exception\NotFound;
 use Psr\Container\ContainerInterface;
 
 class Strategy implements ContainerInterface
@@ -23,7 +23,7 @@ class Strategy implements ContainerInterface
     {
         $provider = $this->findProvider($id);
         if ($provider === null) {
-            throw new ProviderNotFound($id);
+            throw new NotFound($id);
         }
         return $provider->get($id);
     }

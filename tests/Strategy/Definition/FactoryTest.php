@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Container\Compiled;
+namespace Cekta\DI\Test\Strategy\Definition;
 
-use Cekta\DI\Container\Compiled\Factory;
+use Cekta\DI\Strategy\Definition\Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

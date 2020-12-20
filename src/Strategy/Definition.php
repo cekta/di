@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Container;
+namespace Cekta\DI\Strategy;
 
 use Psr\Container\ContainerInterface;
 
-class Compiled extends KeyValue
+class Definition extends KeyValue
 {
     /**
      * @var ContainerInterface
