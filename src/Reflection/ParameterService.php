@@ -14,33 +14,33 @@ use ReflectionUnionType;
  */
 class ParameterService
 {
-    /**
-     * @param ReflectionParameter $parameter
-     * @param array<string> $annotations
-     * @return string
-     */
-    public function getName(ReflectionParameter $parameter, array $annotations): string
+    public function getName(ReflectionParameter $parameter): string
     {
-        if (array_key_exists($parameter->name, $annotations)) {
-            return $annotations[$parameter->name];
-        }
         $type = $parameter->getType();
         if ($type === null) {
             return $parameter->name;
         }
-        if (class_exists(ReflectionUnionType::class) && $type instanceof ReflectionUnionType) {
-            foreach ($type->getTypes() as $namedType) {
-                return $this->getFromNamedType($parameter, $namedType);
-            }
+        if ($type instanceof ReflectionNamedType) {
+            return $this->fromNamed($type, $parameter->name);
         }
-        if (!$type instanceof ReflectionNamedType) {
-            throw new LogicException("it can't be");
+        if ($type instanceof ReflectionUnionType) {
+            return $this->fromUnion($type, $parameter->name);
         }
-        return $this->getFromNamedType($parameter, $type);
+        throw new LogicException("it can't be");
     }
 
-    private function getFromNamedType(ReflectionParameter $parameter, ReflectionNamedType $type): string
+    private function fromUnion(ReflectionUnionType $type, string $name): string
     {
-        return $type->isBuiltin() ? $parameter->name : $type->getName();
+        foreach ($type->getTypes() as $namedType) {
+            if (!$namedType->isBuiltin()) {
+                return $namedType->getName();
+            }
+        }
+        return $name;
+    }
+
+    private function fromNamed(ReflectionNamedType $type, string $name): string
+    {
+        return $type->isBuiltin() ? $name : $type->getName();
     }
 }

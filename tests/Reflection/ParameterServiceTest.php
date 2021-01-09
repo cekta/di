@@ -19,6 +19,6 @@ class ParameterServiceTest extends TestCase
         $mock = $this->createMock(ReflectionParameter::class);
         $mock->method('getType')
             ->willReturn($this->createMock(ReflectionType::class));
-        $service->getName($mock, []);
+        $service->getName($mock);
     }
 }

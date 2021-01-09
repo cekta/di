@@ -20,6 +20,7 @@ class MethodService
     {
         $this->parameter = new ParameterService();
     }
+
     /**
      * @param ReflectionMethod|null $method
      * @return array<string>
@@ -55,9 +56,11 @@ class MethodService
     private function getDependencies(ReflectionMethod $method): array
     {
         $parameters = [];
-        $annotations = $this->getAnnotationParameters((string) $method->getDocComment());
+        $annotations = $this->getAnnotationParameters((string)$method->getDocComment());
         foreach ($method->getParameters() as $parameter) {
-            $parameters[] = $this->parameter->getName($parameter, $annotations);
+            $parameters[] = array_key_exists($parameter->name, $annotations) ?
+                $annotations[$parameter->name]
+                : $this->parameter->getName($parameter);
         }
         return $parameters;
     }
