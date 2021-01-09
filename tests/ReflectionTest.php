@@ -31,7 +31,7 @@ class ReflectionTest extends TestCase
         $this->assertSame([], $this->service->getDependencies('invalid name'));
     }
 
-    public function testGetDependenciesWithContructorArguments(): void
+    public function testGetDependenciesWithConstructorArguments(): void
     {
         $obj = new class (new stdClass()) {
             /**
@@ -92,5 +92,42 @@ class ReflectionTest extends TestCase
         };
         $class = get_class($obj);
         $this->assertSame(['a\magic', 'b\magic'], $this->service->getDependencies($class));
+    }
+
+    public function testUnionType(): void
+    {
+        $obj = new class (1, 2) {
+            public int | string | stdClass $param1;
+            public int | string $param2;
+
+            public function __construct(int | string | stdClass $param1, int | string $param2)
+            {
+                $this->param1 = $param1;
+                $this->param2 = $param2;
+            }
+        };
+        $class = get_class($obj);
+        $this->assertSame([stdClass::class, 'param2'], $this->service->getDependencies($class));
+    }
+
+    public function testWithoutType(): void
+    {
+        $obj = new class (1) {
+            /**
+             * @phpstan-ignore-next-line
+             */
+            private $param;
+
+            /**
+             * @param $param
+             * @phpstan-ignore-next-line
+             */
+            public function __construct($param)
+            {
+                $this->param = $param;
+            }
+        };
+        $class = get_class($obj);
+        $this->assertSame(['param'], $this->service->getDependencies($class));
     }
 }

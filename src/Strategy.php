@@ -12,11 +12,11 @@ class Strategy implements ContainerInterface
     /**
      * @var ContainerInterface[]
      */
-    private $providers;
+    private array $containers;
 
-    public function __construct(ContainerInterface ...$provider)
+    public function __construct(ContainerInterface ...$containers)
     {
-        $this->providers = $provider;
+        $this->containers = $containers;
     }
 
     public function get($id)
@@ -35,7 +35,7 @@ class Strategy implements ContainerInterface
 
     private function findProvider(string $id): ?ContainerInterface
     {
-        foreach ($this->providers as $provider) {
+        foreach ($this->containers as $provider) {
             if ($provider->has($id)) {
                 return $provider;
             }
