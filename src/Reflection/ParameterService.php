@@ -4,24 +4,43 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Reflection;
 
+use LogicException;
+use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionUnionType;
 
 /**
  * @internal
  */
 class ParameterService
 {
-    /**
-     * @param ReflectionParameter $parameter
-     * @param array<string> $annotations
-     * @return string
-     */
-    public function getName(ReflectionParameter $parameter, array $annotations): string
+    public function getName(ReflectionParameter $parameter): string
     {
-        $result = $parameter->getClass() === null ? $parameter->name : $parameter->getClass()->name;
-        if (array_key_exists($result, $annotations)) {
-            $result = $annotations[$result];
+        $type = $parameter->getType();
+        if ($type === null) {
+            return $parameter->name;
         }
-        return $result;
+        if ($type instanceof ReflectionNamedType) {
+            return $this->fromNamed($type, $parameter->name);
+        }
+        if ($type instanceof ReflectionUnionType) {
+            return $this->fromUnion($type, $parameter->name);
+        }
+        throw new LogicException("it can't be");
+    }
+
+    private function fromUnion(ReflectionUnionType $type, string $name): string
+    {
+        foreach ($type->getTypes() as $namedType) {
+            if (!$namedType->isBuiltin()) {
+                return $namedType->getName();
+            }
+        }
+        return $name;
+    }
+
+    private function fromNamed(ReflectionNamedType $type, string $name): string
+    {
+        return $type->isBuiltin() ? $name : $type->getName();
     }
 }
