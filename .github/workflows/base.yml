@@ -5,6 +5,8 @@ jobs:
       matrix:
         php: ['8.0']
     steps:
+      - name: install
+        run: make install
       - name: phpcs
         run: make phpcs
 on:
