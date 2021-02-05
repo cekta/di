@@ -1,0 +1,13 @@
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.0']
+    steps:
+      - name: phpcs
+        run: make phpcs
+on:
+  pull_request:
+    branches:
+      - master
