@@ -9,6 +9,7 @@ before_script:
 	./cc-test-reporter before-build
 after_script:
 	./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT} clover.xml
+	echo ${CC_TEST_REPORTER_ID}
 update:
 	composer update
 phpcs:
