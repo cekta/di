@@ -5,6 +5,9 @@ jobs:
       matrix:
         php: ['8.0']
     steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
       - name: install
         env:
           TOKEN: ${{ secrets.TOKEN }}
