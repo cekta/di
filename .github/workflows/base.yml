@@ -17,9 +17,13 @@ jobs:
 #      - name: after_script
 #        run: ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}  clover.xml
       - name: failure step
+        env:
+          CC_TEST_REPORTER_ID : ${{ secrets.CC_TEST_REPORTER_ID  }}
         if: ${{ failure() }}
         run: ./cc-test-reporter after-build --exit-code 1 clover.xml
       - name: success step
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID  }}
         if: ${{ success() }}
         run: ./cc-test-reporter after-build --exit-code 0 clover.xml
 on:
