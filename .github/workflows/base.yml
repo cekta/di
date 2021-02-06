@@ -9,11 +9,15 @@ jobs:
         with:
           fetch-depth: 1
       - name: install
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
+#        env:
+#          TOKEN: ${{ secrets.TOKEN }}
         run: make install
-      - name: phpcs
-        run: make phpcs
+      - name: before_script
+        run: make before_script
+      - name: script
+        run: make script
+      - name: after_script
+        run: make after_script
 on:
   pull_request:
     branches:
