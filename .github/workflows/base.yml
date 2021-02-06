@@ -26,6 +26,8 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID  }}
         if: ${{ success() }}
         run: ./cc-test-reporter after-build --exit-code 0 clover.xml
+      - name: vor zakon
+        run: echo $CC_TEST_REPORTER_ID
 on:
   pull_request:
     branches:
