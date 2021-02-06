@@ -6,6 +6,8 @@ jobs:
         php: ['8.0']
     steps:
       - name: install
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
         run: make install
       - name: phpcs
         run: make phpcs
