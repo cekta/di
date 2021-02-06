@@ -9,15 +9,19 @@ jobs:
         with:
           fetch-depth: 1
       - name: install
-#        env:
-#          TOKEN: ${{ secrets.TOKEN }}
         run: make install
       - name: before_script
         run: make before_script
       - name: script
         run: make script
-      - name: after_script
-        run: make after_script
+#      - name: after_script
+#        run: ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT} clover.xml
+      - name: failure step
+        if: ${{ failure() }}
+        run: ./cc-test-reporter after-build --exit-code 1 clover.xml
+      - name: success step
+        if: ${{ success() }}
+        run: ./cc-test-reporter after-build --exit-code 0 clover.xml
 on:
   pull_request:
     branches:
