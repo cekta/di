@@ -15,7 +15,7 @@ jobs:
       - name: script
         run: make script
 #      - name: after_script
-#        run: ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT} clover.xml
+#        run: ./cc-test-reporter after-build --exit-code ${TRAVIS_TEST_RESULT}  clover.xml
       - name: failure step
         if: ${{ failure() }}
         run: ./cc-test-reporter after-build --exit-code 1 clover.xml
