@@ -3,7 +3,8 @@
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
          cacheResult="false"
          colors="true"
-         executionOrder="default">
+         executionOrder="random"
+         resolveDependencies="true">
     <coverage>
         <include>
             <directory>src</directory>
