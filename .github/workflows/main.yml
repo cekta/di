@@ -1,0 +1,21 @@
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.0']
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 1
+      - name: install
+        run: make phpunit_with_clover
+      - name: before_script
+        run: make before_script
+      - name: test
+        run: make test
+
+on:
+  pull_request:
+    branches:
+      - master
