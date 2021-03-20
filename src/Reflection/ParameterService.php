@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Reflection;
 
-use LogicException;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
@@ -17,16 +16,13 @@ class ParameterService
     public function getName(ReflectionParameter $parameter): string
     {
         $type = $parameter->getType();
-        if ($type === null) {
-            return $parameter->name;
-        }
         if ($type instanceof ReflectionNamedType) {
             return $this->fromNamed($type, $parameter->name);
         }
         if ($type instanceof ReflectionUnionType) {
             return $this->fromUnion($type, $parameter->name);
         }
-        throw new LogicException("it can't be");
+        return $parameter->name;
     }
 
     private function fromUnion(ReflectionUnionType $type, string $name): string
