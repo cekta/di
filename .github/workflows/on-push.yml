@@ -10,12 +10,8 @@ jobs:
           fetch-depth: 1
       - name: install
         run: make install
-      - name: before_script
-        run: make before_script
-      - name: phpunit
-        run: make phpunit_with_clover
-      - name: after_script
-        run: make after_script
+      - name: test
+        run: make test
 
 on:
   push:

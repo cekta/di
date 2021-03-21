@@ -10,8 +10,6 @@ jobs:
           fetch-depth: 1
       - name: install
         run: make install
-      - name: before_script
-        run: make before_script
       - name: test
         run: make test
 
