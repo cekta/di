@@ -6,11 +6,5 @@ php:
 install:
   - make install
 
-before_script:
-  - make before_script
-
 script:
-  - make script
-
-after_script:
-  - make after_script
+  - make test
