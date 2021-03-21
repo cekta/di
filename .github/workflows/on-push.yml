@@ -12,6 +12,8 @@ jobs:
         run: make install
       - name: test
         run: make test
+        env:
+          INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
 
 on:
   push:
