@@ -10,4 +10,4 @@ phpstan:
 phpunit:
 	./vendor/bin/phpunit
 infection:
-	XDEBUG_MODE=coverage ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
+	phpdbg -qrr ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v

@@ -11,7 +11,7 @@ class Definition extends KeyValue
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
 
     public function __construct(array $values, ContainerInterface $container)
     {

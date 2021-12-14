@@ -58,9 +58,11 @@ class MethodService
         $parameters = [];
         $annotations = $this->getAnnotationParameters((string)$method->getDocComment());
         foreach ($method->getParameters() as $parameter) {
-            $parameters[] = array_key_exists($parameter->name, $annotations) ?
-                $annotations[$parameter->name]
-                : $this->parameter->getName($parameter);
+            if (array_key_exists($parameter->name, $annotations)) {
+                $parameters[] = $annotations[$parameter->name];
+            } else {
+                $parameters[] = $this->parameter->getName($parameter);
+            }
         }
         return $parameters;
     }
