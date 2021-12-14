@@ -68,30 +68,7 @@ class ReflectionTest extends TestCase
 
     public function testInjection(): void
     {
-        $obj = new class (1, 2) {
-            /**
-             * @var int
-             */
-            private $a;
-            /**
-             * @var int
-             */
-            private $b;
-
-            /**
-             * @param int $a
-             * @param int $b
-             * @inject a\magic $a
-             * @inject b\magic $b
-             */
-            public function __construct(int $a, int $b)
-            {
-                $this->a = $a;
-                $this->b = $b;
-            }
-        };
-        $class = get_class($obj);
-        $this->assertSame(['a\magic', 'b\magic'], $this->service->getDependencies($class));
+        $this->assertSame(['a\magic', 'b\magic'], $this->service->getDependencies(C::class));
     }
 
     public function testUnionType(): void
@@ -125,6 +102,14 @@ class ReflectionTest extends TestCase
             public function __construct($param)
             {
                 $this->param = $param;
+            }
+
+            /**
+             * @return mixed
+             */
+            public function getParam()
+            {
+                return $this->param;
             }
         };
         $class = get_class($obj);
