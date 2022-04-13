@@ -1,4 +1,7 @@
+hello:
+	echo hello world
 install:
+	php -i
 	composer install
 test: phpcs phpstan phpunit infection
 update:
@@ -10,4 +13,4 @@ phpstan:
 phpunit:
 	./vendor/bin/phpunit
 infection:
-	phpdbg -qrr ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
+	XDEBUG_MODE=coverage ./vendor/bin/infection -s --min-msi=100 --min-covered-msi=100 -v
