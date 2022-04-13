@@ -89,27 +89,15 @@ class ReflectionTest extends TestCase
 
     public function testWithoutType(): void
     {
-        $obj = new class (1) {
-            /**
-             * @phpstan-ignore-next-line
-             */
-            private $param;
+        $obj = new class ('1') {
+            public string $param;
 
             /**
-             * @param $param
              * @phpstan-ignore-next-line
              */
             public function __construct($param)
             {
                 $this->param = $param;
-            }
-
-            /**
-             * @return mixed
-             */
-            public function getParam()
-            {
-                return $this->param;
             }
         };
         $class = get_class($obj);

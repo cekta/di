@@ -4,11 +4,5 @@
       "src"
     ]
   },
-  "timeout": 10,
-  "tmpDir": "./",
-  "logs": {
-    "badge": {
-      "branch": "master"
-    }
-  }
+  "timeout": 10
 }

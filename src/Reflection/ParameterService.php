@@ -6,6 +6,7 @@ namespace Cekta\DI\Reflection;
 
 use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionType;
 use ReflectionUnionType;
 
 /**

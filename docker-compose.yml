@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ./
+    user: ${UID:-1000}
+    volumes:
+      - ./:/app
+      - ./docker/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+      - PHP_IDE_CONFIG=serverName=docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - install
+      - test
+
