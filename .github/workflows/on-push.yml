@@ -3,7 +3,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ['8.0']
+        php: ['8.0', '8.1']
     steps:
       - uses: actions/checkout@master
         with:
@@ -11,7 +11,7 @@ jobs:
       - name: install
         run: make install
       - name: test
-        run: make test
+        run: XDEBUG_MODE=coverage make test
         env:
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
 
