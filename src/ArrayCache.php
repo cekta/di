@@ -8,14 +8,11 @@ use Psr\Container\ContainerInterface;
 
 class ArrayCache implements ContainerInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private ContainerInterface $container;
     /**
      * @var string[]
      */
-    private $values = [];
+    private array $values = [];
 
     public function __construct(ContainerInterface $container)
     {

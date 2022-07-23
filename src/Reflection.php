@@ -9,10 +9,7 @@ use ReflectionException;
 
 class Reflection
 {
-    /**
-     * @var Reflection\MethodService
-     */
-    private $reflectionMethod;
+    private Reflection\MethodService $reflectionMethod;
 
     public function __construct()
     {
@@ -22,7 +19,6 @@ class Reflection
     /**
      * @param string $name
      * @return string[]
-     * @internal
      */
     public function getDependencies(string $name): array
     {
@@ -37,7 +33,6 @@ class Reflection
     /**
      * @param string $name
      * @return bool
-     * @internal
      */
     public function isInstantiable(string $name): bool
     {

@@ -12,10 +12,7 @@ use stdClass;
 
 class DefinitionTest extends TestCase
 {
-    /**
-     * @var MockObject
-     */
-    private $container;
+    private MockObject $container;
 
     protected function setUp(): void
     {

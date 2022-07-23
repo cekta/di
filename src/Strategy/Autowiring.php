@@ -6,19 +6,12 @@ namespace Cekta\DI\Strategy;
 
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Reflection;
-use Cekta\DI\Strategy\Definition\Factory;
 use Psr\Container\ContainerInterface;
 
 class Autowiring implements ContainerInterface
 {
-    /**
-     * @var Reflection
-     */
-    private $reflection;
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private Reflection $reflection;
+    private ContainerInterface $container;
 
     public function __construct(Reflection $reflection, ContainerInterface $container)
     {
@@ -31,7 +24,11 @@ class Autowiring implements ContainerInterface
         if (!$this->has($id)) {
             throw new NotFound($id);
         }
-        return (new Factory($id, ...$this->reflection->getDependencies($id)))($this->container);
+        $args = [];
+        foreach ($this->reflection->getDependencies($id) as $dependency) {
+            $args[] = $this->container->get($dependency);
+        }
+        return new $id(...$args);
     }
 
     public function has($id): bool

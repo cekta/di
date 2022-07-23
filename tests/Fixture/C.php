@@ -1,17 +1,17 @@
 <?php
 
-namespace Cekta\DI\Test;
+namespace Cekta\DI\Test\Fixture;
 
 class C
 {
     /**
      * @var int
      */
-    private $a;
+    public int $a;
     /**
      * @var int
      */
-    private $b;
+    public int $b;
 
     /**
      * @param int $a
@@ -23,21 +23,5 @@ class C
     {
         $this->a = $a;
         $this->b = $b;
-    }
-
-    /**
-     * @return int
-     */
-    public function getA(): int
-    {
-        return $this->a;
-    }
-
-    /**
-     * @return int
-     */
-    public function getB(): int
-    {
-        return $this->b;
     }
 }

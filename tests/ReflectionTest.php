@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Reflection;
+use Cekta\DI\Test\Fixture\C;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use stdClass;
