@@ -8,9 +8,6 @@ use Psr\Container\ContainerInterface;
 
 class Definition extends KeyValue
 {
-    /**
-     * @var ContainerInterface
-     */
     private ContainerInterface $container;
 
     public function __construct(array $values, ContainerInterface $container)

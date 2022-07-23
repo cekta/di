@@ -12,14 +12,8 @@ use Psr\Container\ContainerInterface;
 
 class InfiniteRecursionDetectorTest extends TestCase
 {
-    /**
-     * @var InfiniteRecursionDetector
-     */
-    private $container;
-    /**
-     * @var MockObject
-     */
-    private $mock;
+    private InfiniteRecursionDetector $container;
+    private MockObject $mock;
 
     protected function setUp(): void
     {

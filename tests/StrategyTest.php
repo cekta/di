@@ -12,14 +12,9 @@ use Psr\Container\ContainerInterface;
 
 class StrategyTest extends TestCase
 {
-    /**
-     * @var Strategy
-     */
-    private $container;
-    /**
-     * @var MockObject
-     */
-    private $provider;
+    private Strategy $container;
+
+    private MockObject $provider;
 
     protected function setUp(): void
     {

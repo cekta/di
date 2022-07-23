@@ -14,18 +14,9 @@ use stdClass;
 
 class AutowiringTest extends TestCase
 {
-    /**
-     * @var Autowiring
-     */
-    private $provider;
-    /**
-     * @var MockObject
-     */
-    private $reflection;
-    /**
-     * @var MockObject
-     */
-    private $container;
+    private Autowiring $provider;
+    private MockObject $reflection;
+    private MockObject $container;
 
     protected function setUp(): void
     {

@@ -4,149 +4,65 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Container;
 use Cekta\DI\ContainerBuilder;
-use Cekta\DI\ContainerCompiledFactory;
-use Cekta\DI\ContainerDevelopFactory;
-use InvalidArgumentException;
+use Cekta\DI\Test\Fixture\A;
+use Cekta\DI\Test\Fixture\B;
+use Cekta\DI\Test\Fixture\ExampleParams;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 class ContainerBuilderTest extends TestCase
 {
+    public ContainerBuilder $builder;
+
     public function testBuildDefault(): void
     {
-        $builder = new ContainerBuilder();
-        $result = $builder->build();
-        $this->assertInstanceOf(Container::class, $result);
+        $container = $this->builder->build();
+        $this->assertInstanceOf(Container::class, $container);
+        $this->assertInstanceOf(A::class, $container->get(A::class));
+        $this->assertInstanceOf(B::class, $container->get(A::class)->b);
     }
 
-    public function testBuildCheckDefaultArguments(): void
+    protected function setUp(): void
     {
-        $builder = new ContainerBuilder();
-        $builder->setDevelopFactory(new ContainerDevelopFactory(ContainerDevelop::class));
-        $result = $builder->build();
-        assert($result instanceof ContainerDevelop);
-        $this->assertSame([], $result->params);
-        $this->assertSame([], $result->interfaces);
-        $this->assertSame([], $result->definitions);
+        $this->builder = new ContainerBuilder();
     }
 
-    public function testBuildCheckCustomArguments(): void
+    public function testBuildParams(): void
     {
-        $params = ['param' => 'value'];
-        $definitions = [
-            'definition' => function () {
+        $this->builder->params([
+            'a' => 123,
+            'b' => 321,
+        ]);
+        $container = $this->builder->build();
+        $this->assertSame(123, $container->get('a'));
+        $this->assertSame(321, $container->get('b'));
+        $this->assertInstanceOf(ExampleParams::class, $container->get(ExampleParams::class));
+    }
+
+    public function testBuildAlias(): void
+    {
+        $this->builder->params([
+            'a' => 'param a',
+        ]);
+        $this->builder->alias([
+            'example' => 'a',
+        ]);
+        $container = $this->builder->build();
+        $this->assertSame('param a', $container->get('example'));
+    }
+
+    public function testDefinition(): void
+    {
+        $this->builder->params([
+            'a' => 'value a',
+        ]);
+        $this->builder->definitions([
+            'example' => function (ContainerInterface $container) {
+                return [$container->get('a')];
             },
-            'd2' => function () {
-            },
-        ];
-        $interfaces = [
-            'interface' => 'class',
-            'i2' => 'c2'
-        ];
-        $builder = new ContainerBuilder();
-        $builder->setDevelopFactory(new ContainerDevelopFactory(ContainerDevelop::class))
-            ->setParams($params)
-            ->setDefinitionProvider(function () use ($definitions) {
-                return $definitions;
-            })
-            ->setInterfaceProvider(function () use ($interfaces) {
-                return $interfaces;
-            });
-        $result = $builder->build();
-        assert($result instanceof ContainerDevelop);
-        $this->assertSame($params, $result->params);
-        $this->assertSame($interfaces, $result->interfaces);
-        $this->assertSame($definitions, $result->definitions);
-    }
-
-    public function testBuildCompiled(): void
-    {
-        $params = ['param' => 'value'];
-        $builder = new ContainerBuilder();
-        $builder->setCompiledFactory(new ContainerCompiledFactory(ContainerCompiled::class))
-            ->setParams($params)
-            ->setDefinitionProvider(function () {
-                $this->fail();
-            })
-            ->setInterfaceProvider(function () {
-                $this->fail();
-            });
-        $result = $builder->build();
-        assert($result instanceof ContainerCompiled);
-        $this->assertSame($params, $result->params);
-    }
-
-    public function testDefinitionProviderReturnNotArray(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('definition provider must return array');
-        $builder = new ContainerBuilder();
-        $builder->setDefinitionProvider(function () {
-            return 123;
-        });
-        $builder->build();
-    }
-
-    public function testDefinitionProviderReturnKeyNotString(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('definition provider must return array with all keys is string');
-        $builder = new ContainerBuilder();
-        $builder->setDefinitionProvider(function () {
-            return [
-                function () {
-                }
-            ];
-        });
-        $builder->build();
-    }
-
-    public function testDefinitionProviderReturnValueNotCallable(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('definition provider must return array with all values is callable');
-        $builder = new ContainerBuilder();
-        $builder->setDefinitionProvider(function () {
-            return [
-                'test' => 'not callable'
-            ];
-        });
-        $builder->build();
-    }
-
-    public function testInterfaceProviderReturnNotArray(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('interface provider must return array');
-        $builder = new ContainerBuilder();
-        $builder->setInterfaceProvider(function () {
-            return 123;
-        });
-        $builder->build();
-    }
-
-    public function testInterfaceProviderReturnKeyNotString(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('interface provider must return array with all keys is string');
-        $builder = new ContainerBuilder();
-        $builder->setInterfaceProvider(function () {
-            return [
-                'key not string'
-            ];
-        });
-        $builder->build();
-    }
-
-    public function testInterfaceProviderReturnValueNotCallable(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('interface provider must return array with all values is string');
-        $builder = new ContainerBuilder();
-        $builder->setInterfaceProvider(function () {
-            return [
-                'test' => 123
-            ];
-        });
-        $builder->build();
+        ]);
+        $result = $this->builder->build()->get('example');
+        $this->assertIsArray($result);
+        $this->assertSame('value a', $result[0]);
     }
 }

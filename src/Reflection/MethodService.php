@@ -11,10 +11,7 @@ use ReflectionMethod;
  */
 class MethodService
 {
-    /**
-     * @var ParameterService
-     */
-    private $parameter;
+    private ParameterService $parameter;
 
     public function __construct()
     {

@@ -11,14 +11,8 @@ use Psr\Container\ContainerInterface;
 
 class ArrayCacheTest extends TestCase
 {
-    /**
-     * @var MockObject
-     */
-    private $mock;
-    /**
-     * @var ArrayCache
-     */
-    private $container;
+    private MockObject $mock;
+    private ArrayCache $container;
 
     protected function setUp(): void
     {

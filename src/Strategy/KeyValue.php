@@ -12,7 +12,7 @@ class KeyValue implements ContainerInterface
     /**
      * @var array<string, mixed>
      */
-    private $values;
+    private array $values;
 
     /**
      * @param array<string, mixed> $values
