@@ -24,9 +24,6 @@ class KeyValue implements ContainerInterface
 
     public function get($id)
     {
-        if (!$this->has($id)) {
-            throw new NotFound($id);
-        }
         return $this->values[$id];
     }
 

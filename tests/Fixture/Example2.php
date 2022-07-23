@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class B
+class Example2
 {
-    public string $username;
+    public $username;
 
-    public function __construct(string $username)
+    public function __construct($username)
     {
         $this->username = $username;
     }

@@ -19,15 +19,12 @@ class Reflection
     /**
      * @param string $name
      * @return string[]
+     * @throws ReflectionException
      */
     public function getDependencies(string $name): array
     {
-        try {
-            $class = new ReflectionClass($name);
-            return $this->reflectionMethod->findDependencies($class->getConstructor());
-        } catch (ReflectionException $exception) {
-            return [];
-        }
+        $class = new ReflectionClass($name);
+        return $this->reflectionMethod->findDependencies($class->getConstructor());
     }
 
     /**

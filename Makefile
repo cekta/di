@@ -1,5 +1,4 @@
 install:
-	php -i
 	composer install
 test: phpcs phpstan phpunit infection
 update:
