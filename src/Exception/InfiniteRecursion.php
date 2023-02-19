@@ -16,6 +16,6 @@ class InfiniteRecursion extends RuntimeException implements ContainerExceptionIn
     public function __construct(string $id, array $calls)
     {
         $callsString = implode(', ', $calls);
-        parent::__construct("Infinite recursion for `${id}`, calls: `${callsString}`");
+        parent::__construct("Infinite recursion for `{$id}`, calls: `{$callsString}`");
     }
 }

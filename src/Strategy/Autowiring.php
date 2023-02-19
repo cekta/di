@@ -21,9 +21,6 @@ class Autowiring implements ContainerInterface
 
     public function get($id)
     {
-        if (!$this->has($id)) {
-            throw new NotFound($id);
-        }
         $args = [];
         foreach ($this->reflection->getDependencies($id) as $dependency) {
             $args[] = $this->container->get($dependency);

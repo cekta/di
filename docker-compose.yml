@@ -3,6 +3,8 @@ services:
   app:
     build:
       context: ./
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.2}
     user: ${UID:-1000}
     volumes:
       - ./:/app

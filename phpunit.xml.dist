@@ -1,15 +1,16 @@
 <?xml version="1.0"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
          cacheResult="false"
-         colors="true">
+         colors="true"
+         executionOrder="random">
     <coverage>
         <include>
             <directory>src</directory>
         </include>
     </coverage>
     <testsuites>
-        <testsuite name="Unit">
+        <testsuite name="Acceptance">
             <directory>tests</directory>
         </testsuite>
     </testsuites>

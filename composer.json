@@ -11,8 +11,7 @@
   ],
   "require": {
     "psr/container": "^1.0",
-    "php": ">=8.0",
-    "ext-json": "*"
+    "php": ">=8.0"
   },
   "require-dev": {
     "phpunit/phpunit": "@stable",

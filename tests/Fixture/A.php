@@ -6,10 +6,15 @@ namespace Cekta\DI\Test\Fixture;
 
 class A
 {
-    public B $b;
+    public string $dsn;
+    public string $username;
+    public string $password;
+    public array $options;
 
-    public function __construct(B $b)
+    public function __construct(string $dsn, string $username, string $password = 'default password')
     {
-        $this->b = $b;
+        $this->dsn = $dsn;
+        $this->username = $username;
+        $this->password = $password;
     }
 }

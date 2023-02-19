@@ -3,19 +3,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ['8.0', '8.1']
+        php: ['8.0', '8.1', '8.2']
     steps:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: install
-        run: make install
-      - name: test
-        run: XDEBUG_MODE=coverage make test
+      - name: docker-compose up
+        run: docker-compose up
         env:
+          PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
-
 on:
+  pull_request:
+    branches:
+      - master
   push:
     branches:
       - master

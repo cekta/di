@@ -19,7 +19,7 @@ class Container implements ContainerInterface
      */
     public function __construct(array $params = [], array $interfaces = [], array $definitions = [])
     {
-        $this->container = new ArrayCache(new InfiniteRecursionDetector(new Strategy(
+        $this->container = new InfiniteRecursionDetector(new ArrayCache(new Strategy(
             new KeyValue($params),
             new Definition($definitions, $this),
             new Implementation($interfaces, $this),

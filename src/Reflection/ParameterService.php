@@ -20,20 +20,7 @@ class ParameterService
         if ($type instanceof ReflectionNamedType) {
             return $this->fromNamed($type, $parameter->name);
         }
-        if ($type instanceof ReflectionUnionType) {
-            return $this->fromUnion($type, $parameter->name);
-        }
         return $parameter->name;
-    }
-
-    private function fromUnion(ReflectionUnionType $type, string $name): string
-    {
-        foreach ($type->getTypes() as $namedType) {
-            if (!$namedType->isBuiltin()) {
-                return $namedType->getName();
-            }
-        }
-        return $name;
     }
 
     private function fromNamed(ReflectionNamedType $type, string $name): string

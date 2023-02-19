@@ -7,6 +7,14 @@
       "src"
     ]
   },
+  "mutators": {
+    "@default": true,
+    "Throw_": {
+      "ignore": [
+        "Cekta\\DI\\InfiniteRecursionDetector::get::29"
+      ]
+    }
+  },
   "timeout": 10,
   "minMsi": 100,
   "minCoveredMsi": 100
