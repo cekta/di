@@ -94,6 +94,8 @@ class ContainerBuilder
         $this->reflection = new Reflection();
         $namespace = $this->getNamespace();
         $class = $this->getClass();
+        $alias = $this->alias;
+        $definitions = $this->definitions;
         $containers = $this->generateContainers($containers);
         ob_start();
         include __DIR__ . '/../template/container.compiler';

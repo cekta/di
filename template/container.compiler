@@ -21,28 +21,18 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
 
     public function get($name)
     {
-        if (array_key_exists($name, $this->params)) {
-            return $this->params[$name];
-        }
-
-        if (array_key_exists($name, $this->alias)) {
-            $this->params[$name] = $this->get($this->alias[$name]);
-            return $this->params[$name];
-        }
-
-        if (array_key_exists($name, $this->definitions)) {
-            $this->params[$name] = ($this->definitions[$name])($this);
-            return $this->params[$name];
-        }
-
-        match($name) {
-<?php foreach($containers as $key => $value) { ?>
-            <?= var_export($key) ?> => $this->params[$name] = <?= $value ?>,
+        return $this->params[$name] ?? match($name) {
+<?php foreach(array_keys($alias) as $key) { ?>
+            <?= var_export($key) ?> => $this->params[$name] = $this->get($this->alias[$name]),
 <?php } ?>
-            default => throw new \Cekta\DI\Exception\NotFound($name),
-        };
-
-        return $this->params[$name];
+<?php foreach(array_keys($definitions) as $key) { ?>
+            <?= var_export($key) ?> => $this->params[$name] = $this->definitions[$name]($this),
+<?php } ?>
+<?php foreach($containers as $key => $value) { ?>
+           <?= var_export($key) ?> => $this->params[$name] = <?= $value ?>,
+<?php } ?>
+           default => throw new \Cekta\DI\Exception\NotFound($name),
+       };
     }
 
     public function has($name)
