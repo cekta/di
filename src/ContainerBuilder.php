@@ -91,7 +91,7 @@ class ContainerBuilder
      */
     public function compile(array $containers): string|false
     {
-        $this->reflection = new Reflection();
+        $this->reflection = new Reflection(new Container($this->params, $this->alias, $this->definitions));
         $namespace = $this->getNamespace();
         $class = $this->getClass();
         $alias = $this->alias;

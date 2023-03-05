@@ -13,6 +13,11 @@
       "ignore": [
         "Cekta\\DI\\InfiniteRecursionDetector::get::29"
       ]
+    },
+    "InstanceOf_": {
+      "ignore": [
+        "Cekta\\DI\\Reflection::getName::69"
+      ]
     }
   },
   "timeout": 10,
