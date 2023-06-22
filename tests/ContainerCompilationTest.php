@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerBuilder;
-use Cekta\DI\Test\Fixture\Example4;
+use Cekta\DI\Test\Fixture\ExampleWithoutConstructor;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionException;
@@ -32,7 +32,7 @@ class ContainerCompilationTest extends TestCase
     {
         $builder = new ContainerBuilder();
         $builder->fqcn('\\Container');
-        $compiled = $builder->compile([Example4::class]);
+        $compiled = $builder->compile([ExampleWithoutConstructor::class]);
         $this->assertIsString($compiled);
         $this->assertStringNotContainsString('namespace', $compiled);
     }
@@ -43,11 +43,12 @@ class ContainerCompilationTest extends TestCase
      */
     public function testInvalidNamespace(): void
     {
-        $builder = new ContainerBuilder();
         $fqcn = 'Container';
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid fqcn: `{$fqcn}` must contain \\");
+
+        $builder = new ContainerBuilder();
         $builder->fqcn($fqcn);
-        $builder->compile([Example4::class]);
+        $builder->compile([ExampleWithoutConstructor::class]);
     }
 }

@@ -1,24 +1,11 @@
 {
-  "logs": {
-    "text": "php://stdout"
-  },
   "source": {
     "directories": [
       "src"
     ]
   },
   "mutators": {
-    "@default": true,
-    "Throw_": {
-      "ignore": [
-        "Cekta\\DI\\InfiniteRecursionDetector::get::29"
-      ]
-    },
-    "InstanceOf_": {
-      "ignore": [
-        "Cekta\\DI\\Reflection::getName::69"
-      ]
-    }
+    "@default": true
   },
   "timeout": 10,
   "minMsi": 100,

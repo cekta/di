@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example6
+class ExampleUnionType
 {
-    public (A & B) | int $param;
+    public A|int $param;
 
-    public function __construct((A & B) | int $param)
+    public function __construct(A|int $param)
     {
         $this->param = $param;
     }

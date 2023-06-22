@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example5
+class ExampleOverwrite
 {
     public string $username;
     public string $password;

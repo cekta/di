@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example
+class ExampleNamed
 {
     public A $a;
     public I $i;

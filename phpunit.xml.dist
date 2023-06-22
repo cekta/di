@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
-         cacheResult="false"
-         colors="true"
-         executionOrder="random">
-    <coverage>
-        <include>
-            <directory>src</directory>
-        </include>
-    </coverage>
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+        cacheResult="false"
+        colors="true"
+        executionOrder="random">
+    <coverage/>
     <testsuites>
         <testsuite name="Acceptance">
             <directory>tests</directory>

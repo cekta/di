@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example3
+class ExampleMixType
 {
     public string $username;
     public A $a;
