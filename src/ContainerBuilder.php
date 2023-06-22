@@ -2,7 +2,7 @@
 
 namespace Cekta\DI;
 
-use LogicException;
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use ReflectionException;
 use UnexpectedValueException;
@@ -28,8 +28,9 @@ class ContainerBuilder
      * @var array<string>
      */
     private array $shared = [];
+
     /**
-     * @var array<string, array<string>>
+     * @var array<string, array<array{'name': string, 'variadic': bool}>>
      */
     private array $dependenciesMap = [];
     private string $fqcn = 'App\Container';
@@ -43,7 +44,7 @@ class ContainerBuilder
             if ($result instanceof ContainerInterface) {
                 return $result;
             }
-            throw new UnexpectedValueException("`{$this->fqcn}` must implement Psr\Container\ContainerInterface");
+            throw new UnexpectedValueException("`$this->fqcn` must implement Psr\Container\ContainerInterface");
         }
         return new Container($this->params, $this->alias, $this->definitions);
     }
@@ -86,7 +87,7 @@ class ContainerBuilder
 
     /**
      * @param array<string> $containers
-     * @return string
+     * @return string|false
      * @throws ReflectionException
      */
     public function compile(array $containers): string|false
@@ -109,7 +110,7 @@ class ContainerBuilder
     {
         $position = strrpos($this->fqcn, '\\');
         if ($position === false) {
-            throw new \InvalidArgumentException("Invalid fqcn: `{$this->fqcn}` must contain \\");
+            throw new InvalidArgumentException("Invalid fqcn: `$this->fqcn` must contain \\");
         }
         return substr($this->fqcn, 0, $position);
     }
@@ -160,7 +161,11 @@ class ContainerBuilder
             }
             if ($this->reflection->isInstantiable($container)) {
                 $this->dependenciesMap[$container] = $this->reflection->getDependencies($container);
-                $this->generateMap($this->dependenciesMap[$container]);
+                /** @var array<string> $new_containers */
+                $new_containers = array_map(static function (array $container) {
+                    return $container['name'];
+                }, $this->dependenciesMap[$container]);
+                $this->generateMap($new_containers);
                 continue;
             }
             throw new UnexpectedValueException("`$container` is cant be resolved");
@@ -170,7 +175,7 @@ class ContainerBuilder
     private function buildContainer(string $target): string
     {
         if (
-            (in_array($target, $this->shared) && count($this->stack))
+            (in_array($target, $this->shared) && count($this->stack) !== 0)
             || array_key_exists($target, $this->alias)
             || array_key_exists($target, $this->definitions)
             || array_key_exists($target, $this->params)
@@ -181,7 +186,9 @@ class ContainerBuilder
         $container = "new \\$target(";
         if (array_key_exists($target, $this->dependenciesMap)) {
             foreach ($this->dependenciesMap[$target] as $dependency) {
-                $container .= "{$this->buildContainer($dependency)}, ";
+                $name = $dependency['name'];
+                $variadic = $dependency['variadic'] === true ? '...' : '';
+                $container .= "$variadic{$this->buildContainer($name)}, ";
             }
         }
         $container .= ')';

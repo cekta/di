@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example2
+class ExampleWithoutType
 {
-    public $username;
+    public mixed $username;
 
     public function __construct($username)
     {

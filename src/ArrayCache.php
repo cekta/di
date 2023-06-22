@@ -9,9 +9,6 @@ use Psr\Container\ContainerInterface;
 class ArrayCache implements ContainerInterface
 {
     private ContainerInterface $container;
-    /**
-     * @var string[]
-     */
     private array $values = [];
 
     public function __construct(ContainerInterface $container)

@@ -23,7 +23,7 @@ class Reflection
 
     /**
      * @param string $name
-     * @return string[]
+     * @return array<array{name: string, variadic: bool}>
      * @throws ReflectionException
      */
     public function getDependencies(string $name): array
@@ -35,7 +35,10 @@ class Reflection
         }
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
-            $parameters[] = $this->getName($name, $parameter);
+            $parameters[] = [
+                'name' => $this->getName($name, $parameter),
+                'variadic' => $parameter->isVariadic()
+            ];
         }
         return $parameters;
     }
@@ -56,20 +59,17 @@ class Reflection
 
     private function getName(string $name, ReflectionParameter $parameter): string
     {
-        $key = "{$name}\${$parameter->name}";
+        $prefix = $parameter->isVariadic() ? '...' : '';
+        $key = "{$prefix}{$name}\${$parameter->name}";
         if ($this->container->has($key)) {
             return $key;
         }
         $type = $parameter->getType();
-        if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-            return $type->getName();
+
+        if ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
+            return $prefix . $parameter->name;
         }
-        if (
-            $type instanceof ReflectionUnionType
-            || $type instanceof ReflectionIntersectionType
-        ) {
-            return (string)$type;
-        }
-        return $parameter->name;
+
+        return $prefix . $type;
     }
 }

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Fixture;
 
-class Example7
+class ExampleVariadicUnion
 {
-    public A|int $param;
+    public array $param;
 
-    public function __construct(A|int $param)
+    public function __construct(A|int ...$param)
     {
         $this->param = $param;
     }
