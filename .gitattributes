@@ -1,0 +1,7 @@
+* export-ignore
+
+/src** -export-ignore
+/template** -export-ignore
+/composer.json -export-ignore
+/readme.md -export-ignore
+/LICENSE -export-ignore
