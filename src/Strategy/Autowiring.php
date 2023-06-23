@@ -11,18 +11,34 @@ class Autowiring implements ContainerInterface
 {
     private Reflection $reflection;
     private ContainerInterface $container;
+    /**
+     * @var array<string, string>
+     */
+    private array $alias;
 
-    public function __construct(Reflection $reflection, ContainerInterface $container)
+    /**
+     * @param Reflection $reflection
+     * @param ContainerInterface $container
+     * @param array<string, string> $alias
+     */
+    public function __construct(Reflection $reflection, ContainerInterface $container, array $alias)
     {
         $this->reflection = $reflection;
         $this->container = $container;
+        $this->alias = $alias;
     }
 
     public function get($id)
     {
         $args = [];
         foreach ($this->reflection->getDependencies($id) as $dependency) {
-            $container = $this->container->get($dependency['name']);
+            $target = $dependency['name'];
+            if (array_key_exists($dependency['parameter'], $this->alias)) {
+                $target = $dependency['parameter'];
+            }
+
+            $container = $this->container->get($target);
+
             if ($dependency['variadic'] === true) {
                 assert(is_array($container));
                 $args = array_merge($args, $container);

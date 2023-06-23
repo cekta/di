@@ -27,7 +27,7 @@ class Compiler
      */
     private array $shared = [];
     /**
-     * @var array<string, array<array{'name': string, 'variadic': bool}>>
+     * @var array<string, array<array{'name': string, 'variadic': bool, parameter: string}>>
      */
     private array $dependenciesMap = [];
     private Reflection $reflection;
@@ -53,7 +53,7 @@ class Compiler
      */
     public function __invoke(array $containers): string|false
     {
-        $this->reflection = new Reflection(new Container($this->params, $this->alias, $this->definitions));
+        $this->reflection = new Reflection();
         $namespace = $this->getNamespace();
         $class = $this->getClass();
         $alias = $this->alias;
@@ -121,9 +121,11 @@ class Compiler
             if ($this->reflection->isInstantiable($container)) {
                 $this->dependenciesMap[$container] = $this->reflection->getDependencies($container);
                 /** @var array<string> $new_containers */
-                $new_containers = array_map(static function (array $container) {
-                    return $container['name'];
-                }, $this->dependenciesMap[$container]);
+                $new_containers = [];
+                foreach ($this->dependenciesMap[$container] as $dependency) {
+                    $new_containers[] = array_key_exists($dependency['parameter'], $this->alias) ?
+                        $dependency['parameter'] : $dependency['name'];
+                }
                 $this->generateMap($new_containers);
                 continue;
             }
@@ -145,7 +147,10 @@ class Compiler
         $container = "new \\$target(";
         if (array_key_exists($target, $this->dependenciesMap)) {
             foreach ($this->dependenciesMap[$target] as $dependency) {
-                $name = $dependency['name'];
+                $name = array_key_exists(
+                    $dependency['parameter'],
+                    $this->alias
+                ) ? $dependency['parameter'] : $dependency['name'];
                 $variadic = $dependency['variadic'] === true ? '...' : '';
                 $container .= "$variadic{$this->buildContainer($name)}, ";
             }

@@ -105,7 +105,7 @@ class ContainerTest extends TestCase
     {
         $overwrite = $this->container->get(ExampleOverwrite::class);
         $this->assertInstanceOf(ExampleOverwrite::class, $overwrite);
-        $this->assertSame(Builder::$PARAMS[ExampleOverwrite::class . '$username'], $overwrite->username);
+        $this->assertSame(Builder::$PARAMS['overwrite_username'], $overwrite->username);
     }
 
     /**
@@ -127,7 +127,7 @@ class ContainerTest extends TestCase
     {
         $variadic_overwrite = $this->container->get(ExampleVariadicOverwrite::class);
         $this->assertInstanceOf(ExampleVariadicOverwrite::class, $variadic_overwrite);
-        $expected = Builder::$PARAMS[sprintf('...%s$variadic_primitive_params', ExampleVariadicOverwrite::class)];
+        $expected = Builder::$PARAMS['variadic_overwrite_param'];
         $this->assertSame($expected, $variadic_overwrite->params);
     }
 

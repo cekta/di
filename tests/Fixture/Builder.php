@@ -12,6 +12,7 @@ class Builder
     public static array $PARAMS;
     public static array $ALIAS = [
         I::class => R::class,
+        ExampleOverwrite::class . '$username' => 'overwrite_username',
     ];
     private ContainerBuilder $builder;
     /**
@@ -27,7 +28,7 @@ class Builder
             'db_type' => 'mysql',
             'db_name' => 'test',
             'db_host' => '127.0.0.1',
-            ExampleOverwrite::class . '$username' => 'other_username',
+            'overwrite_username' => 'other_username',
             A::class . '|int' => 54321,
             '...variadic_params' => [123, 456],
             '...variadic_strings' => ['hello', 'world'],
@@ -39,12 +40,20 @@ class Builder
             new ExampleWithoutConstructor(),
             new ExampleWithoutConstructor()
         ];
-        self::$PARAMS[sprintf('...%s$variadic_primitive_params', ExampleVariadicOverwrite::class)] = [
+        self::$ALIAS[sprintf(
+            '...%s$variadic_primitive_params',
+            ExampleVariadicOverwrite::class
+        )] = 'variadic_overwrite_param';
+        self::$PARAMS['variadic_overwrite_param'] = [
             'overwrite'
         ];
         if (version_compare(PHP_VERSION, '8.1.0', '>=')) {
-            self::$PARAMS[sprintf('%s&%s', A::class, I::class)] = new C('', '', '');
-            self::$PARAMS[sprintf('...%s&%s', A::class, I::class)] = [new C('', '', '')];
+            self::$PARAMS[
+                sprintf('%s&%s', A::class, I::class)
+            ] = new C('', '', '');
+            self::$PARAMS[
+                sprintf('...%s&%s', A::class, I::class)
+            ] = [new C('', '', '')];
         }
 
         $this->builder = new ContainerBuilder();

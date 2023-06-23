@@ -4,7 +4,7 @@ namespace Cekta\DI;
 
 use Cekta\DI\Strategy\Autowiring;
 use Cekta\DI\Strategy\Definition;
-use Cekta\DI\Strategy\Implementation;
+use Cekta\DI\Strategy\Alias;
 use Cekta\DI\Strategy\KeyValue;
 use Psr\Container\ContainerInterface;
 
@@ -14,16 +14,16 @@ class Container implements ContainerInterface
 
     /**
      * @param array<string, mixed> $params
-     * @param array<string, string> $interfaces
+     * @param array<string, string> $alias
      * @param array<string, callable> $definitions
      */
-    public function __construct(array $params = [], array $interfaces = [], array $definitions = [])
+    public function __construct(array $params = [], array $alias = [], array $definitions = [])
     {
         $this->container = new ArrayCache(new InfiniteRecursionDetector(new Strategy(
             new KeyValue($params),
             new Definition($definitions, $this),
-            new Implementation($interfaces, $this),
-            new Autowiring(new Reflection($this), $this),
+            new Alias($alias, $this),
+            new Autowiring(new Reflection(), $this, $alias),
         )));
     }
 

@@ -6,7 +6,7 @@ namespace Cekta\DI\Strategy;
 
 use Psr\Container\ContainerInterface;
 
-class Implementation extends KeyValue
+class Alias extends KeyValue
 {
     private ContainerInterface $container;
 
