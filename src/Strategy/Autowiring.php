@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Strategy;
 
-use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Reflection;
-use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 
 class Autowiring implements ContainerInterface

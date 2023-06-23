@@ -7,10 +7,8 @@ namespace Cekta\DI;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionUnionType;
 
 class Reflection
 {

@@ -3,8 +3,6 @@
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerBuilder;
-use Cekta\DI\Test\Fixture\ExampleNamed;
-use Generator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;

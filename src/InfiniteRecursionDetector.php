@@ -9,14 +9,11 @@ use Psr\Container\ContainerInterface;
 
 class InfiniteRecursionDetector implements ContainerInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private ContainerInterface $container;
     /**
      * @var string[]
      */
-    private $calls = [];
+    private array $calls = [];
 
     public function __construct(ContainerInterface $container)
     {
