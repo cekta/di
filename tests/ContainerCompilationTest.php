@@ -8,14 +8,10 @@ use Cekta\DI\ContainerBuilder;
 use Cekta\DI\Test\Fixture\ExampleWithoutConstructor;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use ReflectionException;
 use UnexpectedValueException;
 
 class ContainerCompilationTest extends TestCase
 {
-    /**
-     * @throws ReflectionException
-     */
     public function testFail(): void
     {
         $this->expectException(UnexpectedValueException::class);
@@ -24,10 +20,6 @@ class ContainerCompilationTest extends TestCase
             ->compile(['invalid container']);
     }
 
-    /**
-     * @return void
-     * @throws ReflectionException
-     */
     public function testWithoutNamespace(): void
     {
         $builder = new ContainerBuilder();
@@ -37,15 +29,11 @@ class ContainerCompilationTest extends TestCase
         $this->assertStringNotContainsString('namespace', $compiled);
     }
 
-    /**
-     * @return void
-     * @throws ReflectionException
-     */
     public function testInvalidNamespace(): void
     {
         $fqcn = 'Container';
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid fqcn: `{$fqcn}` must contain \\");
+        $this->expectExceptionMessage("Invalid fqcn: `$fqcn` must contain \\");
 
         $builder = new ContainerBuilder();
         $builder->fqcn($fqcn);

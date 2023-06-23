@@ -17,7 +17,7 @@ class Builder
     /**
      * @psalm-var  class-string<object>
      */
-    public static $FQCN = 'Cekta\\DI\\Test\\ExampleCompiled';
+    public static string $FQCN = 'Cekta\\DI\\Test\\ExampleCompiled';
 
     public function __construct()
     {
@@ -57,7 +57,7 @@ class Builder
                     $db_name = $c->get('db_name');
                     $db_host = $c->get('db_host');
                     assert(is_string($db_type) && is_string($db_name) && is_string($db_host));
-                    return "{$db_type}:dbname={$db_name};host={$db_host}";
+                    return "$db_type:dbname=$db_name;host=$db_host";
                 },
             ]);
     }

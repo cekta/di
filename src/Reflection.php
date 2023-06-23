@@ -22,11 +22,14 @@ class Reflection
     /**
      * @param string $name
      * @return array<array{name: string, variadic: bool}>
-     * @throws ReflectionException
      */
     public function getDependencies(string $name): array
     {
-        $class = new ReflectionClass($name);
+        try {
+            $class = new ReflectionClass($name);
+        } catch (ReflectionException $e) {
+            return [];
+        }
         $constructor = $class->getConstructor();
         if ($constructor === null) {
             return [];
@@ -58,7 +61,7 @@ class Reflection
     private function getName(string $name, ReflectionParameter $parameter): string
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
-        $key = "{$prefix}{$name}\${$parameter->name}";
+        $key = "$prefix$name\$$parameter->name";
         if ($this->container->has($key)) {
             return $key;
         }

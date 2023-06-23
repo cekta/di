@@ -88,7 +88,6 @@ class ContainerBuilder
     /**
      * @param array<string> $containers
      * @return string|false
-     * @throws ReflectionException
      */
     public function compile(array $containers): string|false
     {
@@ -126,7 +125,6 @@ class ContainerBuilder
     /**
      * @param string[] $targets
      * @return array<string, string>
-     * @throws ReflectionException
      */
     private function generateContainers(array $targets): array
     {
@@ -140,7 +138,6 @@ class ContainerBuilder
 
     /**
      * @param array<string> $containers
-     * @throws ReflectionException
      */
     private function generateMap(array $containers): void
     {
