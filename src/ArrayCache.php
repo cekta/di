@@ -16,9 +16,6 @@ class ArrayCache implements ContainerInterface
         $this->container = $container;
     }
 
-    /**
-     * @noinspection PhpMissingReturnTypeInspection
-     */
     public function get($id)
     {
         if (!array_key_exists($id, $this->values)) {

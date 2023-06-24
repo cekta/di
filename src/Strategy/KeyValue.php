@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Strategy;
 
-use Cekta\DI\Exception\NotFound;
 use Psr\Container\ContainerInterface;
 
 class KeyValue implements ContainerInterface

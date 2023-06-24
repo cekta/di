@@ -8,9 +8,9 @@ use Cekta\DI\Container;
 use Cekta\DI\Test\Fixture\A;
 use Cekta\DI\Test\Fixture\B;
 use Cekta\DI\Test\Fixture\Builder;
-use Cekta\DI\Test\Fixture\ExampleMixType;
 use Cekta\DI\Test\Fixture\ExampleDNFType;
 use Cekta\DI\Test\Fixture\ExampleIntersectionType;
+use Cekta\DI\Test\Fixture\ExampleMixType;
 use Cekta\DI\Test\Fixture\ExampleNamed;
 use Cekta\DI\Test\Fixture\ExampleOverwrite;
 use Cekta\DI\Test\Fixture\ExampleUnionType;
@@ -43,6 +43,10 @@ class ContainerTest extends TestCase
         }
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testNamed(): void
     {
         $this->assertTrue($this->container->has(ExampleNamed::class));
@@ -56,6 +60,10 @@ class ContainerTest extends TestCase
         $this->assertInstanceOf(Builder::$ALIAS[I::class], $example->i);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testMustBeSingleton(): void
     {
         $example = $this->container->get(ExampleNamed::class);
@@ -66,6 +74,10 @@ class ContainerTest extends TestCase
         $this->assertSame($example->a, $example_other->a);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testWithoutType(): void
     {
         $example2 = $this->container->get(ExampleWithoutType::class);
@@ -73,6 +85,10 @@ class ContainerTest extends TestCase
         $this->assertSame(Builder::$PARAMS['username'], $example2->username);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testWithoutConstructor(): void
     {
         $this->assertInstanceOf(
@@ -81,13 +97,21 @@ class ContainerTest extends TestCase
         );
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testOverwrite(): void
     {
         $overwrite = $this->container->get(ExampleOverwrite::class);
         $this->assertInstanceOf(ExampleOverwrite::class, $overwrite);
-        $this->assertSame(Builder::$PARAMS[ExampleOverwrite::class . '$username'], $overwrite->username);
+        $this->assertSame(Builder::$PARAMS['overwrite_username'], $overwrite->username);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testUnionType(): void
     {
         $union = $this->container->get(ExampleUnionType::class);
@@ -95,14 +119,22 @@ class ContainerTest extends TestCase
         $this->assertSame(Builder::$PARAMS[A::class . '|int'], $union->param);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testVariadicOverwrite(): void
     {
         $variadic_overwrite = $this->container->get(ExampleVariadicOverwrite::class);
         $this->assertInstanceOf(ExampleVariadicOverwrite::class, $variadic_overwrite);
-        $expected = Builder::$PARAMS[sprintf('...%s$variadic_primitive_params', ExampleVariadicOverwrite::class)];
+        $expected = Builder::$PARAMS['variadic_overwrite_param'];
         $this->assertSame($expected, $variadic_overwrite->params);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testVariadicWithoutType(): void
     {
         $variadic_without_type = $this->container->get(ExampleVariadicWithoutType::class);
@@ -110,6 +142,10 @@ class ContainerTest extends TestCase
         $this->assertSame(Builder::$PARAMS['...variadic_params'], $variadic_without_type->params);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testVariadicPrimitive(): void
     {
         $variadic_primitive = $this->container->get(ExampleVariadicPrimitive::class);
@@ -118,6 +154,10 @@ class ContainerTest extends TestCase
         $this->assertSame(Builder::$PARAMS['username'], $variadic_primitive->username);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testVariadicUnion(): void
     {
         $variadic_union = $this->container->get(ExampleVariadicUnion::class);
@@ -126,6 +166,10 @@ class ContainerTest extends TestCase
         $this->assertSame($expected, $variadic_union->param);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testVariadicNamed(): void
     {
         $variadic_named = $this->container->get(ExampleVariadicNamedType::class);
@@ -134,11 +178,19 @@ class ContainerTest extends TestCase
         $this->assertSame($expected, $variadic_named->param);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testDeepDependency(): void
     {
         $this->assertInstanceOf(A::class, $this->container->get(A::class));
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testMixType(): void
     {
         $example3 = $this->container->get(ExampleMixType::class);

@@ -8,9 +8,15 @@ use Cekta\DI\ContainerBuilder;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Test\Fixture\ExampleRecursion;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class InfiniteRecursionTest extends TestCase
 {
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function test(): void
     {
         $this->expectException(InfiniteRecursion::class);

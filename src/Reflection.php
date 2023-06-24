@@ -7,36 +7,32 @@ namespace Cekta\DI;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionParameter;
-use ReflectionUnionType;
 
 class Reflection
 {
-    private ContainerInterface $container;
-
-    public function __construct(ContainerInterface $container)
-    {
-        $this->container = $container;
-    }
-
     /**
      * @param string $name
-     * @return array<array{name: string, variadic: bool}>
-     * @throws ReflectionException
+     * @return array<array{name: string, variadic: bool, parameter: string}>
      */
     public function getDependencies(string $name): array
     {
-        $class = new ReflectionClass($name);
+        try {
+            $class = new ReflectionClass($name);
+        } catch (ReflectionException $e) {
+            return [];
+        }
         $constructor = $class->getConstructor();
         if ($constructor === null) {
             return [];
         }
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
+            $prefix = $parameter->isVariadic() ? '...' : '';
             $parameters[] = [
-                'name' => $this->getName($name, $parameter),
+                'name' => $prefix . $this->getName($name, $parameter),
+                'parameter' => "$prefix$name\$$parameter->name",
                 'variadic' => $parameter->isVariadic()
             ];
         }
@@ -59,17 +55,12 @@ class Reflection
 
     private function getName(string $name, ReflectionParameter $parameter): string
     {
-        $prefix = $parameter->isVariadic() ? '...' : '';
-        $key = "{$prefix}{$name}\${$parameter->name}";
-        if ($this->container->has($key)) {
-            return $key;
-        }
         $type = $parameter->getType();
 
         if ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
-            return $prefix . $parameter->name;
+            return $parameter->name;
         }
 
-        return $prefix . $type;
+        return (string)$type;
     }
 }
