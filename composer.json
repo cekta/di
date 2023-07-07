@@ -24,6 +24,9 @@
       "Cekta\\DI\\": "src/"
     }
   },
+  "provide": {
+    "psr/container-implementation": "^1.0"
+  },
   "autoload-dev": {
     "psr-4": {
       "Cekta\\DI\\Test\\": "tests/"
