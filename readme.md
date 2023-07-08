@@ -21,6 +21,6 @@
 composer require cekta/di
 ```
 
-### Video examples with Russian comments
+### Video tutorial (Russian
 
 [![Video Preview](http://img.youtube.com/vi/gm-3TSf9go0/0.jpg)](http://www.youtube.com/watch?v=gm-3TSf9go0)
