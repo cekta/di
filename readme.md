@@ -8,13 +8,12 @@
 
 ## Features
 
- * Support Autowiring. Constructor-based automatic configuration
- * Autowiring support variadic arguments.
- * Allows you to manually configure any dependency (using closure).
+ * Supports Autowiring with automatic constructor-based configuration and variadic arguments.
+ * Allows you to manually configure any dependency via closures.
  * Easy to improve and extend.
- * Contain everything you need.
- * Support opcache compilation (fast)
- * High code quality (see badges)
+ * Contains everything you need.
+ * Supports opcache compilation (fast).
+ * High code quality (see the badges).
 
 ## Install via [composer](https://getcomposer.org/)
 
