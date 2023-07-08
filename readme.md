@@ -20,3 +20,7 @@
 ```
 composer require cekta/di
 ```
+
+### Video examples with Russian comments
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/gm-3TSf9go0/0.jpg)](http://www.youtube.com/watch?v=gm-3TSf9go0)
