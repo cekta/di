@@ -47,6 +47,15 @@ class ContainerTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
+    public function testNull(): void
+    {
+        $this->assertNull($this->container->get('null'));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testNamed(): void
     {
         $this->assertTrue($this->container->has(ExampleNamed::class));
