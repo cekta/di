@@ -32,6 +32,7 @@ class Builder
             A::class . '|int' => 54321,
             '...variadic_params' => [123, 456],
             '...variadic_strings' => ['hello', 'world'],
+            'null' => null,
         ];
         self::$PARAMS[sprintf('(%s&%s)|int', A::class, B::class)] = 12345;
         self::$PARAMS[sprintf('...(%s&%s)|int', A::class, B::class)] = [456, 321];

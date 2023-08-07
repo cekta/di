@@ -10,7 +10,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
-class ContainerCompilationTest extends TestCase
+class CompilerTest extends TestCase
 {
     public function testFail(): void
     {

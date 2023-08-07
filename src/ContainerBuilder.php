@@ -74,11 +74,23 @@ class ContainerBuilder
 
     /**
      * @param array<string> $containers
+     * @param bool $definition_overridable
+     * @param bool $alias_overridable
+     * @param bool $reflection_enabled
      * @return string|false
      */
-    public function compile(array $containers): string|false
-    {
+    public function compile(
+        array $containers,
+        bool $definition_overridable = true,
+        bool $alias_overridable = true,
+        bool $reflection_enabled = false
+    ): string|false {
         $compiler = new Compiler($this->params, $this->alias, $this->definitions, $this->fqcn);
-        return $compiler($containers);
+        return $compiler(
+            $containers,
+            $definition_overridable,
+            $alias_overridable,
+            $reflection_enabled,
+        );
     }
 }

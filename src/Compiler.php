@@ -49,10 +49,17 @@ class Compiler
 
     /**
      * @param array<string> $containers
+     * @param bool $definition_overridable
+     * @param bool $alias_overridable
+     * @param bool $reflection_enabled
      * @return string|false
      */
-    public function __invoke(array $containers): string|false
-    {
+    public function __invoke(
+        array $containers,
+        bool $definition_overridable,
+        bool $alias_overridable,
+        bool $reflection_enabled
+    ): string|false {
         $this->reflection = new Reflection();
         $namespace = $this->getNamespace();
         $class = $this->getClass();
@@ -60,7 +67,7 @@ class Compiler
         $definitions = $this->definitions;
         $containers = $this->generateContainers($containers);
         ob_start();
-        include __DIR__ . '/../template/container.compiler';
+        include __DIR__ . '/../template/container.compiler.php';
         return ob_get_clean();
     }
 
