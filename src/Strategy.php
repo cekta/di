@@ -28,7 +28,7 @@ class Strategy implements ContainerInterface
         return $provider->get($id);
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return $this->findProvider($id) !== null;
     }

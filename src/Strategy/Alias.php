@@ -16,7 +16,7 @@ class Alias extends KeyValue
         $this->container = $container;
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         $result = parent::get($id);
         if (is_string($result)) {

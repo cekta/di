@@ -16,7 +16,7 @@ class ArrayCache implements ContainerInterface
         $this->container = $container;
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         if (!array_key_exists($id, $this->values)) {
             $this->values[$id] = $this->container->get($id);
@@ -24,7 +24,7 @@ class ArrayCache implements ContainerInterface
         return $this->values[$id];
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->values) || $this->container->has($id);
     }

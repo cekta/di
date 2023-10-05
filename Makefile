@@ -1,8 +1,6 @@
 install:
 	composer install
-test: phpcs phpstan phpunit infection clean
-clean:
-	rm -f tests/ExampleCompiled.php
+test: phpcs phpstan phpunit infection
 update:
 	composer update
 phpcs:

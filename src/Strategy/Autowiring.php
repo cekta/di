@@ -28,7 +28,7 @@ class Autowiring implements ContainerInterface
         $this->alias = $alias;
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         $args = [];
         foreach ($this->reflection->getDependencies($id) as $dependency) {
@@ -49,7 +49,7 @@ class Autowiring implements ContainerInterface
         return new $id(...$args);
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return $this->reflection->isInstantiable($id);
     }
