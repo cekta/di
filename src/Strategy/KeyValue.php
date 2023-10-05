@@ -21,12 +21,12 @@ class KeyValue implements ContainerInterface
         $this->values = $values;
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         return $this->values[$id];
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->values);
     }

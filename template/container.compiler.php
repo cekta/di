@@ -41,7 +41,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         $this->containers = <?= var_export(array_unique(array_merge(array_keys($containers), array_keys($alias)))) ?>;
     }
 
-    public function get($name)
+    public function get(string $name)
     {
         if (!array_key_exists($name, $this->params)) {
             $this->params[$name] = match($name) {
@@ -66,7 +66,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         return $this->params[$name];
     }
 
-    public function has($name)
+    public function has(string $name): bool
     {
         return array_key_exists($name, $this->params)
 <?php if ($alias_overridable) { ?>

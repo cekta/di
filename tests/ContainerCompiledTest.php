@@ -34,6 +34,9 @@ class ContainerCompiledTest extends ContainerTest
         if (file_exists(__DIR__ . '/ExampleCompiled.php')) {
             unlink(__DIR__ . '/ExampleCompiled.php');
         }
+        if (file_exists(__DIR__ . '/TestReflectionEnabled.php')) {
+            unlink(__DIR__ . '/TestReflectionEnabled.php');
+        }
     }
 
     /**

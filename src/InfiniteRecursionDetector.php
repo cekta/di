@@ -20,7 +20,7 @@ class InfiniteRecursionDetector implements ContainerInterface
         $this->container = $container;
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         if (in_array($id, $this->calls)) {
             throw new InfiniteRecursion($id, $this->calls);
@@ -31,7 +31,7 @@ class InfiniteRecursionDetector implements ContainerInterface
         return $result;
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return $this->container->has($id);
     }
