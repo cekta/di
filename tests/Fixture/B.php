@@ -6,10 +6,10 @@ namespace Cekta\DI\Test\Fixture;
 
 class B
 {
-    public string $username;
-
-    public function __construct(string $username)
-    {
-        $this->username = $username;
+    public function __construct(
+        private string $username,
+        private string $password,
+        private C $c
+    ) {
     }
 }

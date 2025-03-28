@@ -3,4 +3,5 @@
     <rule ref="PSR12"/>
     <file>src</file>
     <file>tests</file>
+    <exclude-pattern>tests/Container.php</exclude-pattern>
 </ruleset>

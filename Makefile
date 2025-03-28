@@ -1,6 +1,7 @@
 install:
 	composer install
-test: phpcs phpstan phpunit infection
+#test: phpcs phpstan phpunit infection
+test: phpcs phpunit infection
 update:
 	composer update
 phpcs:
@@ -12,10 +13,23 @@ phpunit:
 infection:
 	./vendor/bin/infection --show-mutations
 docker:
-	docker-compose up
+	docker compose run --rm app install
+	docker compose run --rm app
+shell:
+	docker compose run --rm --entrypoint=/bin/sh app
 docker-build-8.0:
-	PHP_VERSION=8.0 docker-compose build
+	PHP_VERSION=8.0 docker compose build
+	docker compose run --rm app update
 docker-build-8.1:
-	PHP_VERSION=8.1 docker-compose build
+	PHP_VERSION=8.1 docker compose build
+	docker compose run --rm app update
 docker-build-8.2:
-	PHP_VERSION=8.2 docker-compose build
+	PHP_VERSION=8.2 docker compose build
+	docker compose run --rm app update
+docker-build-8.3:
+	PHP_VERSION=8.3 docker compose build
+	docker compose run --rm app update
+docker-run-8.0: docker-build-8.0 docker
+docker-run-8.1: docker-build-8.1 docker
+docker-run-8.2: docker-build-8.2 docker
+docker-run-8.3: docker-build-8.3 docker

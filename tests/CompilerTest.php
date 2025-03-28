@@ -4,39 +4,28 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerBuilder;
-use Cekta\DI\Test\Fixture\ExampleWithoutConstructor;
-use InvalidArgumentException;
+use Cekta\DI\Compiler;
 use PHPUnit\Framework\TestCase;
-use UnexpectedValueException;
 
 class CompilerTest extends TestCase
 {
-    public function testFail(): void
+    private Compiler $compiler;
+
+    protected function setUp(): void
     {
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('`invalid container` is cant be resolved');
-        (new ContainerBuilder())
-            ->compile(['invalid container']);
+        $this->compiler = new Compiler();
     }
 
-    public function testWithoutNamespace(): void
+    public function testCompileInvalidFQCN(): void
     {
-        $builder = new ContainerBuilder();
-        $builder->fqcn('\\Container');
-        $compiled = $builder->compile([ExampleWithoutConstructor::class]);
-        $this->assertIsString($compiled);
-        $this->assertStringNotContainsString('namespace', $compiled);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->compiler->compile(fqcn: 'invalid fqcn');
     }
 
-    public function testInvalidNamespace(): void
+    public function testCompileWithoutNamespace(): void
     {
-        $fqcn = 'Container';
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid fqcn: `$fqcn` must contain \\");
-
-        $builder = new ContainerBuilder();
-        $builder->fqcn($fqcn);
-        $builder->compile([ExampleWithoutConstructor::class]);
+        $code = $this->compiler->compile(fqcn: '\Container');
+        $this->assertNotEmpty($code);
+        $this->assertStringNotContainsString('namespace', $code);
     }
 }

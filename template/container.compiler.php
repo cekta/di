@@ -1,84 +1,88 @@
-<?= '<?php' . PHP_EOL; ?><?php
+<?= '<?php' . PHP_EOL; ?>
+<?php
 /**
+ * @var string $namespace
  * @var string $class
- * @var bool $reflection_enabled
- * @var bool $alias_overridable
- * @var bool $definition_overridable
- * @var array $alias
- * @var array $alias
- * @var array $containers
+ * @var array<string, string> $containers
+ * @var array<string, string> $alias
+ * @var array<string, mixed> $params
+ * @var array<string, callable> $definitions
  */
+
 ?>
 
 declare(strict_types=1);
 
-<?php if (!empty($namespace)) { ?>namespace <?= $namespace ?>; <?php } ?>
+<?php
+if (!empty($namespace)) {
+    echo "namespace {$namespace};";
+}
+?>
 
 class <?= $class ?> implements \Psr\Container\ContainerInterface
 {
     private array $params;
     private array $alias;
-<?php if ($definition_overridable) { ?>
     private array $definitions;
-<?php } ?>
-    private array $containers;
-<?php if ($reflection_enabled) { ?>
-    private \Cekta\DI\Strategy\Autowiring $autowiring;
-<?php } ?>
+    private array $ids;
 
-    public function __construct(array $params, array $alias, array $definitions)
+    public function __construct(array $params = [], array $alias = [], array $definitions = [])
     {
         $this->params = $params;
-<?php if ($alias_overridable) { ?>
         $this->alias = $alias;
-<?php } ?>
-<?php if ($definition_overridable) { ?>
         $this->definitions = $definitions;
-<?php } ?>
-<?php if ($reflection_enabled) { ?>
-        $this->autowiring = new \Cekta\DI\Strategy\Autowiring(new \Cekta\DI\Reflection(), $this, $this->alias);
-<?php } ?>
-        $this->containers = <?= var_export(array_unique(array_merge(array_keys($containers), array_keys($alias)))) ?>;
-    }
-
-    public function get(string $name)
-    {
-        if (!array_key_exists($name, $this->params)) {
-            $this->params[$name] = match($name) {
-            <?php if ($definition_overridable) { ?>
-                array_key_exists($name, $this->definitions) ? $name: false => $this->definitions[$name]($this),
-            <?php } ?>
-            <?php if ($alias_overridable) { ?>
-                array_key_exists($name, $this->alias) ? $name: false => $this->get($this->alias[$name]),
-            <?php } ?>
-            <?php foreach ($containers as $key => $value) { ?>
-                <?= var_export($key, true) ?> => <?= $value ?>,
-            <?php } ?>
-            <?php foreach ($alias as $key => $value) { ?>
-                <?= var_export($key, true) ?> => $this->get('<?= $value ?>'),
-            <?php } ?>
-            <?php if ($reflection_enabled) { ?>
-                $this->autowiring->has($name) === true ? $name: false => $this->autowiring->get($name),
-            <?php } ?>
-                default => throw new \Cekta\DI\Exception\NotFound($name),
-            };
+        $this->ids = <?= var_export(array_unique(
+    array_merge(
+        array_keys($params),
+        array_keys($definitions),
+        array_keys($alias),
+        array_keys($containers),
+    )
+)) ?>;
+        $current_ids = array_unique(
+            array_merge(
+                array_keys($this->params),
+                array_keys($this->alias),
+                array_keys($this->definitions),
+            )
+        );
+        $diff = array_diff(<?= var_export(array_unique(
+    array_merge(
+        array_keys($params),
+        array_keys($definitions),
+        array_keys($alias),
+    )
+)) ?>, $current_ids);
+        if (!empty($diff)) {
+            throw new \Cekta\DI\Exception\InvalidConfiguration($diff);
         }
-        return $this->params[$name];
+    }
+    public function get(string $id)
+    {
+        if (!array_key_exists($id, $this->params)) {
+        $this->params[$id] = match($id) {
+        array_key_exists($id, $this->definitions) ? $id: false => $this->definitions[$id]($this),
+        array_key_exists($id, $this->alias) ? $id: false => $this->get($this->alias[$id]),
+        <?php
+        foreach ($containers as $key => $value) {
+            $key = var_export($key, true);
+            echo "{$key} => {$value}," . PHP_EOL;
+        }
+        ?>
+        <?php
+        foreach ($alias as $key => $value) {
+            $key = var_export($key, true);
+            echo "{$key} => \$this->get('{$value}')," . PHP_EOL;
+        }
+        ?>
+        default => throw new \Cekta\DI\Exception\NotFound($id),
+        };
+        }
+        return $this->params[$id];
     }
 
-    public function has(string $name): bool
+    public function has(string $id): bool
     {
-        return array_key_exists($name, $this->params)
-<?php if ($alias_overridable) { ?>
-            || array_key_exists($name, $this->alias)
-<?php } ?>
-<?php if ($definition_overridable) { ?>
-            || array_key_exists($name, $this->definitions)
-<?php } ?>
-            || in_array($name, $this->containers)
-            <?php if ($reflection_enabled) { ?>
-            || $this->autowiring->has($name)
-            <?php } ?>
-            ;
+        return in_array($id, $this->ids);
     }
 }
