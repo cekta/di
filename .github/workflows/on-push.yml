@@ -8,8 +8,8 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: docker-compose up
-        run: docker-compose up
+      - name: docker compose up
+        run: docker compose up
         env:
           PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
