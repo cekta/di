@@ -8,12 +8,13 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
+      - name: Set current UID
+        run: echo "UID = $(id -u)" >> $GITHUB_ENV
       - name: docker compose up
         run: docker compose up --exit-code-from app
         env:
           PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
-          UID: {{id -u}}
 on:
   pull_request:
     branches:
