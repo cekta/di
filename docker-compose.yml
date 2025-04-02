@@ -11,6 +11,6 @@ services:
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     command:
-      - install
+      - update
       - test
 

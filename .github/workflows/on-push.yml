@@ -9,7 +9,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: docker compose up
-        run: docker compose up
+        run: docker compose up --exit-code-from app
         env:
           PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
