@@ -13,6 +13,7 @@ jobs:
         env:
           PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
+          UID: {{id -u}}
 on:
   pull_request:
     branches:
