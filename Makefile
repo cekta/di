@@ -1,9 +1,7 @@
 install:
 	composer install
 #test: phpcs phpstan phpunit infection
-test: show-dir phpcs phpunit infection
-show-dir:
-	ls -l
+test: phpcs phpunit infection
 update:
 	composer update
 phpcs:
