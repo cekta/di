@@ -8,8 +8,6 @@ jobs:
       - uses: actions/checkout@master
         with:
           fetch-depth: 1
-      - name: Set current UID
-        run: echo "UID = $(id -u)" >> $GITHUB_ENV
       - name: docker compose up
         run: docker compose up --exit-code-from app
         env:
