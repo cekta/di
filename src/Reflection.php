@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Psr\Container\ContainerInterface;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionNamedType;
 use ReflectionParameter;
 
+/**
+ * @template T of object
+ * @extends ReflectionClass<T>
+ */
 class Reflection extends ReflectionClass
 {
     /**

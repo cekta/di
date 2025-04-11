@@ -45,7 +45,7 @@ class ContainerTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-//        unlink(self::FILE);
+        unlink(self::FILE);
     }
 
     public static function setUpBeforeClass(): void
@@ -78,8 +78,6 @@ class ContainerTest extends TestCase
             );
             file_put_contents($this::FILE, $compile);
         }
-        /** @noinspection PhpUndefinedClassInspection */
-        /** @noinspection PhpFieldAssignmentTypeMismatchInspection */
         $this->container = new Container(
             params: $this::PARAMS,
             alias: $this::ALIAS,
@@ -172,7 +170,6 @@ class ContainerTest extends TestCase
                 )
             )
         );
-        /** @noinspection PhpUndefinedClassInspection */
         new Container();
     }
 
