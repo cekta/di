@@ -3,10 +3,11 @@
 /**
  * @var string $namespace
  * @var string $class
- * @var array<string, string> $containers
+ * @var array<string> $targets
+ * @var array<string, string> $dependencies
  * @var array<string, string> $alias
- * @var array<string, mixed> $params
- * @var array<string, callable> $definitions
+ * @var string[] $param_keys
+ * @var string[] $definition_keys
  */
 
 ?>
@@ -15,74 +16,56 @@ declare(strict_types=1);
 
 <?php
 if (!empty($namespace)) {
-    echo "namespace {$namespace};";
+    echo "namespace {$namespace};" . PHP_EOL;
 }
 ?>
 
 class <?= $class ?> implements \Psr\Container\ContainerInterface
 {
-    private array $params;
-    private array $alias;
-    private array $definitions;
-    private array $ids;
-
-    public function __construct(array $params = [], array $alias = [], array $definitions = [])
-    {
-        $this->params = $params;
-        $this->alias = $alias;
-        $this->definitions = $definitions;
-        $this->ids = <?= var_export(array_unique(
-    array_merge(
-        array_keys($params),
-        array_keys($definitions),
-        array_keys($alias),
-        array_keys($containers),
-    )
-)) ?>;
-        $current_ids = array_unique(
-            array_merge(
-                array_keys($this->params),
-                array_keys($this->alias),
-                array_keys($this->definitions),
-            )
-        );
-        $diff = array_diff(<?= var_export(array_unique(
-    array_merge(
-        array_keys($params),
-        array_keys($definitions),
-        array_keys($alias),
-    )
-)) ?>, $current_ids);
+    /**
+     * @param array<string, mixed> $params
+     * @param array<string, callable> $definitions
+     * @throws \RuntimeException if required params or definition not declared
+     */ 
+    public function __construct(
+        private array $params = [], 
+        private array $definitions = []
+    ) {
+        $diff = array_diff(<?= var_export($param_keys, true) ?>, array_keys($this->params));
         if (!empty($diff)) {
-            throw new \Cekta\DI\Exception\InvalidConfiguration($diff);
+            $diff = implode(', ', $diff);
+            throw new \RuntimeException("params: {$diff} must be declared");
+        }
+
+        $diff = array_diff(<?= var_export($definition_keys, true) ?>, array_keys($this->definitions));
+        if (!empty($diff)) {
+            $diff = implode(', ', $diff);
+            throw new \RuntimeException("definitions: {$diff} must be declared");
         }
     }
+
     public function get(string $id)
     {
-        if (!array_key_exists($id, $this->params)) {
+        if (array_key_exists($id, $this->params)) {
+            return $this->params[$id];
+        }
         $this->params[$id] = match($id) {
-        array_key_exists($id, $this->definitions) ? $id: false => $this->definitions[$id]($this),
-        array_key_exists($id, $this->alias) ? $id: false => $this->get($this->alias[$id]),
-        <?php
-        foreach ($containers as $key => $value) {
-            $key = var_export($key, true);
-            echo "{$key} => {$value}," . PHP_EOL;
-        }
-        ?>
-        <?php
-        foreach ($alias as $key => $value) {
-            $key = var_export($key, true);
-            echo "{$key} => \$this->get('{$value}')," . PHP_EOL;
-        }
-        ?>
-        default => throw new \Cekta\DI\Exception\NotFound($id),
+            array_key_exists($id, $this->definitions) ? $id: false => call_user_func($this->definitions[$id], $this),
+    <?php foreach ($alias as $key => $value) { ?>
+        <?= var_export($key, true) . " => \$this->get('{$value}')," . PHP_EOL ?>
+    <?php } ?>
+
+    <?php foreach ($dependencies as $key => $value) { ?>
+        <?= var_export($key, true) . " => {$value}," . PHP_EOL ?>
+    <?php } ?>
+
+            default => throw new \Cekta\DI\Exception\NotFound($id),
         };
-        }
         return $this->params[$id];
     }
 
     public function has(string $id): bool
     {
-        return in_array($id, $this->ids);
+        return in_array($id, <?= var_export($targets, true) ?>);
     }
 }

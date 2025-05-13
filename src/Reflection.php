@@ -7,6 +7,7 @@ namespace Cekta\DI;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionParameter;
+use RuntimeException;
 
 /**
  * @template T of object
@@ -19,6 +20,9 @@ class Reflection extends ReflectionClass
      */
     public function getDependencies(): array
     {
+        if (!$this->isInstantiable()) {
+            throw new RuntimeException("`{$this->getName()}` must be instantiable");
+        }
         $constructor = $this->getConstructor();
         if ($constructor === null) {
             return [];

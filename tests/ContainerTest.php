@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\Exception\InvalidConfiguration;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Test\Fixture\A;
 use Cekta\DI\Test\Fixture\Example\Autowiring;
+use Cekta\DI\Test\Fixture\Example\AutowiringShared;
 use Cekta\DI\Test\Fixture\Example\Shared;
 use Cekta\DI\Test\Fixture\Example\WithoutArgument;
 use Cekta\DI\Test\Fixture\I;
@@ -18,16 +18,16 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
 
 class ContainerTest extends TestCase
 {
     private const FILE = __DIR__ . '/Container.php';
     private ContainerInterface $container;
-    private const CONTAINERS = [
+    private const TARGETS = [
         Shared::class,
         Autowiring::class,
         WithoutArgument::class,
+        AutowiringShared::class,
     ];
     private const PARAMS = [
         'username' => 'some username',
@@ -42,11 +42,7 @@ class ContainerTest extends TestCase
     private const ALIAS = [
         I::class => R1::class,
     ];
-
-    public static function tearDownAfterClass(): void
-    {
-        unlink(self::FILE);
-    }
+    private string $fqcn = 'Cekta\DI\Test\Container';
 
     public static function setUpBeforeClass(): void
     {
@@ -62,27 +58,26 @@ class ContainerTest extends TestCase
         ];
     }
 
-    /**
-     * @throws ReflectionException
-     */
     protected function setUp(): void
     {
         if (!file_exists($this::FILE)) {
-            $compiler = new Compiler();
-            $compile = $compiler->compile(
-                targets: $this::CONTAINERS,
-                alias: $this::ALIAS,
-                params: $this::PARAMS,
-                definitions: $this::$definitions,
-                fqcn: 'Cekta\DI\Test\Container',
+            file_put_contents(
+                $this::FILE,
+                (new Compiler(
+                    containers: $this::TARGETS,
+                    alias: $this::ALIAS,
+                    params: $this::PARAMS,
+                    definitions: $this::$definitions,
+                    fqcn: $this->fqcn,
+                ))->compile()
             );
-            file_put_contents($this::FILE, $compile);
         }
-        $this->container = new Container(
+        $container = new $this->fqcn(
             params: $this::PARAMS,
-            alias: $this::ALIAS,
             definitions: $this::$definitions,
         );
+        /** @var ContainerInterface $container */
+        $this->container = $container;
     }
 
     /**
@@ -113,6 +108,7 @@ class ContainerTest extends TestCase
         $definition = self::$definitions['definition'];
         $this->assertSame($definition($this->container), $autowiring->definition);
         $this->assertInstanceOf(R1::class, $autowiring->i);
+        $this->assertInstanceOf(AutowiringShared::class, $this->container->get(AutowiringShared::class));
     }
 
     /**
@@ -152,39 +148,34 @@ class ContainerTest extends TestCase
         $this->assertSame($without_argument, $this->container->get(WithoutArgument::class));
     }
 
-    public function testCreateWithoutRequiredParams(): void
-    {
-        $this->expectException(InvalidConfiguration::class);
-        $this->expectExceptionMessage(
-            sprintf(
-                'Container: %s must be defined',
-                implode(
-                    ', ',
-                    array_unique(
-                        array_merge(
-                            array_keys($this::PARAMS),
-                            array_keys($this::$definitions),
-                            array_keys($this::ALIAS),
-                        )
-                    )
-                )
-            )
-        );
-        new Container();
-    }
-
     public function testHas(): void
     {
-        /** @var string[] $keys */
-        $keys = array_unique(
-            array_merge(
-                array_keys($this::PARAMS),
-                array_keys($this::$definitions),
-                array_keys($this::ALIAS),
-            )
-        );
-        foreach ($keys as $key) {
+        foreach (self::TARGETS as $key) {
             $this->assertTrue($this->container->has($key));
         }
+
+        foreach (array_keys(self::PARAMS) as $key) {
+            $this->assertFalse($this->container->has($key));
+        }
+
+        foreach (array_keys(self::$definitions) as $key) {
+            $this->assertFalse($this->container->has($key));
+        }
+    }
+
+    public function testWithoutRequiredParams(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            'params: username, password, Cekta\DI\Test\Fixture\S|string, ...variadic_int must be declared'
+        );
+        new $this->fqcn([], self::$definitions);
+    }
+
+    public function testWithoutRequiredDefinitions(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('definitions: definition must be declared');
+        new $this->fqcn(self::PARAMS, []);
     }
 }
