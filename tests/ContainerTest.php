@@ -4,26 +4,16 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Container;
+use Cekta\DI\Compiler;
+use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Test\Fixture\A;
-use Cekta\DI\Test\Fixture\B;
-use Cekta\DI\Test\Fixture\Builder;
-use Cekta\DI\Test\Fixture\ExampleDNFType;
-use Cekta\DI\Test\Fixture\ExampleIntersectionType;
-use Cekta\DI\Test\Fixture\ExampleMixType;
-use Cekta\DI\Test\Fixture\ExampleNamed;
-use Cekta\DI\Test\Fixture\ExampleOverwrite;
-use Cekta\DI\Test\Fixture\ExampleUnionType;
-use Cekta\DI\Test\Fixture\ExampleVariadicDNFType;
-use Cekta\DI\Test\Fixture\ExampleVariadicIntersection;
-use Cekta\DI\Test\Fixture\ExampleVariadicNamedType;
-use Cekta\DI\Test\Fixture\ExampleVariadicOverwrite;
-use Cekta\DI\Test\Fixture\ExampleVariadicPrimitive;
-use Cekta\DI\Test\Fixture\ExampleVariadicUnion;
-use Cekta\DI\Test\Fixture\ExampleVariadicWithoutType;
-use Cekta\DI\Test\Fixture\ExampleWithoutConstructor;
-use Cekta\DI\Test\Fixture\ExampleWithoutType;
+use Cekta\DI\Test\Fixture\Example\Autowiring;
+use Cekta\DI\Test\Fixture\Example\AutowiringShared;
+use Cekta\DI\Test\Fixture\Example\Shared;
+use Cekta\DI\Test\Fixture\Example\WithoutArgument;
 use Cekta\DI\Test\Fixture\I;
+use Cekta\DI\Test\Fixture\R1;
+use Cekta\DI\Test\Fixture\S;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -31,215 +21,161 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class ContainerTest extends TestCase
 {
-    protected ContainerInterface $container;
+    private const FILE = __DIR__ . '/Container.php';
+    private ContainerInterface $container;
+    private const TARGETS = [
+        Shared::class,
+        Autowiring::class,
+        WithoutArgument::class,
+        AutowiringShared::class,
+    ];
+    private const PARAMS = [
+        'username' => 'some username',
+        'password' => 'some password',
+        S::class . '|string' => 'named params: ' . S::class . '|string',
+        '...variadic_int' => [1, 3, 5],
+    ];
+    /**
+     * @var array<string, callable>
+     */
+    private static array $definitions = [];
+    private const ALIAS = [
+        I::class => R1::class,
+    ];
+    private string $fqcn = 'Cekta\DI\Test\Container';
+
+    public static function setUpBeforeClass(): void
+    {
+        file_exists(self::FILE) && unlink(self::FILE);
+        self::$definitions = [
+            'definition' => function (ContainerInterface $container) {
+                /** @var string $username */
+                $username = $container->get('username');
+                /** @var string $password */
+                $password = $container->get('password');
+                return "definition u: $username, p: $password";
+            }
+        ];
+    }
 
     protected function setUp(): void
     {
-        if (!isset($this->container)) {
-            $builder = new Builder();
-            $container = $builder->build();
-            $this->assertInstanceOf(Container::class, $container);
-            $this->container = $container;
+        if (!file_exists($this::FILE)) {
+            file_put_contents(
+                $this::FILE,
+                new Compiler(
+                    params: $this::PARAMS,
+                    definitions: $this::$definitions,
+                    alias: $this::ALIAS,
+                    containers: $this::TARGETS,
+                    fqcn: $this->fqcn,
+                )
+            );
+        }
+        $container = new $this->fqcn(
+            params: $this::PARAMS,
+            definitions: $this::$definitions,
+        );
+        /** @var ContainerInterface $container */
+        $this->container = $container;
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testNotFound(): void
+    {
+        $key = 'not exist container';
+        $this->expectException(NotFound::class);
+        $this->expectExceptionMessage("Container `$key` not found");
+        $this->container->get($key);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testAutowiring(): void
+    {
+        /** @var Autowiring $autowiring */
+        $autowiring = $this->container->get(Autowiring::class);
+        $this->assertInstanceOf(Autowiring::class, $autowiring);
+        $this->assertInstanceOf(A::class, $autowiring->a);
+        $this->assertSame(self::PARAMS['username'], $autowiring->username);
+        $this->assertSame(self::PARAMS['password'], $autowiring->password);
+        $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->named);
+        $definition = self::$definitions['definition'];
+        $this->assertSame($definition($this->container), $autowiring->definition);
+        $this->assertInstanceOf(R1::class, $autowiring->i);
+        $this->assertInstanceOf(AutowiringShared::class, $this->container->get(AutowiringShared::class));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testShared(): void
+    {
+        /** @var Shared $example */
+        $example = $this->container->get(Shared::class);
+        $this->assertInstanceOf(Shared::class, $example);
+        $this->assertSame($example, $this->container->get(Shared::class));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testSharedDependencyMustBeSame(): void
+    {
+        /** @var Shared $shared */
+        $shared = $this->container->get(Shared::class);
+        /** @var Autowiring $autowiring */
+        $autowiring = $this->container->get(Autowiring::class);
+        $this->assertSame($shared->s, $autowiring->s);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testAutowiringWithoutArguments(): void
+    {
+        /** @var WithoutArgument $without_argument */
+        $without_argument = $this->container->get(WithoutArgument::class);
+        $this->assertInstanceOf(WithoutArgument::class, $without_argument);
+        $this->assertSame($without_argument, $this->container->get(WithoutArgument::class));
+    }
+
+    public function testHas(): void
+    {
+        foreach (self::TARGETS as $key) {
+            $this->assertTrue($this->container->has($key));
+        }
+
+        foreach (array_keys(self::PARAMS) as $key) {
+            $this->assertFalse($this->container->has($key));
+        }
+
+        foreach (array_keys(self::$definitions) as $key) {
+            $this->assertFalse($this->container->has($key));
         }
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testNull(): void
+    public function testWithoutRequiredParams(): void
     {
-        $this->assertNull($this->container->get('null'));
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testNamed(): void
-    {
-        $this->assertTrue($this->container->has(ExampleNamed::class));
-        $example = $this->container->get(ExampleNamed::class);
-        $this->assertTrue($this->container->has(ExampleNamed::class));
-
-        $this->assertInstanceOf(ExampleNamed::class, $example);
-        $this->assertSame('mysql:dbname=test;host=127.0.0.1', $example->a->dsn);
-        $this->assertSame(Builder::$PARAMS['username'], $example->a->username);
-        $this->assertSame(Builder::$PARAMS['password'], $example->a->password);
-        $this->assertInstanceOf(Builder::$ALIAS[I::class], $example->i);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testMustBeSingleton(): void
-    {
-        $example = $this->container->get(ExampleNamed::class);
-        $example_other = $this->container->get(ExampleNamed::class);
-        $this->assertInstanceOf(ExampleNamed::class, $example_other);
-        $this->assertInstanceOf(ExampleNamed::class, $example);
-        $this->assertSame($example, $example_other);
-        $this->assertSame($example->a, $example_other->a);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testWithoutType(): void
-    {
-        $example2 = $this->container->get(ExampleWithoutType::class);
-        $this->assertInstanceOf(ExampleWithoutType::class, $example2);
-        $this->assertSame(Builder::$PARAMS['username'], $example2->username);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testWithoutConstructor(): void
-    {
-        $this->assertInstanceOf(
-            ExampleWithoutConstructor::class,
-            $this->container->get(ExampleWithoutConstructor::class)
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(
+            'params: username, password, Cekta\DI\Test\Fixture\S|string, ...variadic_int must be declared'
         );
+        new $this->fqcn([], self::$definitions);
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testOverwrite(): void
+    public function testWithoutRequiredDefinitions(): void
     {
-        $overwrite = $this->container->get(ExampleOverwrite::class);
-        $this->assertInstanceOf(ExampleOverwrite::class, $overwrite);
-        $this->assertSame(Builder::$PARAMS['overwrite_username'], $overwrite->username);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testUnionType(): void
-    {
-        $union = $this->container->get(ExampleUnionType::class);
-        $this->assertInstanceOf(ExampleUnionType::class, $union);
-        $this->assertSame(Builder::$PARAMS[A::class . '|int'], $union->param);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testVariadicOverwrite(): void
-    {
-        $variadic_overwrite = $this->container->get(ExampleVariadicOverwrite::class);
-        $this->assertInstanceOf(ExampleVariadicOverwrite::class, $variadic_overwrite);
-        $expected = Builder::$PARAMS['variadic_overwrite_param'];
-        $this->assertSame($expected, $variadic_overwrite->params);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testVariadicWithoutType(): void
-    {
-        $variadic_without_type = $this->container->get(ExampleVariadicWithoutType::class);
-        $this->assertInstanceOf(ExampleVariadicWithoutType::class, $variadic_without_type);
-        $this->assertSame(Builder::$PARAMS['...variadic_params'], $variadic_without_type->params);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testVariadicPrimitive(): void
-    {
-        $variadic_primitive = $this->container->get(ExampleVariadicPrimitive::class);
-        $this->assertInstanceOf(ExampleVariadicPrimitive::class, $variadic_primitive);
-        $this->assertSame(Builder::$PARAMS['...variadic_strings'], $variadic_primitive->params);
-        $this->assertSame(Builder::$PARAMS['username'], $variadic_primitive->username);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testVariadicUnion(): void
-    {
-        $variadic_union = $this->container->get(ExampleVariadicUnion::class);
-        $this->assertInstanceOf(ExampleVariadicUnion::class, $variadic_union);
-        $expected = Builder::$PARAMS[sprintf('...%s|int', A::class)];
-        $this->assertSame($expected, $variadic_union->param);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testVariadicNamed(): void
-    {
-        $variadic_named = $this->container->get(ExampleVariadicNamedType::class);
-        $this->assertInstanceOf(ExampleVariadicNamedType::class, $variadic_named);
-        $expected = Builder::$PARAMS[sprintf('...%s', ExampleWithoutConstructor::class)];
-        $this->assertSame($expected, $variadic_named->param);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testDeepDependency(): void
-    {
-        $this->assertInstanceOf(A::class, $this->container->get(A::class));
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testMixType(): void
-    {
-        $example3 = $this->container->get(ExampleMixType::class);
-        $this->assertInstanceOf(ExampleMixType::class, $example3);
-        $this->assertSame(Builder::$PARAMS['username'], $example3->b->username);
-    }
-
-    /**
-     * @return void
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @requires PHP >= 8.1
-     */
-    public function testIntersection(): void
-    {
-        $intersection = $this->container->get(ExampleIntersectionType::class);
-        $this->assertInstanceOf(ExampleIntersectionType::class, $intersection);
-        $this->assertSame(Builder::$PARAMS[sprintf('%s&%s', A::class, I::class)], $intersection->param);
-
-        $variadic_intersection = $this->container->get(ExampleVariadicIntersection::class);
-        $this->assertInstanceOf(ExampleVariadicIntersection::class, $variadic_intersection);
-        $expected = Builder::$PARAMS[sprintf('...%s&%s', A::class, I::class)];
-        $this->assertSame($expected, $variadic_intersection->param);
-    }
-
-    /**
-     * @return void
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @requires PHP >= 8.2
-     */
-    public function testDNFType(): void
-    {
-        $dnf = $this->container->get(ExampleDNFType::class);
-        $this->assertInstanceOf(ExampleDNFType::class, $dnf);
-        $this->assertSame(Builder::$PARAMS[sprintf('(%s&%s)|int', A::class, B::class)], $dnf->param);
-
-        $variadic_dnf = $this->container->get(ExampleVariadicDNFType::class);
-        $this->assertInstanceOf(ExampleVariadicDNFType::class, $variadic_dnf);
-        $expected = Builder::$PARAMS[sprintf('...(%s&%s)|int', A::class, B::class)];
-        $this->assertSame($expected, $variadic_dnf->param);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('definitions: definition must be declared');
+        new $this->fqcn(self::PARAMS, []);
     }
 }

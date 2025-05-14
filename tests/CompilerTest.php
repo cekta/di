@@ -4,39 +4,48 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerBuilder;
-use Cekta\DI\Test\Fixture\ExampleWithoutConstructor;
-use InvalidArgumentException;
+use Cekta\DI\Compiler;
+use Cekta\DI\Test\Fixture\B;
+use Cekta\DI\Test\Fixture\D;
+use Cekta\DI\Test\Fixture\I;
 use PHPUnit\Framework\TestCase;
-use UnexpectedValueException;
+use ReflectionException;
+use RuntimeException;
 
 class CompilerTest extends TestCase
 {
-    public function testFail(): void
+    public function testCompileWithoutNamespace(): void
     {
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('`invalid container` is cant be resolved');
-        (new ContainerBuilder())
-            ->compile(['invalid container']);
+        $code = (new Compiler(fqcn: 'Container'))->__toString();
+        $this->assertNotEmpty($code);
+        $this->assertStringNotContainsString('namespace', $code);
     }
 
-    public function testWithoutNamespace(): void
+    public function testCompileWithoutRequiredParams(): void
     {
-        $builder = new ContainerBuilder();
-        $builder->fqcn('\\Container');
-        $compiled = $builder->compile([ExampleWithoutConstructor::class]);
-        $this->assertIsString($compiled);
-        $this->assertStringNotContainsString('namespace', $compiled);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Class "password" does not exist');
+        $this->expectExceptionCode(1);
+
+        (new Compiler(
+            params: ['username' => 'value username'],
+            containers: [
+                B::class
+            ]
+        ))->__toString();
     }
 
-    public function testInvalidNamespace(): void
+    public function testCompileNotInstantiable(): void
     {
-        $fqcn = 'Container';
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid fqcn: `$fqcn` must contain \\");
+        $name = I::class;
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage("`{$name}` must be instantiable");
+        $this->expectExceptionCode(2);
 
-        $builder = new ContainerBuilder();
-        $builder->fqcn($fqcn);
-        $builder->compile([ExampleWithoutConstructor::class]);
+        (new Compiler(
+            containers: [
+                D::class
+            ],
+        ))->__toString();
     }
 }

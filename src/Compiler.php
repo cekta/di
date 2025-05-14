@@ -4,109 +4,78 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use InvalidArgumentException;
-use UnexpectedValueException;
+use RuntimeException;
 
-class Compiler
+class Compiler implements \Stringable
 {
-    /**
-     * @var array<string, mixed>
-     */
-    private array $params;
-    /**
-     * @var array<string, string>
-     */
-    private array $alias;
-    /**
-     * @var array<string, callable>
-     */
-    private array $definitions;
-    private string $fqcn;
     /**
      * @var array<string>
      */
     private array $shared = [];
+
     /**
-     * @var array<string, array<array{'name': string, 'variadic': bool, parameter: string}>>
+     * @var array<string>
+     */
+    private array $stack = [];
+    /**
+     * @var array<string, array<array{name: string, variadic: bool}>>
      */
     private array $dependenciesMap = [];
-    private Reflection $reflection;
-    private array $stack = [];
+    /**
+     * @var array<string>
+     */
+    private array $param_keys = [];
+    /**
+     * @var array<string>
+     */
+    private array $definition_keys = [];
 
     /**
-     * @param array<string, mixed> $params
+     * @param array<string> $containers
      * @param array<string, string> $alias
+     * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @param string $fqcn
+     * @return void
      */
-    public function __construct(array $params, array $alias, array $definitions, string $fqcn)
-    {
-        $this->params = $params;
-        $this->alias = $alias;
-        $this->definitions = $definitions;
-        $this->fqcn = $fqcn;
-    }
-
-    /**
-     * @param array<string> $containers
-     * @param bool $definition_overridable
-     * @param bool $alias_overridable
-     * @param bool $reflection_enabled
-     * @return string|false
-     */
-    public function __invoke(
-        array $containers,
-        bool $definition_overridable,
-        bool $alias_overridable,
-        bool $reflection_enabled
-    ): string|false {
-        $this->reflection = new Reflection();
-        $namespace = $this->getNamespace();
-        $class = $this->getClass();
-        $alias = $this->alias;
-        $definitions = $this->definitions;
-        $containers = $this->generateContainers($containers);
-        ob_start();
-        include __DIR__ . '/../template/container.compiler.php';
-        return ob_get_clean();
+    public function __construct(
+        private array $params = [],
+        private array $definitions = [],
+        private array $alias = [],
+        private array $containers = [],
+        private string $fqcn = 'App\Container'
+    ) {
     }
 
     /**
      * @return string
+     * @throws RuntimeException code 2 if not instantiable
+     * @throws RuntimeException code 1 if class not found
      */
-    private function getNamespace(): string
+    public function __toString(): string
     {
-        $position = strrpos($this->fqcn, '\\');
-        if ($position === false) {
-            throw new InvalidArgumentException("Invalid fqcn: `$this->fqcn` must contain \\");
+        $this->generateMap($this->containers);
+        $dependencies = [];
+        foreach (array_merge($this->containers, $this->shared, $this->alias) as $target) {
+            $dependencies[$target] = $this->buildDependency($target);
         }
-        return substr($this->fqcn, 0, $position);
-    }
-
-    /**
-     * @return string
-     */
-    private function getClass(): string
-    {
-        return substr($this->fqcn, strrpos($this->fqcn, '\\') + 1);
-    }
-
-    /**
-     * @param string[] $targets
-     * @return array<string, string>
-     */
-    private function generateContainers(array $targets): array
-    {
-        $this->generateMap($targets);
-        $containers = [];
-        foreach (array_merge($targets, $this->shared, $this->alias) as $target) {
-            $containers[$target] = $this->buildContainer($target);
-        }
-        return $containers;
+        $fqcn = new FQCN($this->fqcn);
+        $template = new Template(__DIR__ . '/../template/container.compiler.php');
+        return $template->render([
+            'namespace' => $fqcn->getNamespace(),
+            'class' => $fqcn->getClass(),
+            'targets' => $this->containers,
+            'dependencies' => $dependencies,
+            'alias' => $this->alias,
+            'param_keys' => array_unique($this->param_keys),
+            'definition_keys' => array_unique($this->definition_keys),
+        ]);
     }
 
     /**
      * @param array<string> $containers
+     * @return void
+     * @noinspection PhpDocMissingThrowsInspection
      */
     private function generateMap(array $containers): void
     {
@@ -114,39 +83,42 @@ class Compiler
             if (array_key_exists($container, $this->alias)) {
                 $container = $this->alias[$container];
             }
-            if (
-                array_key_exists($container, $this->params)
-                || array_key_exists($container, $this->definitions)
-                || array_key_exists($container, $this->shared)
-            ) {
+            if (array_key_exists($container, $this->params)) {
+                $this->param_keys[] = $container;
+                continue;
+            }
+            if (array_key_exists($container, $this->definitions)) {
+                $this->definition_keys[] = $container;
+                continue;
+            }
+            if (in_array($container, $this->shared)) {
                 continue;
             }
             if (array_key_exists($container, $this->dependenciesMap)) {
                 $this->shared[] = $container;
                 continue;
             }
-            if ($this->reflection->isInstantiable($container)) {
-                $this->dependenciesMap[$container] = $this->reflection->getDependencies($container);
-                /** @var array<string> $new_containers */
-                $new_containers = [];
-                foreach ($this->dependenciesMap[$container] as $dependency) {
-                    $new_containers[] = array_key_exists($dependency['parameter'], $this->alias) ?
-                        $dependency['parameter'] : $dependency['name'];
-                }
-                $this->generateMap($new_containers);
-                continue;
+            /** @var class-string $container */
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $reflection = new Reflection($container);
+            $this->dependenciesMap[$container] = $reflection->getDependencies();
+            $dependencies = [];
+            foreach ($this->dependenciesMap[$container] as $dependency) {
+                $dependencies[] = $dependency['name'];
             }
-            throw new UnexpectedValueException("`$container` is cant be resolved");
+            $this->generateMap($dependencies);
         }
     }
 
-    private function buildContainer(string $target): string
+    private function buildDependency(string $target): string
     {
+        if (array_key_exists($target, $this->params)) {
+            return "\$this->params['$target']";
+        }
         if (
             (in_array($target, $this->shared) && count($this->stack) !== 0)
             || array_key_exists($target, $this->alias)
             || array_key_exists($target, $this->definitions)
-            || array_key_exists($target, $this->params)
         ) {
             return "\$this->get('$target')";
         }
@@ -154,12 +126,9 @@ class Compiler
         $container = "new \\$target(";
         if (array_key_exists($target, $this->dependenciesMap)) {
             foreach ($this->dependenciesMap[$target] as $dependency) {
-                $name = array_key_exists(
-                    $dependency['parameter'],
-                    $this->alias
-                ) ? $dependency['parameter'] : $dependency['name'];
+                $name = $dependency['name'];
                 $variadic = $dependency['variadic'] === true ? '...' : '';
-                $container .= "$variadic{$this->buildContainer($name)}, ";
+                $container .= "$variadic{$this->buildDependency($name)}, ";
             }
         }
         $container .= ')';

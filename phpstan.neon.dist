@@ -3,6 +3,3 @@ parameters:
     paths:
         - src
     inferPrivatePropertyTypeFromConstructor: true
-    ignoreErrors:
-        - "#Property .* type has no value type specified in iterable type array#"
-        - '#Parameter \#1 $argument of class ReflectionClass constructor expects class-string<T of object>|T of object, string given.#'
