@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use ReflectionException;
 use RuntimeException;
 
-class Compiler
+class Compiler implements \Stringable
 {
     /**
      * @var array<string>
@@ -40,20 +39,20 @@ class Compiler
      * @return void
      */
     public function __construct(
-        private array $containers = [],
-        private array $alias = [],
         private array $params = [],
         private array $definitions = [],
+        private array $alias = [],
+        private array $containers = [],
         private string $fqcn = 'App\Container'
     ) {
     }
 
     /**
      * @return string
-     * @throws ReflectionException for class not found
-     * @throws RuntimeException for dependency not instantiable
+     * @throws RuntimeException code 2 if not instantiable
+     * @throws RuntimeException code 1 if class not found
      */
-    public function compile(): string
+    public function __toString(): string
     {
         $this->generateMap($this->containers);
         $dependencies = [];
@@ -75,8 +74,8 @@ class Compiler
 
     /**
      * @param array<string> $containers
-     * @throws ReflectionException if class not found
-     * @throws RuntimeException if not instantiable
+     * @return void
+     * @noinspection PhpDocMissingThrowsInspection
      */
     private function generateMap(array $containers): void
     {
@@ -100,6 +99,7 @@ class Compiler
                 continue;
             }
             /** @var class-string $container */
+            /** @noinspection PhpUnhandledExceptionInspection */
             $reflection = new Reflection($container);
             $this->dependenciesMap[$container] = $reflection->getDependencies();
             $dependencies = [];

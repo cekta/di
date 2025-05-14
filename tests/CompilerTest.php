@@ -16,22 +16,23 @@ class CompilerTest extends TestCase
 {
     public function testCompileWithoutNamespace(): void
     {
-        $code = (new Compiler(fqcn: 'Container'))->compile();
+        $code = (new Compiler(fqcn: 'Container'))->__toString();
         $this->assertNotEmpty($code);
         $this->assertStringNotContainsString('namespace', $code);
     }
 
     public function testCompileWithoutRequiredParams(): void
     {
-        $this->expectException(ReflectionException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Class "password" does not exist');
+        $this->expectExceptionCode(1);
 
         (new Compiler(
+            params: ['username' => 'value username'],
             containers: [
                 B::class
-            ],
-            params: ['username' => 'value username']
-        ))->compile();
+            ]
+        ))->__toString();
     }
 
     public function testCompileNotInstantiable(): void
@@ -39,11 +40,12 @@ class CompilerTest extends TestCase
         $name = I::class;
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage("`{$name}` must be instantiable");
+        $this->expectExceptionCode(2);
 
         (new Compiler(
             containers: [
                 D::class
             ],
-        ))->compile();
+        ))->__toString();
     }
 }

@@ -26,7 +26,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
      * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @throws \RuntimeException if required params or definition not declared
-     */ 
+     */
     public function __construct(
         private array $params = [], 
         private array $definitions = []

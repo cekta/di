@@ -63,13 +63,13 @@ class ContainerTest extends TestCase
         if (!file_exists($this::FILE)) {
             file_put_contents(
                 $this::FILE,
-                (new Compiler(
-                    containers: $this::TARGETS,
-                    alias: $this::ALIAS,
+                new Compiler(
                     params: $this::PARAMS,
                     definitions: $this::$definitions,
+                    alias: $this::ALIAS,
+                    containers: $this::TARGETS,
                     fqcn: $this->fqcn,
-                ))->compile()
+                )
             );
         }
         $container = new $this->fqcn(
