@@ -34,7 +34,7 @@ class Template
     private function handleResult(string|false $result): string
     {
         if ($result === false) {
-            throw new RuntimeException("ob_get_clean return false for {$this->path}");
+            throw new RuntimeException("ob_get_clean return false for $this->path");
         }
         return $result;
     }

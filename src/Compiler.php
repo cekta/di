@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use RuntimeException;
+use Cekta\DI\Exception\NotInstantiable;
+use ReflectionException;
+use Stringable;
 
-class Compiler implements \Stringable
+/**
+ * @external
+ */
+class Compiler implements Stringable
 {
     /**
      * @var array<string>
@@ -39,18 +44,18 @@ class Compiler implements \Stringable
      * @return void
      */
     public function __construct(
-        private array $params = [],
-        private array $definitions = [],
-        private array $alias = [],
         private array $containers = [],
+        private array $params = [],
+        private array $alias = [],
+        private array $definitions = [],
         private string $fqcn = 'App\Container'
     ) {
     }
 
     /**
      * @return string
-     * @throws RuntimeException code 2 if not instantiable
-     * @throws RuntimeException code 1 if class not found
+     * @throws NotInstantiable
+     * @throws ReflectionException
      */
     public function __toString(): string
     {
@@ -74,8 +79,8 @@ class Compiler implements \Stringable
 
     /**
      * @param array<string> $containers
-     * @return void
-     * @noinspection PhpDocMissingThrowsInspection
+     * @throws ReflectionException
+     * @throws NotInstantiable
      */
     private function generateMap(array $containers): void
     {
@@ -99,8 +104,10 @@ class Compiler implements \Stringable
                 continue;
             }
             /** @var class-string $container */
-            /** @noinspection PhpUnhandledExceptionInspection */
             $reflection = new Reflection($container);
+            if (!$reflection->isInstantiable()) {
+                throw new NotInstantiable("`{$reflection->getName()}` must be instantiable");
+            }
             $this->dependenciesMap[$container] = $reflection->getDependencies();
             $dependencies = [];
             foreach ($this->dependenciesMap[$container] as $dependency) {

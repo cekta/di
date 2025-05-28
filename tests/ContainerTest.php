@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
 
 class ContainerTest extends TestCase
 {
@@ -64,10 +65,10 @@ class ContainerTest extends TestCase
             file_put_contents(
                 $this::FILE,
                 new Compiler(
-                    params: $this::PARAMS,
-                    definitions: $this::$definitions,
-                    alias: $this::ALIAS,
                     containers: $this::TARGETS,
+                    params: $this::PARAMS,
+                    alias: $this::ALIAS,
+                    definitions: $this::$definitions,
                     fqcn: $this->fqcn,
                 )
             );
@@ -165,7 +166,7 @@ class ContainerTest extends TestCase
 
     public function testWithoutRequiredParams(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
             'params: username, password, Cekta\DI\Test\Fixture\S|string, ...variadic_int must be declared'
         );
@@ -174,7 +175,7 @@ class ContainerTest extends TestCase
 
     public function testWithoutRequiredDefinitions(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('definitions: definition must be declared');
         new $this->fqcn(self::PARAMS, []);
     }
