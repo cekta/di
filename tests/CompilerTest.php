@@ -14,13 +14,20 @@ use ReflectionException;
 
 class CompilerTest extends TestCase
 {
+    private Compiler $compiler;
+
+    protected function setUp(): void
+    {
+        $this->compiler = new Compiler();
+    }
+
     /**
      * @throws ReflectionException
      * @throws NotInstantiable
      */
     public function testCompileWithoutNamespace(): void
     {
-        $code = (new Compiler(fqcn: 'Container'))->__toString();
+        $code = $this->compiler->compile(fqcn: 'Container');
         $this->assertNotEmpty($code);
         $this->assertStringNotContainsString('namespace', $code);
     }
@@ -33,12 +40,12 @@ class CompilerTest extends TestCase
         $this->expectException(ReflectionException::class);
         $this->expectExceptionMessage('Class "password" does not exist');
 
-        (new Compiler(
+        $this->compiler->compile(
             containers: [
                 B::class
             ],
             params: ['username' => 'value username']
-        ))->__toString();
+        );
     }
 
     /**
@@ -50,10 +57,10 @@ class CompilerTest extends TestCase
         $this->expectException(NotInstantiable::class);
         $this->expectExceptionMessage("`$name` must be instantiable");
 
-        (new Compiler(
+        $this->compiler->compile(
             containers: [
                 D::class
             ],
-        ))->__toString();
+        );
     }
 }

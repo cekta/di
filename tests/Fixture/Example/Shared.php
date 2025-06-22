@@ -11,7 +11,7 @@ class Shared
     public function __construct(
         public S $s,
         public string $username,
-        public string $definition,
+        public string $dsn,
     ) {
     }
 }

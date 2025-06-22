@@ -23,7 +23,10 @@ docker-build-8.2:
 	PHP_VERSION=8.2 docker compose build
 docker-build-8.3:
 	PHP_VERSION=8.3 docker compose build
+docker-build-8.4:
+	PHP_VERSION=8.4 docker compose build
 docker-run-8.0: docker-build-8.0 docker
 docker-run-8.1: docker-build-8.1 docker
 docker-run-8.2: docker-build-8.2 docker
 docker-run-8.3: docker-build-8.3 docker
+docker-run-8.4: docker-build-8.4 docker

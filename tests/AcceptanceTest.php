@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Compiler;
+use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\NotFound;
+use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\A;
-use Cekta\DI\Test\Fixture\Example\Autowiring;
+use Cekta\DI\Test\Fixture\Example\AutowiringInConstructor;
 use Cekta\DI\Test\Fixture\Example\AutowiringShared;
 use Cekta\DI\Test\Fixture\Example\Shared;
 use Cekta\DI\Test\Fixture\Example\WithoutArgument;
@@ -18,15 +19,17 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
 use RuntimeException;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
-class ContainerTest extends TestCase
+class AcceptanceTest extends TestCase
 {
     private const FILE = __DIR__ . '/Container.php';
-    private ContainerInterface $container;
+    private static ContainerInterface $container;
     private const TARGETS = [
         Shared::class,
-        Autowiring::class,
+        AutowiringInConstructor::class,
         WithoutArgument::class,
         AutowiringShared::class,
     ];
@@ -43,13 +46,17 @@ class ContainerTest extends TestCase
     private const ALIAS = [
         I::class => R1::class,
     ];
-    private string $fqcn = 'Cekta\DI\Test\Container';
+    private const FQCN  = 'Cekta\DI\Test\Container';
 
-    public static function setUpBeforeClass(): void
+    /**
+     * @throws NotInstantiable
+     * @throws ReflectionException
+     * @throws IOExceptionInterface
+     */
+    protected function setUp(): void
     {
-        file_exists(self::FILE) && unlink(self::FILE);
         self::$definitions = [
-            'definition' => function (ContainerInterface $container) {
+            'dsn' => function (ContainerInterface $container) {
                 /** @var string $username */
                 $username = $container->get('username');
                 /** @var string $password */
@@ -57,29 +64,22 @@ class ContainerTest extends TestCase
                 return "definition u: $username, p: $password";
             }
         ];
+        $builder = new ContainerFactory();
+        self::$container = $builder->make(
+            filename: self::FILE,
+            fqcn: self::FQCN,
+            containers: self::TARGETS,
+            params: self::PARAMS,
+            alias: self::ALIAS,
+            definitions: self::$definitions,
+        );
     }
 
-    protected function setUp(): void
+    public static function tearDownAfterClass(): void
     {
-        if (!file_exists($this::FILE)) {
-            file_put_contents(
-                $this::FILE,
-                new Compiler(
-                    containers: $this::TARGETS,
-                    params: $this::PARAMS,
-                    alias: $this::ALIAS,
-                    definitions: $this::$definitions,
-                    fqcn: $this->fqcn,
-                )
-            );
-        }
-        $container = new $this->fqcn(
-            params: $this::PARAMS,
-            definitions: $this::$definitions,
-        );
-        /** @var ContainerInterface $container */
-        $this->container = $container;
+        unlink(self::FILE);
     }
+
 
     /**
      * @throws ContainerExceptionInterface
@@ -90,7 +90,7 @@ class ContainerTest extends TestCase
         $key = 'not exist container';
         $this->expectException(NotFound::class);
         $this->expectExceptionMessage("Container `$key` not found");
-        $this->container->get($key);
+        self::$container->get($key);
     }
 
     /**
@@ -99,17 +99,17 @@ class ContainerTest extends TestCase
      */
     public function testAutowiring(): void
     {
-        /** @var Autowiring $autowiring */
-        $autowiring = $this->container->get(Autowiring::class);
-        $this->assertInstanceOf(Autowiring::class, $autowiring);
+        /** @var AutowiringInConstructor $autowiring */
+        $autowiring = self::$container->get(AutowiringInConstructor::class);
+        $this->assertInstanceOf(AutowiringInConstructor::class, $autowiring);
         $this->assertInstanceOf(A::class, $autowiring->a);
         $this->assertSame(self::PARAMS['username'], $autowiring->username);
         $this->assertSame(self::PARAMS['password'], $autowiring->password);
-        $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->named);
-        $definition = self::$definitions['definition'];
-        $this->assertSame($definition($this->container), $autowiring->definition);
+        $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->union_type);
+        $definition = self::$definitions['dsn'];
+        $this->assertSame($definition(self::$container), $autowiring->dsn);
         $this->assertInstanceOf(R1::class, $autowiring->i);
-        $this->assertInstanceOf(AutowiringShared::class, $this->container->get(AutowiringShared::class));
+        $this->assertInstanceOf(AutowiringShared::class, self::$container->get(AutowiringShared::class));
     }
 
     /**
@@ -119,9 +119,9 @@ class ContainerTest extends TestCase
     public function testShared(): void
     {
         /** @var Shared $example */
-        $example = $this->container->get(Shared::class);
+        $example = self::$container->get(Shared::class);
         $this->assertInstanceOf(Shared::class, $example);
-        $this->assertSame($example, $this->container->get(Shared::class));
+        $this->assertSame($example, self::$container->get(Shared::class));
     }
 
     /**
@@ -131,9 +131,9 @@ class ContainerTest extends TestCase
     public function testSharedDependencyMustBeSame(): void
     {
         /** @var Shared $shared */
-        $shared = $this->container->get(Shared::class);
-        /** @var Autowiring $autowiring */
-        $autowiring = $this->container->get(Autowiring::class);
+        $shared = self::$container->get(Shared::class);
+        /** @var AutowiringInConstructor $autowiring */
+        $autowiring = self::$container->get(AutowiringInConstructor::class);
         $this->assertSame($shared->s, $autowiring->s);
     }
 
@@ -144,23 +144,23 @@ class ContainerTest extends TestCase
     public function testAutowiringWithoutArguments(): void
     {
         /** @var WithoutArgument $without_argument */
-        $without_argument = $this->container->get(WithoutArgument::class);
+        $without_argument = self::$container->get(WithoutArgument::class);
         $this->assertInstanceOf(WithoutArgument::class, $without_argument);
-        $this->assertSame($without_argument, $this->container->get(WithoutArgument::class));
+        $this->assertSame($without_argument, self::$container->get(WithoutArgument::class));
     }
 
     public function testHas(): void
     {
         foreach (self::TARGETS as $key) {
-            $this->assertTrue($this->container->has($key));
+            $this->assertTrue(self::$container->has($key));
         }
 
         foreach (array_keys(self::PARAMS) as $key) {
-            $this->assertFalse($this->container->has($key));
+            $this->assertFalse(self::$container->has($key));
         }
 
         foreach (array_keys(self::$definitions) as $key) {
-            $this->assertFalse($this->container->has($key));
+            $this->assertFalse(self::$container->has($key));
         }
     }
 
@@ -170,13 +170,13 @@ class ContainerTest extends TestCase
         $this->expectExceptionMessage(
             'params: username, password, Cekta\DI\Test\Fixture\S|string, ...variadic_int must be declared'
         );
-        new $this->fqcn([], self::$definitions);
+        new (self::FQCN)([], self::$definitions);
     }
 
     public function testWithoutRequiredDefinitions(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('definitions: definition must be declared');
-        new $this->fqcn(self::PARAMS, []);
+        $this->expectExceptionMessage('definitions: dsn must be declared');
+        new (self::FQCN)(self::PARAMS, []);
     }
 }

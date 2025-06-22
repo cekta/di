@@ -6,12 +6,8 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionException;
-use Stringable;
 
-/**
- * @external
- */
-class Compiler implements Stringable
+class Compiler
 {
     /**
      * @var array<string>
@@ -34,6 +30,18 @@ class Compiler implements Stringable
      * @var array<string>
      */
     private array $definition_keys = [];
+    /**
+     * @var array<string, mixed>
+     */
+    private array $params;
+    /**
+     * @var string[]
+     */
+    private array $alias;
+    /**
+     * @var callable[]
+     */
+    private array $definitions;
 
     /**
      * @param array<string> $containers
@@ -41,35 +49,31 @@ class Compiler implements Stringable
      * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @param string $fqcn
-     * @return void
-     */
-    public function __construct(
-        private array $containers = [],
-        private array $params = [],
-        private array $alias = [],
-        private array $definitions = [],
-        private string $fqcn = 'App\Container'
-    ) {
-    }
-
-    /**
      * @return string
      * @throws NotInstantiable
      * @throws ReflectionException
      */
-    public function __toString(): string
-    {
-        $this->generateMap($this->containers);
+    public function compile(
+        array $containers = [],
+        array $params = [],
+        array $alias = [],
+        array $definitions = [],
+        string $fqcn = 'App\Container'
+    ): string {
+        $this->params = $params;
+        $this->alias = $alias;
+        $this->definitions = $definitions;
+        $this->generateMap($containers);
         $dependencies = [];
-        foreach (array_merge($this->containers, $this->shared, $this->alias) as $target) {
+        foreach (array_merge($containers, $this->shared, $this->alias) as $target) {
             $dependencies[$target] = $this->buildDependency($target);
         }
-        $fqcn = new FQCN($this->fqcn);
+        $fqcn = new FQCN($fqcn);
         $template = new Template(__DIR__ . '/../template/container.compiler.php');
         return $template->render([
             'namespace' => $fqcn->getNamespace(),
             'class' => $fqcn->getClass(),
-            'targets' => $this->containers,
+            'targets' => $containers,
             'dependencies' => $dependencies,
             'alias' => $this->alias,
             'param_keys' => array_unique($this->param_keys),
