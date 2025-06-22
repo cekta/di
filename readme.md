@@ -8,11 +8,12 @@
 
 ## Features
 
- * Supports Autowiring with automatic constructor-based configuration and variadic arguments.
- * Allows you to manually configure any dependency via closures.
- * Easy to improve and extend.
- * Contains everything you need.
+ * Zero cost
  * Supports opcache compilation (fast).
+ * Supports Autowiring with automatic constructor-based configuration
+ * Autowiring support Union Types, Intersection Types, DNF Types, and variadic arguments
+ * Allows you to manually configure any dependency via closures.
+ * Support interface and abstract classes
  * High code quality (see the badges).
 
 ## Install via [composer](https://getcomposer.org/)
@@ -21,6 +22,6 @@
 composer require cekta/di
 ```
 
-### Video tutorial (Russian).
+## Example usage
 
-[![Video Preview](http://img.youtube.com/vi/gm-3TSf9go0/0.jpg)](http://www.youtube.com/watch?v=gm-3TSf9go0)
+[Best example is workging autotest with assertation and comments](./tests/ReadmeTest.php)

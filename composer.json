@@ -11,7 +11,8 @@
   ],
   "require": {
     "psr/container": ">=2.0",
-    "php": ">=8.0"
+    "php": ">=8.0",
+    "symfony/filesystem": "@stable"
   },
   "require-dev": {
     "phpunit/phpunit": "@stable",
