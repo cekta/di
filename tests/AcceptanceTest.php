@@ -26,6 +26,7 @@ use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 class AcceptanceTest extends TestCase
 {
     private const FILE = __DIR__ . '/Container.php';
+    private const FQCN  = 'Cekta\DI\Test\Container';
     private static ContainerInterface $container;
     private const TARGETS = [
         Shared::class,
@@ -46,7 +47,6 @@ class AcceptanceTest extends TestCase
     private const ALIAS = [
         I::class => R1::class,
     ];
-    private const FQCN  = 'Cekta\DI\Test\Container';
 
     /**
      * @throws NotInstantiable

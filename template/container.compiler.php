@@ -46,10 +46,8 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
 
     public function get(string $id)
     {
-        if (array_key_exists($id, $this->params)) {
-            return $this->params[$id];
-        }
         $this->params[$id] = match($id) {
+            array_key_exists($id, $this->params) ? $id: false => $this->params[$id],
             array_key_exists($id, $this->definitions) ? $id: false => call_user_func($this->definitions[$id], $this),
     <?php foreach ($alias as $key => $value) { ?>
         <?= var_export($key, true) . " => \$this->get('{$value}')," . PHP_EOL ?>

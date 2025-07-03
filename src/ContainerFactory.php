@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
 use Psr\Container\ContainerInterface;
 use ReflectionException;
@@ -36,8 +37,10 @@ class ContainerFactory
      * @param array<string, string> $alias
      * @param array<string, callable> $definitions
      * @return ContainerInterface
+     *
      * @throws NotInstantiable if container interface or abstract class
      * @throws ReflectionException if cant create ReflectionClass for dependency
+     * @throws InfiniteRecursion
      * @throws IOExceptionInterface if file not writable
      */
     public function make(
