@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionException;
 
@@ -14,6 +15,10 @@ class Compiler
      */
     private array $shared = [];
 
+    /**
+     * @var array<string>
+     */
+    private array $build_stack = [];
     /**
      * @var array<string>
      */
@@ -52,6 +57,7 @@ class Compiler
      * @return string
      * @throws NotInstantiable
      * @throws ReflectionException
+     * @throws InfiniteRecursion
      */
     public function compile(
         array $containers = [],
@@ -85,26 +91,36 @@ class Compiler
      * @param array<string> $containers
      * @throws ReflectionException
      * @throws NotInstantiable
+     * @throws InfiniteRecursion
      */
     private function generateMap(array $containers): void
     {
         foreach ($containers as $container) {
+            if (in_array($container, $this->stack)) {
+                throw new InfiniteRecursion($container, $this->stack);
+            }
+            $this->stack[] = $container;
+
             if (array_key_exists($container, $this->alias)) {
                 $container = $this->alias[$container];
             }
             if (array_key_exists($container, $this->params)) {
                 $this->param_keys[] = $container;
+                array_pop($this->stack);
                 continue;
             }
             if (array_key_exists($container, $this->definitions)) {
                 $this->definition_keys[] = $container;
+                array_pop($this->stack);
                 continue;
             }
             if (in_array($container, $this->shared)) {
+                array_pop($this->stack);
                 continue;
             }
             if (array_key_exists($container, $this->dependenciesMap)) {
                 $this->shared[] = $container;
+                array_pop($this->stack);
                 continue;
             }
             /** @var class-string $container */
@@ -118,6 +134,7 @@ class Compiler
                 $dependencies[] = $dependency['name'];
             }
             $this->generateMap($dependencies);
+            array_pop($this->stack);
         }
     }
 
@@ -127,13 +144,13 @@ class Compiler
             return "\$this->params['$target']";
         }
         if (
-            (in_array($target, $this->shared) && count($this->stack) !== 0)
+            (in_array($target, $this->shared) && count($this->build_stack) !== 0)
             || array_key_exists($target, $this->alias)
             || array_key_exists($target, $this->definitions)
         ) {
             return "\$this->get('$target')";
         }
-        $this->stack[] = $target;
+        $this->build_stack[] = $target;
         $container = "new \\$target(";
         if (array_key_exists($target, $this->dependenciesMap)) {
             foreach ($this->dependenciesMap[$target] as $dependency) {
@@ -143,7 +160,7 @@ class Compiler
             }
         }
         $container .= ')';
-        array_pop($this->stack);
+        array_pop($this->build_stack);
         return $container;
     }
 }
