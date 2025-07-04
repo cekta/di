@@ -6,8 +6,7 @@
  * @var array<string> $targets
  * @var array<string, string> $dependencies
  * @var array<string, string> $alias
- * @var string[] $param_keys
- * @var string[] $definition_keys
+ * @var string[] $required_keys
  */
 
 ?>
@@ -31,16 +30,11 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         private array $params = [], 
         private array $definitions = []
     ) {
-        $diff = array_diff(<?= var_export($param_keys, true) ?>, array_keys($this->params));
+        $keys = array_merge(array_keys($this->params), array_keys($this->definitions));
+        $diff = array_diff(<?= var_export($required_keys, true) ?>, $keys);
         if (!empty($diff)) {
             $diff = implode(', ', $diff);
-            throw new \RuntimeException("params: {$diff} must be declared");
-        }
-
-        $diff = array_diff(<?= var_export($definition_keys, true) ?>, array_keys($this->definitions));
-        if (!empty($diff)) {
-            $diff = implode(', ', $diff);
-            throw new \RuntimeException("definitions: {$diff} must be declared");
+            throw new \InvalidArgumentException("Containers: {$diff} must be declared in params or definitions");
         }
     }
 

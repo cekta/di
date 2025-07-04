@@ -15,7 +15,10 @@ class InfiniteRecursion extends Exception
     public function __construct(string $container, array $stack)
     {
         parent::__construct(
-            sprintf("Infinite recursion detected for `{$container}`, stack: %s", implode(', ', $stack))
+            sprintf(
+                "Infinite recursion detected for `$container`, stack: %s",
+                implode(', ', $stack)
+            )
         );
     }
 }

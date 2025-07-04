@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
+use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\A;
 use Cekta\DI\Test\Fixture\Example\AutowiringInConstructor;
@@ -15,7 +17,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class ReadmeTest extends TestCase
@@ -24,11 +25,12 @@ class ReadmeTest extends TestCase
     private const FQCN = "Cekta\DI\Test\ReadmeContainer";
 
     /**
-     * @throws NotFoundExceptionInterface
-     * @throws IOExceptionInterface
-     * @throws NotInstantiable
-     * @throws ReflectionException
      * @throws ContainerExceptionInterface
+     * @throws IOExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws NotInstantiable
+     * @throws InfiniteRecursion
+     * @throws InvalidContainerForCompile
      */
     public function testExample(): void
     {
