@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use UnexpectedValueException;
 
 /**
  * @external
@@ -29,19 +29,16 @@ class ContainerFactory
     }
 
     /**
-     * @param string $filename
-     * @param string $fqcn
-     * @param bool $force_compile
      * @param array<string> $containers
      * @param array<string, mixed> $params
      * @param array<string, string> $alias
      * @param array<string, callable> $definitions
-     * @return ContainerInterface
      *
-     * @throws NotInstantiable if container interface or abstract class
-     * @throws ReflectionException if cant create ReflectionClass for dependency
-     * @throws InfiniteRecursion
-     * @throws IOExceptionInterface if file not writable
+     * @throws NotInstantiable if container cant be created (interface or abstract class)
+     * @throws InfiniteRecursion Invalid compile, infinite recursion in dependencies
+     * @throws IOExceptionInterface if file not writable, or other problem with IO
+     * @throws InvalidArgumentException if fqcn result not implement ContainerInterface, or cant create Container
+     * @throws InvalidContainerForCompile
      */
     public function make(
         string $filename,
@@ -66,7 +63,7 @@ class ContainerFactory
         }
         $result = new $fqcn($params, $definitions);
         if (!($result instanceof ContainerInterface)) {
-            throw new UnexpectedValueException(
+            throw new InvalidArgumentException(
                 sprintf(
                     "Invalid fqcn: `$fqcn`, must be instanceof %s",
                     ContainerInterface::class

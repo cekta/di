@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
+use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\B;
 use Cekta\DI\Test\Fixture\D;
 use Cekta\DI\Test\Fixture\I;
 use PHPUnit\Framework\TestCase;
-use ReflectionException;
 
 class CompilerTest extends TestCase
 {
@@ -22,8 +23,9 @@ class CompilerTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidContainerForCompile
      * @throws NotInstantiable
+     * @throws InfiniteRecursion
      */
     public function testCompileWithoutNamespace(): void
     {
@@ -33,12 +35,20 @@ class CompilerTest extends TestCase
     }
 
     /**
+     * @throws InvalidContainerForCompile
+     * @throws InfiniteRecursion
      * @throws NotInstantiable
      */
     public function testCompileWithoutRequiredParams(): void
     {
-        $this->expectException(ReflectionException::class);
-        $this->expectExceptionMessage('Class "password" does not exist');
+        $this->expectException(InvalidContainerForCompile::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Invalid container:`%s` for compile, stack: %s',
+                'password',
+                implode(', ', [B::class])
+            ),
+        );
 
         $this->compiler->compile(
             containers: [
@@ -49,7 +59,9 @@ class CompilerTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidContainerForCompile
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
      */
     public function testCompileNotInstantiable(): void
     {

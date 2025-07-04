@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
+use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\Example\InfiniteRecursionExample;
 use Cekta\DI\Test\Fixture\InfiniteRecursion;
 use Cekta\DI\Test\Fixture\OtherUseS;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class InfiniteRecursionDetectorTest extends TestCase
 {
@@ -22,6 +25,11 @@ class InfiniteRecursionDetectorTest extends TestCase
         }
     }
 
+    /**
+     * @throws IOExceptionInterface
+     * @throws InvalidContainerForCompile
+     * @throws NotInstantiable
+     */
     public function testInfiniteRecursion(): void
     {
         $this->expectException(\Cekta\DI\Exception\InfiniteRecursion::class);

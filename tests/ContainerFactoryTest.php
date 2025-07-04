@@ -6,17 +6,18 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
 use Cekta\DI\ContainerFactory;
+use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
-use ReflectionException;
 use stdClass;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use UnexpectedValueException;
 
 class ContainerFactoryTest extends TestCase
 {
@@ -35,10 +36,11 @@ class ContainerFactoryTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidContainerForCompile
      * @throws Exception
-     * @throws NotInstantiable
      * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
      */
     public function testFileMustBeCompiledIfNotExist(): void
     {
@@ -58,10 +60,11 @@ class ContainerFactoryTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidContainerForCompile
      * @throws Exception
-     * @throws NotInstantiable
      * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
      */
     public function testFileMustBeNOTCompiledIfExist(): void
     {
@@ -76,10 +79,11 @@ class ContainerFactoryTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
-     * @throws Exception
-     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
      * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
+     * @throws Exception
      */
     public function testForceCompile(): void
     {
@@ -95,15 +99,16 @@ class ContainerFactoryTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
-     * @throws NotInstantiable
      * @throws IOExceptionInterface
+     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
+     * @throws InfiniteRecursion
      */
     public function testMakeResultMustImplementContainerInterface(): void
     {
         $fqcn = stdClass::class;
 
-        $this->expectException(UnexpectedValueException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
         );
@@ -112,7 +117,9 @@ class ContainerFactoryTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
+     * @throws InvalidContainerForCompile
+     * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
      * @throws NotInstantiable
      */
     public function testCantCreateFile(): void

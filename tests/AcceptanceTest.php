@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
+use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\A;
@@ -15,18 +17,17 @@ use Cekta\DI\Test\Fixture\Example\WithoutArgument;
 use Cekta\DI\Test\Fixture\I;
 use Cekta\DI\Test\Fixture\R1;
 use Cekta\DI\Test\Fixture\S;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionException;
-use RuntimeException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class AcceptanceTest extends TestCase
 {
     private const FILE = __DIR__ . '/Container.php';
-    private const FQCN  = 'Cekta\DI\Test\Container';
+    private const FQCN = 'Cekta\DI\Test\Container';
     private static ContainerInterface $container;
     private const TARGETS = [
         Shared::class,
@@ -49,9 +50,10 @@ class AcceptanceTest extends TestCase
     ];
 
     /**
-     * @throws NotInstantiable
-     * @throws ReflectionException
      * @throws IOExceptionInterface
+     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
+     * @throws InfiniteRecursion
      */
     protected function setUp(): void
     {
@@ -166,17 +168,22 @@ class AcceptanceTest extends TestCase
 
     public function testWithoutRequiredParams(): void
     {
-        $this->expectException(RuntimeException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'params: username, password, Cekta\DI\Test\Fixture\S|string, ...variadic_int must be declared'
+            sprintf(
+                'Containers: username, password, %s|string, ...variadic_int must be declared in params or definitions',
+                S::class,
+            )
         );
+        // @phpstan-ignore class.notFound
         new (self::FQCN)([], self::$definitions);
     }
 
     public function testWithoutRequiredDefinitions(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('definitions: dsn must be declared');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Containers: dsn must be declared in params or definitions');
+        // @phpstan-ignore class.notFound
         new (self::FQCN)(self::PARAMS, []);
     }
 }

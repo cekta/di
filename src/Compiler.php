@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionException;
@@ -30,11 +31,7 @@ class Compiler
     /**
      * @var array<string>
      */
-    private array $param_keys = [];
-    /**
-     * @var array<string>
-     */
-    private array $definition_keys = [];
+    private array $required_keys = [];
     /**
      * @var array<string, mixed>
      */
@@ -56,8 +53,8 @@ class Compiler
      * @param string $fqcn
      * @return string
      * @throws NotInstantiable
-     * @throws ReflectionException
      * @throws InfiniteRecursion
+     * @throws InvalidContainerForCompile
      */
     public function compile(
         array $containers = [],
@@ -82,16 +79,15 @@ class Compiler
             'targets' => $containers,
             'dependencies' => $dependencies,
             'alias' => $this->alias,
-            'param_keys' => array_unique($this->param_keys),
-            'definition_keys' => array_unique($this->definition_keys),
+            'required_keys' => array_unique($this->required_keys),
         ]);
     }
 
     /**
      * @param array<string> $containers
-     * @throws ReflectionException
      * @throws NotInstantiable
      * @throws InfiniteRecursion
+     * @throws InvalidContainerForCompile
      */
     private function generateMap(array $containers): void
     {
@@ -104,13 +100,8 @@ class Compiler
             if (array_key_exists($container, $this->alias)) {
                 $container = $this->alias[$container];
             }
-            if (array_key_exists($container, $this->params)) {
-                $this->param_keys[] = $container;
-                array_pop($this->stack);
-                continue;
-            }
-            if (array_key_exists($container, $this->definitions)) {
-                $this->definition_keys[] = $container;
+            if (array_key_exists($container, $this->params) || array_key_exists($container, $this->definitions)) {
+                $this->required_keys[] = $container;
                 array_pop($this->stack);
                 continue;
             }
@@ -123,10 +114,14 @@ class Compiler
                 array_pop($this->stack);
                 continue;
             }
-            /** @var class-string $container */
-            $reflection = new Reflection($container);
+            try {
+                // @phpstan-ignore argument.type
+                $reflection = new Reflection($container);
+            } catch (ReflectionException $exception) {
+                throw new InvalidContainerForCompile($container, $this->stack, $exception);
+            }
             if (!$reflection->isInstantiable()) {
-                throw new NotInstantiable("`{$reflection->getName()}` must be instantiable");
+                throw new NotInstantiable($reflection->getName(), $this->stack);
             }
             $this->dependenciesMap[$container] = $reflection->getDependencies();
             $dependencies = [];
