@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\B;
 use Cekta\DI\Test\Fixture\D;

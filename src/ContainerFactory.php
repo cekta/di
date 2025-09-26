@@ -33,6 +33,8 @@ class ContainerFactory
      * @param array<string, mixed> $params
      * @param array<string, string> $alias
      * @param array<string, callable> $definitions
+     * @param array<string> $singletons
+     * @param array<string> $factories
      *
      * @throws NotInstantiable if container cant be created (interface or abstract class)
      * @throws InfiniteRecursion Invalid compile, infinite recursion in dependencies
@@ -48,6 +50,8 @@ class ContainerFactory
         array $params = [],
         array $alias = [],
         array $definitions = [],
+        array $singletons = [],
+        array $factories = [],
     ): ContainerInterface {
         if (!$this->filesystem->exists($filename) || $force_compile) {
             $this->filesystem->dumpFile(
@@ -58,6 +62,8 @@ class ContainerFactory
                     alias: $alias,
                     definitions: $definitions,
                     fqcn: $fqcn,
+                    singletons: $singletons,
+                    factories: $factories,
                 )
             );
         }

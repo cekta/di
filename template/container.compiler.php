@@ -7,6 +7,8 @@
  * @var array<string, string> $dependencies
  * @var array<string, string> $alias
  * @var string[] $required_keys
+ * @var string[] $singletons
+ * @var string[] $factories
  */
 
 ?>
@@ -22,6 +24,23 @@ if (!empty($namespace)) {
 class <?= $class ?> implements \Psr\Container\ContainerInterface
 {
     /**
+     * @var array<string, mixed>
+     */
+    private static array $singletons = [];
+    /**
+     * @var array<string, mixed>
+     */
+    private array $context = [];
+    /**
+     * @var string[]
+     */
+    private array $list_singletons;
+    /**
+     * @var string[]
+     */
+    private array $list_factories;
+
+    /**
      * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @throws \RuntimeException if required params or definition not declared
@@ -36,24 +55,56 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
             $diff = implode(', ', $diff);
             throw new \InvalidArgumentException("Containers: {$diff} must be declared in params or definitions");
         }
+        $this->list_factories = <?= var_export($factories, true) ?>;
+        $this->list_singletons = <?= var_export($singletons, true) ?>;
     }
 
     public function get(string $id)
     {
-        $this->params[$id] = match($id) {
-            array_key_exists($id, $this->params) ? $id: false => $this->params[$id],
-            array_key_exists($id, $this->definitions) ? $id: false => call_user_func($this->definitions[$id], $this),
-    <?php foreach ($alias as $key => $value) { ?>
-        <?= var_export($key, true) . " => \$this->get('{$value}')," . PHP_EOL ?>
-    <?php } ?>
-
-    <?php foreach ($dependencies as $key => $value) { ?>
-        <?= var_export($key, true) . " => {$value}," . PHP_EOL ?>
-    <?php } ?>
-
-            default => throw new \Cekta\DI\Exception\NotFound($id),
-        };
-        return $this->params[$id];
+        switch ($id) {
+            case array_key_exists($id, $this->params) ? $id: false:
+                return $this->params[$id];
+            case array_key_exists($id, $this->context) ? $id: false:
+                return $this->context[$id];
+            case array_key_exists($id, self::$singletons) ? $id: false:
+                return self::$singletons[$id];
+            case array_key_exists($id, $this->definitions) ? $id: false:
+                if (in_array($id, $this->list_singletons)) {
+                    self::$singletons[$id] = call_user_func($this->definitions[$id], $this);
+                    return self::$singletons[$id];
+                } else if (in_array($id, $this->list_factories)) {
+                    return call_user_func($this->definitions[$id], $this);
+                } else {
+                    $this->context[$id] = call_user_func($this->definitions[$id], $this);
+                    return $this->context[$id];
+                }
+        <?php foreach ($alias as $key => $value) { ?>
+            case <?= var_export($key, true) ?>:
+            <?php if (in_array($key, $singletons)) { ?>
+                self::$singletons[$id] = $this->get('<?= $value ?>');
+                return self::$singletons[$id];
+            <?php } else if (in_array($key, $factories)) { ?>
+                return $this->get('<?= $value ?>');
+            <?php } else { ?>
+                $this->context[$id] = $this->get('<?= $value ?>');
+                return $this->context[$id];
+            <?php } ?>
+        <?php } ?>
+        <?php foreach ($dependencies as $key => $value) { ?>
+            case <?= var_export($key, true) ?>:
+            <?php if (in_array($key, $singletons)) { ?>
+                self::$singletons[$id] = <?= $value ?>;
+                return self::$singletons[$id];
+            <?php } else if (in_array($key, $factories)) { ?>
+                return <?= $value ?>;
+            <?php } else { ?>
+                $this->context[$id] = <?= $value ?>;
+                return $this->context[$id];
+            <?php } ?>
+        <?php } ?>
+            default:
+                throw new \Cekta\DI\Exception\NotFound($id);
+        }
     }
 
     public function has(string $id): bool
