@@ -10,6 +10,7 @@ use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\A;
+use Cekta\DI\Test\Fixture\D;
 use Cekta\DI\Test\Fixture\Example\AutowiringInConstructor;
 use Cekta\DI\Test\Fixture\Example\AutowiringShared;
 use Cekta\DI\Test\Fixture\Example\Shared;
@@ -49,6 +50,11 @@ class AcceptanceTest extends TestCase
         I::class => R1::class,
     ];
 
+    public static function tearDownAfterClass(): void
+    {
+        unlink(self::FILE);
+    }
+
     /**
      * @throws IOExceptionInterface
      * @throws NotInstantiable
@@ -76,12 +82,6 @@ class AcceptanceTest extends TestCase
             definitions: self::$definitions,
         );
     }
-
-    public static function tearDownAfterClass(): void
-    {
-        unlink(self::FILE);
-    }
-
 
     /**
      * @throws ContainerExceptionInterface
@@ -185,5 +185,15 @@ class AcceptanceTest extends TestCase
         $this->expectExceptionMessage('Containers: dsn must be declared in params or definitions');
         // @phpstan-ignore class.notFound
         new (self::FQCN)(self::PARAMS, []);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     */
+    public function testNotSharedMustCreatedByNew(): void
+    {
+        $this->assertFalse(self::$container->has(D::class));
+        $this->expectException(NotFoundExceptionInterface::class);
+        self::$container->get(D::class);
     }
 }

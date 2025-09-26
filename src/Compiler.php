@@ -44,6 +44,14 @@ class Compiler
      * @var callable[]
      */
     private array $definitions;
+    /**
+     * @var string[]
+     */
+    private array $singletons;
+    /**
+     * @var string[]
+     */
+    private array $factories;
 
     /**
      * @param array<string> $containers
@@ -51,6 +59,8 @@ class Compiler
      * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @param string $fqcn
+     * @param array<string> $singletons
+     * @param array<string> $factories
      * @return string
      * @throws NotInstantiable
      * @throws InfiniteRecursion
@@ -61,11 +71,15 @@ class Compiler
         array $params = [],
         array $alias = [],
         array $definitions = [],
-        string $fqcn = 'App\Container'
+        string $fqcn = 'App\Container',
+        array $singletons = [],
+        array $factories = [],
     ): string {
         $this->params = $params;
         $this->alias = $alias;
         $this->definitions = $definitions;
+        $this->singletons = $singletons;
+        $this->factories = $factories;
         $this->generateMap($containers);
         $dependencies = [];
         foreach (array_merge($containers, $this->shared, $this->alias) as $target) {
@@ -80,6 +94,8 @@ class Compiler
             'dependencies' => $dependencies,
             'alias' => $this->alias,
             'required_keys' => array_unique($this->required_keys),
+            'singletons' => $this->singletons,
+            'factories' => $this->factories,
         ]);
     }
 
@@ -113,6 +129,9 @@ class Compiler
                 $this->shared[] = $container;
                 array_pop($this->stack);
                 continue;
+            }
+            if (in_array($container, $this->singletons)  || in_array($container, $this->factories)) {
+                $this->shared[] = $container;
             }
             try {
                 // @phpstan-ignore argument.type
