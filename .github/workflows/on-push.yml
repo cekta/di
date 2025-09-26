@@ -9,7 +9,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: docker compose up
-        run: docker compose up --rm --exit-code-from app
+        run: docker compose up --exit-code-from app
         env:
           UID: 0
           PHP_VERSION: ${{ matrix.php }}
