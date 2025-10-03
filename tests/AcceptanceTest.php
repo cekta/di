@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerFactory;
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\Fixture\A;
@@ -72,14 +72,17 @@ class AcceptanceTest extends TestCase
                 return "definition u: $username, p: $password";
             }
         ];
-        $builder = new ContainerFactory();
-        self::$container = $builder->make(
+        self::$container = Container::make(
             filename: self::FILE,
-            fqcn: self::FQCN,
-            containers: self::TARGETS,
+            provider: function () {
+                return [
+                    'containers' => self::TARGETS,
+                    'alias' => self::ALIAS,
+                ];
+            },
             params: self::PARAMS,
-            alias: self::ALIAS,
             definitions: self::$definitions,
+            fqcn: self::FQCN,
         );
     }
 

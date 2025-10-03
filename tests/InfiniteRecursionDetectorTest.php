@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
+use Cekta\DI\Container;
 use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\ContainerFactory;
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\Exception;
@@ -19,11 +19,11 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ContainerFactoryTest extends TestCase
+class ContainerBuilderTest extends TestCase
 {
     private MockObject $compiler_mock;
     private MockObject $filesystem;
-    private ContainerFactory $factory;
+    private Container $builder;
 
     /**
      * @throws Exception
@@ -32,7 +32,7 @@ class ContainerFactoryTest extends TestCase
     {
         $this->compiler_mock = $this->createMock(Compiler::class);
         $this->filesystem = $this->createMock(Filesystem::class);
-        $this->factory = new ContainerFactory($this->compiler_mock, $this->filesystem);
+        $this->builder = new Container($this->compiler_mock, $this->filesystem);
     }
 
     /**
@@ -50,9 +50,12 @@ class ContainerFactoryTest extends TestCase
         $this->filesystem->method('exists')
             ->willReturn(false);
 
-        $this->factory->make(
-            $filename,
-            get_class($this->createMock(ContainerInterface::class))
+        $this->builder->build(
+            filename: $filename,
+            provider: function () {
+                return [];
+            },
+            fqcn: get_class($this->createMock(ContainerInterface::class))
         );
         if (file_exists($filename)) {
             unlink($filename);
@@ -72,9 +75,12 @@ class ContainerFactoryTest extends TestCase
             ->willReturn(true);
         $this->compiler_mock->expects($this->never())
             ->method('compile');
-        $this->factory->make(
-            'not important2',
-            get_class($this->createMock(ContainerInterface::class))
+        $this->builder->build(
+            filename: 'not important2',
+            provider: function () {
+                return [];
+            },
+            fqcn: get_class($this->createMock(ContainerInterface::class))
         );
     }
 
@@ -91,10 +97,13 @@ class ContainerFactoryTest extends TestCase
             ->willReturn(true);
         $this->compiler_mock->expects($this->once())
             ->method('compile');
-        $this->factory->make(
-            'not important3',
-            get_class($this->createMock(ContainerInterface::class)),
-            true
+        $this->builder->build(
+            filename: 'not important3',
+            provider: function () {
+                return [];
+            },
+            fqcn: get_class($this->createMock(ContainerInterface::class)),
+            force_compile: true
         );
     }
 
@@ -113,7 +122,13 @@ class ContainerFactoryTest extends TestCase
             sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
         );
 
-        $this->factory->make(filename: __FILE__, fqcn: $fqcn);
+        $this->builder->build(
+            filename: __FILE__,
+            provider: function () {
+                return [];
+            },
+            fqcn: $fqcn
+        );
     }
 
     /**
@@ -128,6 +143,12 @@ class ContainerFactoryTest extends TestCase
 
         $this->filesystem->method('dumpFile')
             ->willThrowException(new IOException('some message'));
-        $this->factory->make(filename: 'not important4', force_compile: true);
+        $this->builder->build(
+            filename: 'not important4',
+            provider: function () {
+                return [];
+            },
+            force_compile: true
+        );
     }
 }
