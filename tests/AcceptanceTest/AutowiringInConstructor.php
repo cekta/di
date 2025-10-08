@@ -2,11 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Fixture\Example;
-
-use Cekta\DI\Test\Fixture\A;
-use Cekta\DI\Test\Fixture\I;
-use Cekta\DI\Test\Fixture\S;
+namespace Cekta\DI\Test\AcceptanceTest;
 
 class AutowiringInConstructor
 {

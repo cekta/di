@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Fixture;
+namespace Cekta\DI\Test\CompilerTest;
 
-class B
+class ExampleWithParams
 {
     public function __construct(
         private string $username,
         private string $password,
-        private C $c
     ) {
     }
 }

@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Container;
 use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Test\Fixture\Example\WithoutArgument;
-use Cekta\DI\Test\LifeCycle\Factory;
-use Cekta\DI\Test\LifeCycle\FactorySubContainer;
-use Cekta\DI\Test\LifeCycle\Singleton;
-use Cekta\DI\Test\LifeCycle\SingletonSubContainer;
-use Cekta\DI\Test\LifeCycle\SingletonSubContainer\Dependency;
+use Cekta\DI\Test\LifeCycleTest\Factory;
+use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
+use Cekta\DI\Test\LifeCycleTest\Singleton;
+use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer;
+use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer\Dependency;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -50,15 +48,15 @@ class LifeCycleTest extends TestCase
             'fqcn' => self::FQCN,
             'force_compile' => true,
             'containers' => [
-                WithoutArgument::class,
+                stdClass::class,
                 SingletonSubContainer::class,
                 FactorySubContainer::class,
                 Singleton::class,
                 Factory::class,
             ],
             'alias' => [
-                self::SCOPED_ALIAS => WithoutArgument::class,
-                self::SINGLETON_ALIAS => WithoutArgument::class,
+                self::SCOPED_ALIAS => stdClass::class,
+                self::SINGLETON_ALIAS => stdClass::class,
                 self::FACTORY_ALIAS => self::FACTORY_DEFINITION,
             ],
             'definitions' => [
@@ -103,9 +101,9 @@ class LifeCycleTest extends TestCase
     public function testDefaultAutowiredMustBeScoped(): void
     {
         $this->mustBeScoped(
-            self::$container->get(WithoutArgument::class),
-            self::$container->get(WithoutArgument::class),
-            self::$container2->get(WithoutArgument::class)
+            self::$container->get(stdClass::class),
+            self::$container->get(stdClass::class),
+            self::$container2->get(stdClass::class)
         );
     }
 

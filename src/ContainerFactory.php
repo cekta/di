@@ -10,13 +10,25 @@ use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @external
- * @deprecated use \Cekta\DI\ContainerBuilder
+ * @deprecated will be removed,  use \Cekta\DI\Container
  */
 class ContainerFactory
 {
+    private Compiler $compiler;
+    private Filesystem $filesystem;
+
+    public function __construct(
+        ?Compiler $compiler = null,
+        ?Filesystem $filesystem = null
+    ) {
+        $this->compiler = $compiler ?? new Compiler();
+        $this->filesystem = $filesystem ?? new Filesystem();
+    }
+
     /**
      * @param array<string> $containers
      * @param array<string, mixed> $params
@@ -42,7 +54,7 @@ class ContainerFactory
         array $singletons = [],
         array $factories = [],
     ): ContainerInterface {
-        return Container::make(
+        return Container::build(
             filename: $filename,
             provider: function () use ($containers, $alias, $singletons, $factories) {
                 return [
@@ -56,6 +68,8 @@ class ContainerFactory
             definitions: $definitions,
             fqcn: $fqcn,
             force_compile: $force_compile,
+            compiler: $this->compiler,
+            filesystem: $this->filesystem,
         );
     }
 }

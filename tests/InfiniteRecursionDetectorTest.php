@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Container;
 use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Test\Fixture\Example\InfiniteRecursionExample;
-use Cekta\DI\Test\Fixture\InfiniteRecursion;
-use Cekta\DI\Test\Fixture\OtherUseS;
+use Cekta\DI\Test\InfiniteRecursionDetectorTest\A;
+use Cekta\DI\Test\InfiniteRecursionDetectorTest\B;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
@@ -37,9 +35,9 @@ class InfiniteRecursionDetectorTest extends TestCase
         $this->expectExceptionMessage(
             sprintf(
                 'Infinite recursion detected for `%s`, stack: %s, %s',
-                InfiniteRecursionExample::class,
-                InfiniteRecursionExample::class,
-                InfiniteRecursion::class
+                A::class,
+                A::class,
+                B::class
             )
         );
 
@@ -48,8 +46,7 @@ class InfiniteRecursionDetectorTest extends TestCase
             fqcn: $this::FQCN,
             force_compile: true,
             containers: [
-                OtherUseS::class,
-                InfiniteRecursionExample::class,
+                A::class,
             ],
             params: [
                 'username' => 'value for username',

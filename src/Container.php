@@ -12,6 +12,9 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * @external
+ */
 class Container
 {
     /**
@@ -25,7 +28,8 @@ class Container
      * @param array<string, callable> $definitions
      * @param string $fqcn
      * @param bool $force_compile
-     *
+     * @param Compiler|null $compiler
+     * @param Filesystem|null $filesystem
      * @return ContainerInterface
      *
      * @throws IOExceptionInterface if file not writable, or other problem with IO
@@ -33,68 +37,25 @@ class Container
      * @throws InvalidContainerForCompile
      * @throws NotInstantiable if container cant be created (interface or abstract class)
      */
-    public static function make(
+    public static function build(
         string $filename,
         callable $provider,
         array $params = [],
         array $definitions = [],
         string $fqcn = 'App\Container',
         bool $force_compile = false,
+        ?Compiler $compiler = null,
+        ?Filesystem $filesystem = null
     ): ContainerInterface {
-        $builder = new Container(
-            new Compiler(),
-            new Filesystem()
-        );
-        return $builder->build(
-            $filename,
-            $provider,
-            $params,
-            $definitions,
-            $fqcn,
-            $force_compile,
-        );
-    }
-
-    public function __construct(
-        private Compiler $compiler,
-        private Filesystem $filesystem
-    ) {
-    }
-
-    /**
-     * @param string $filename
-     * @param callable(): array{
-     *      containers: array<string>,
-     *      alias: array<string, string>,
-     *      factories: array<string>,
-     *      singletons: array<string>} $provider
-     * @param array<string, mixed> $params
-     * @param array<string, callable> $definitions
-     * @param string $fqcn
-     * @param bool $force_compile
-     *
-     * @return ContainerInterface
-     *
-     * @throws IOExceptionInterface if file not writable, or other problem with IO
-     * @throws InfiniteRecursion Invalid compile, infinite recursion in dependencies
-     * @throws InvalidContainerForCompile
-     * @throws NotInstantiable if container cant be created (interface or abstract class)
-     */
-    public function build(
-        string $filename,
-        callable $provider,
-        array $params = [],
-        array $definitions = [],
-        string $fqcn = 'App\Container',
-        bool $force_compile = false,
-    ): ContainerInterface {
+        $compiler = $compiler ?? new Compiler();
+        $filesystem = $filesystem ?? new Filesystem();
         if (
-            !$this->filesystem->exists($filename)
+            !$filesystem->exists($filename)
             || $force_compile
         ) {
-            $this->filesystem->dumpFile(
+            $filesystem->dumpFile(
                 $filename,
-                $this->compiler->compile(
+                $compiler->compile(
                     ...call_user_func($provider) + [
                         'params' => $params,
                         'fqcn' => $fqcn,
