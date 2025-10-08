@@ -8,11 +8,11 @@ use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Test\Fixture\A;
-use Cekta\DI\Test\Fixture\Example\AutowiringInConstructor;
-use Cekta\DI\Test\Fixture\Example\Shared;
-use Cekta\DI\Test\Fixture\R1;
-use Cekta\DI\Test\Fixture\S;
+use Cekta\DI\Test\AcceptanceTest\A;
+use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
+use Cekta\DI\Test\AcceptanceTest\R1;
+use Cekta\DI\Test\AcceptanceTest\S;
+use Cekta\DI\Test\AcceptanceTest\Shared;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -53,7 +53,7 @@ class ReadmeTest extends TestCase
             ],
             alias: [
                 // register inteface or abstract class implementation here
-                Fixture\I::class => Fixture\R1::class
+                AcceptanceTest\I::class => AcceptanceTest\R1::class
             ],
             definitions: [
                 // configuration of exclusive dependencies

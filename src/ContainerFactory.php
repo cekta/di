@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
@@ -14,6 +14,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @external
+ * @deprecated will be removed,  use \Cekta\DI\Container
  */
 class ContainerFactory
 {
@@ -53,29 +54,22 @@ class ContainerFactory
         array $singletons = [],
         array $factories = [],
     ): ContainerInterface {
-        if (!$this->filesystem->exists($filename) || $force_compile) {
-            $this->filesystem->dumpFile(
-                $filename,
-                $this->compiler->compile(
-                    containers: $containers,
-                    params: $params,
-                    alias: $alias,
-                    definitions: $definitions,
-                    fqcn: $fqcn,
-                    singletons: $singletons,
-                    factories: $factories,
-                )
-            );
-        }
-        $result = new $fqcn($params, $definitions);
-        if (!($result instanceof ContainerInterface)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    "Invalid fqcn: `$fqcn`, must be instanceof %s",
-                    ContainerInterface::class
-                )
-            );
-        }
-        return $result;
+        return Container::build(
+            filename: $filename,
+            provider: function () use ($containers, $alias, $singletons, $factories) {
+                return [
+                    'containers' => $containers,
+                    'alias' => $alias,
+                    'singletons' => $singletons,
+                    'factories' => $factories,
+                ];
+            },
+            params: $params,
+            definitions: $definitions,
+            fqcn: $fqcn,
+            force_compile: $force_compile,
+            compiler: $this->compiler,
+            filesystem: $this->filesystem,
+        );
     }
 }

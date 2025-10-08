@@ -9,6 +9,9 @@ use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionException;
 
+/**
+ * @external
+ */
 class Compiler
 {
     /**

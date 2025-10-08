@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\Fixture;
+namespace Cekta\DI\Test\InfiniteRecursionDetectorTest;
 
-class D
+class A
 {
     public function __construct(
-        public I $i
+        public B $b,
     ) {
     }
 }

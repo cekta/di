@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\LifeCycle;
+namespace Cekta\DI\Test\LifeCycleTest;
 
 class Factory
 {

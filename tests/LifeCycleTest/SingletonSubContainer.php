@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI\Test\LifeCycle;
+namespace Cekta\DI\Test\LifeCycleTest;
 
-use Cekta\DI\Test\LifeCycle\SingletonSubContainer\Dependency;
+use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer\Dependency;
 
 class SingletonSubContainer
 {

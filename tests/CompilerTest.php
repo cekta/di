@@ -8,9 +8,9 @@ use Cekta\DI\Compiler;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Test\Fixture\B;
-use Cekta\DI\Test\Fixture\D;
-use Cekta\DI\Test\Fixture\I;
+use Cekta\DI\Test\CompilerTest\Example;
+use Cekta\DI\Test\CompilerTest\ExampleWithParams;
+use Iterator;
 use PHPUnit\Framework\TestCase;
 
 class CompilerTest extends TestCase
@@ -46,13 +46,13 @@ class CompilerTest extends TestCase
             sprintf(
                 'Invalid container:`%s` for compile, stack: %s',
                 'password',
-                implode(', ', [B::class])
+                implode(', ', [ExampleWithParams::class])
             ),
         );
 
         $this->compiler->compile(
             containers: [
-                B::class
+                ExampleWithParams::class
             ],
             params: ['username' => 'value username']
         );
@@ -65,13 +65,13 @@ class CompilerTest extends TestCase
      */
     public function testCompileNotInstantiable(): void
     {
-        $name = I::class;
+        $name = Iterator::class;
         $this->expectException(NotInstantiable::class);
         $this->expectExceptionMessage("`$name` must be instantiable");
 
         $this->compiler->compile(
             containers: [
-                D::class
+                Example::class
             ],
         );
     }

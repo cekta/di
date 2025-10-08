@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerFactory;
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Test\Fixture\A;
-use Cekta\DI\Test\Fixture\D;
-use Cekta\DI\Test\Fixture\Example\AutowiringInConstructor;
-use Cekta\DI\Test\Fixture\Example\AutowiringShared;
-use Cekta\DI\Test\Fixture\Example\Shared;
-use Cekta\DI\Test\Fixture\Example\WithoutArgument;
-use Cekta\DI\Test\Fixture\I;
-use Cekta\DI\Test\Fixture\R1;
-use Cekta\DI\Test\Fixture\S;
+use Cekta\DI\Test\AcceptanceTest\A;
+use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
+use Cekta\DI\Test\AcceptanceTest\AutowiringShared;
+use Cekta\DI\Test\AcceptanceTest\D;
+use Cekta\DI\Test\AcceptanceTest\ExamplePopShared;
+use Cekta\DI\Test\AcceptanceTest\I;
+use Cekta\DI\Test\AcceptanceTest\R1;
+use Cekta\DI\Test\AcceptanceTest\S;
+use Cekta\DI\Test\AcceptanceTest\Shared;
+use Cekta\DI\Test\AcceptanceTest\WithoutArgument;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use stdClass;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class AcceptanceTest extends TestCase
@@ -33,8 +35,9 @@ class AcceptanceTest extends TestCase
     private const TARGETS = [
         Shared::class,
         AutowiringInConstructor::class,
-        WithoutArgument::class,
+        stdClass::class,
         AutowiringShared::class,
+        ExamplePopShared::class,
     ];
     private const PARAMS = [
         'username' => 'some username',
@@ -72,14 +75,17 @@ class AcceptanceTest extends TestCase
                 return "definition u: $username, p: $password";
             }
         ];
-        $builder = new ContainerFactory();
-        self::$container = $builder->make(
+        self::$container = Container::build(
             filename: self::FILE,
-            fqcn: self::FQCN,
-            containers: self::TARGETS,
+            provider: function () {
+                return [
+                    'containers' => self::TARGETS,
+                    'alias' => self::ALIAS,
+                ];
+            },
             params: self::PARAMS,
-            alias: self::ALIAS,
             definitions: self::$definitions,
+            fqcn: self::FQCN,
         );
     }
 
@@ -145,10 +151,10 @@ class AcceptanceTest extends TestCase
      */
     public function testAutowiringWithoutArguments(): void
     {
-        /** @var WithoutArgument $without_argument */
-        $without_argument = self::$container->get(WithoutArgument::class);
-        $this->assertInstanceOf(WithoutArgument::class, $without_argument);
-        $this->assertSame($without_argument, self::$container->get(WithoutArgument::class));
+        /** @var stdClass $obj */
+        $obj = self::$container->get(stdClass::class);
+        $this->assertInstanceOf(stdClass::class, $obj);
+        $this->assertSame($obj, self::$container->get(stdClass::class));
     }
 
     public function testHas(): void
@@ -195,5 +201,10 @@ class AcceptanceTest extends TestCase
         $this->assertFalse(self::$container->has(D::class));
         $this->expectException(NotFoundExceptionInterface::class);
         self::$container->get(D::class);
+    }
+
+    public function testPopSharedTest(): void
+    {
+        $this->assertInstanceOf(ExamplePopShared::class, self::$container->get(ExamplePopShared::class));
     }
 }
