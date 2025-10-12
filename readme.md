@@ -24,4 +24,4 @@ composer require cekta/di
 
 ## Example usage
 
-[Best example is workging autotest with assertation and comments](./tests/ReadmeTest.php)
+[![Watch the video](https://img.youtube.com/vi/0OrVX1V6s5E/0.jpg)](https://www.youtube.com/watch?v=0OrVX1V6s5E)
