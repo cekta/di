@@ -19,6 +19,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
+/**
+ * @deprecated use Acceptance
+ */
 class ReadmeTest extends TestCase
 {
     private const FILENAME = __DIR__ . '/ReadmeContainer.php';

@@ -9,6 +9,7 @@ use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\LoaderDTO;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
 use Cekta\DI\Test\AcceptanceTest\AutowiringShared;
@@ -77,11 +78,11 @@ class AcceptanceTest extends TestCase
         ];
         self::$container = Container::build(
             filename: self::FILE,
-            provider: function () {
-                return [
-                    'containers' => self::TARGETS,
-                    'alias' => self::ALIAS,
-                ];
+            loader: function () {
+                return new LoaderDTO(
+                    containers: self::TARGETS,
+                    alias: self::ALIAS,
+                );
             },
             params: self::PARAMS,
             definitions: self::$definitions,

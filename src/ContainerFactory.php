@@ -56,13 +56,13 @@ class ContainerFactory
     ): ContainerInterface {
         return Container::build(
             filename: $filename,
-            provider: function () use ($containers, $alias, $singletons, $factories) {
-                return [
-                    'containers' => $containers,
-                    'alias' => $alias,
-                    'singletons' => $singletons,
-                    'factories' => $factories,
-                ];
+            loader: function () use ($containers, $alias, $singletons, $factories) {
+                return new LoaderDTO(
+                    containers: $containers,
+                    alias: $alias,
+                    factories: $factories,
+                    singletons: $singletons,
+                );
             },
             params: $params,
             definitions: $definitions,

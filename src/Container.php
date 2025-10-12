@@ -6,6 +6,7 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\LoaderMustReturnDTO;
 use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
@@ -19,11 +20,7 @@ class Container
 {
     /**
      * @param string $filename
-     * @param callable(): array{
-     *     containers: array<string>,
-     *     alias: array<string, string>,
-     *     factories: array<string>,
-     *     singletons: array<string>} $provider
+     * @param callable(): LoaderDTO $loader
      * @param array<string, mixed> $params
      * @param array<string, callable> $definitions
      * @param string $fqcn
@@ -36,10 +33,11 @@ class Container
      * @throws InfiniteRecursion Invalid compile, infinite recursion in dependencies
      * @throws InvalidContainerForCompile
      * @throws NotInstantiable if container cant be created (interface or abstract class)
+     * @throws LoaderMustReturnDTO if loader return not DTO
      */
     public static function build(
         string $filename,
-        callable $provider,
+        callable $loader,
         array $params = [],
         array $definitions = [],
         string $fqcn = 'App\Container',
@@ -53,10 +51,20 @@ class Container
             !$filesystem->exists($filename)
             || $force_compile
         ) {
+            /** @var mixed $dto user can return anything */
+            $dto = call_user_func($loader);
+            if (!($dto instanceof LoaderDTO)) {
+                throw new LoaderMustReturnDTO();
+            }
             $filesystem->dumpFile(
                 $filename,
                 $compiler->compile(
-                    ...call_user_func($provider) + [
+                    ... [
+                        'containers' => $dto->getContainers(),
+                        'alias' => $dto->getAlias(),
+                        'singletons' => $dto->getSingletons(),
+                        'factories' => $dto->getFactories(),
+                    ] + [
                         'params' => $params,
                         'fqcn' => $fqcn,
                         'definitions' => $definitions
