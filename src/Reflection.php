@@ -15,7 +15,7 @@ use ReflectionParameter;
 class Reflection extends ReflectionClass
 {
     /**
-     * @return array<array{name: string, variadic: bool}>
+     * @return DependencyDTO[]
      */
     public function getDependencies(): array
     {
@@ -26,10 +26,10 @@ class Reflection extends ReflectionClass
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
             $prefix = $parameter->isVariadic() ? '...' : '';
-            $parameters[] = [
-                'name' => $prefix . $this->getParameterName($parameter),
-                'variadic' => $parameter->isVariadic()
-            ];
+            $parameters[] = new DependencyDTO(
+                name: $prefix . $this->getParameterName($parameter),
+                variadic: $parameter->isVariadic()
+            );
         }
         return $parameters;
     }

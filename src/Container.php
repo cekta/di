@@ -43,7 +43,7 @@ class Container
         string $fqcn = 'App\Container',
         bool $force_compile = false,
         ?Compiler $compiler = null,
-        ?Filesystem $filesystem = null
+        ?Filesystem $filesystem = null,
     ): ContainerInterface {
         $compiler = $compiler ?? new Compiler();
         $filesystem = $filesystem ?? new Filesystem();
@@ -51,11 +51,15 @@ class Container
             !$filesystem->exists($filename)
             || $force_compile
         ) {
-            /** @var mixed $dto user can return anything */
             $dto = call_user_func($loader);
+            /**
+             * @var mixed $dto user loader can return anything
+             * @noinspection PhpRedundantVariableDocTypeInspection
+             */
             if (!($dto instanceof LoaderDTO)) {
                 throw new LoaderMustReturnDTO();
             }
+            /** @var LoaderDTO $dto */
             $filesystem->dumpFile(
                 $filename,
                 $compiler->compile(
@@ -64,6 +68,7 @@ class Container
                         'alias' => $dto->getAlias(),
                         'singletons' => $dto->getSingletons(),
                         'factories' => $dto->getFactories(),
+                        'rule' => $dto->getRule(),
                     ] + [
                         'params' => $params,
                         'fqcn' => $fqcn,

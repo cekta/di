@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
+use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\InfiniteRecursionDetectorTest\A;
@@ -31,7 +32,7 @@ class InfiniteRecursionDetectorTest extends TestCase
      */
     public function testInfiniteRecursion(): void
     {
-        $this->expectException(\Cekta\DI\Exception\InfiniteRecursion::class);
+        $this->expectException(InfiniteRecursion::class);
         $this->expectExceptionMessage(
             sprintf(
                 'Infinite recursion detected for `%s`, stack: %s, %s',

@@ -10,16 +10,17 @@ use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\LoaderDTO;
+use Cekta\DI\Rule\Regex;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
 use Cekta\DI\Test\AcceptanceTest\AutowiringShared;
 use Cekta\DI\Test\AcceptanceTest\D;
+use Cekta\DI\Test\AcceptanceTest\ExampleApplyRule;
 use Cekta\DI\Test\AcceptanceTest\ExamplePopShared;
 use Cekta\DI\Test\AcceptanceTest\I;
 use Cekta\DI\Test\AcceptanceTest\R1;
 use Cekta\DI\Test\AcceptanceTest\S;
 use Cekta\DI\Test\AcceptanceTest\Shared;
-use Cekta\DI\Test\AcceptanceTest\WithoutArgument;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -39,10 +40,12 @@ class AcceptanceTest extends TestCase
         stdClass::class,
         AutowiringShared::class,
         ExamplePopShared::class,
+        ExampleApplyRule::class,
     ];
     private const PARAMS = [
         'username' => 'some username',
         'password' => 'some password',
+        'db_username' => 'some db username',
         S::class . '|string' => 'named params: ' . S::class . '|string',
         '...variadic_int' => [1, 3, 5],
     ];
@@ -82,6 +85,7 @@ class AcceptanceTest extends TestCase
                 return new LoaderDTO(
                     containers: self::TARGETS,
                     alias: self::ALIAS,
+                    rule: new Regex('/ExampleApplyRule/', ['username' => 'db_username'])
                 );
             },
             params: self::PARAMS,
@@ -178,8 +182,12 @@ class AcceptanceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Containers: username, password, %s|string, ...variadic_int must be declared in params or definitions',
+                'Containers: %s, %s, %s|string, %s, %s must be declared in params or definitions',
+                'username',
+                'password',
                 S::class,
+                '...variadic_int',
+                'db_username',
             )
         );
         // @phpstan-ignore class.notFound
@@ -204,8 +212,24 @@ class AcceptanceTest extends TestCase
         self::$container->get(D::class);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testPopSharedTest(): void
     {
         $this->assertInstanceOf(ExamplePopShared::class, self::$container->get(ExamplePopShared::class));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testApplyRule(): void
+    {
+        /** @var ExampleApplyRule $obj */
+        $obj = self::$container->get(ExampleApplyRule::class);
+        $this->assertSame(self::PARAMS['db_username'], $obj->username);
+        $this->assertSame(self::PARAMS['password'], $obj->password);
     }
 }
