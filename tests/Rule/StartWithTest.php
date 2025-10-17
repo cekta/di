@@ -10,6 +10,46 @@ use PHPUnit\Framework\TestCase;
 
 class StartWithTest extends TestCase
 {
+    public function testApply(): void
+    {
+        $dependencies = [
+            new DependencyDTO('example'),
+            new DependencyDTO('source'),
+            new DependencyDTO('source2')
+        ];
+        $data = [
+            [
+                'pattern' => 'some\namespace',
+                'transforms' => [
+                    'source' => 'target',
+                    'source2' => 'target2'
+                ],
+                'container' => 'some\namespace\test',
+                'dependencies' => $dependencies,
+                'expected' => [
+                    new DependencyDTO('example'),
+                    new DependencyDTO('target'),
+                    new DependencyDTO('target2')
+                ],
+            ],
+            [
+                'pattern' => '/some invalid pattern/',
+                'transforms' => [
+                    'source' => 'target',
+                    'source2' => 'target2'
+                ],
+                'container' => 'some\namespace\test',
+                'dependencies' => $dependencies,
+                'expected' => $dependencies,
+            ],
+        ];
+        foreach (
+            $data as $dataset
+        ) {
+            $this->checkDataSet(...$dataset);
+        }
+    }
+
     /**
      * @param string $pattern
      * @param array<string, string> $transforms
@@ -17,10 +57,8 @@ class StartWithTest extends TestCase
      * @param DependencyDTO[] $dependencies
      * @param DependencyDTO[] $expected
      * @return void
-     *
-     * @dataProvider applyProvider
      */
-    public function testApply(
+    private function checkDataSet(
         string $pattern,
         array $transforms,
         string $container,
@@ -32,45 +70,5 @@ class StartWithTest extends TestCase
         foreach ($expected as $index => $dependency) {
             $this->assertSame($dependency->getName(), $result[$index]->getName());
         }
-    }
-
-    /**
-     * @return array<string, array{
-     *     pattern: string,
-     *     transforms: array<string, string>,
-     *     container: string,
-     *     dependencies: DependencyDTO[],
-     *     expected: DependencyDTO[]
-     * }>
-     */
-    public static function applyProvider(): array
-    {
-        $dependencies = [
-            new DependencyDTO('example'),
-            new DependencyDTO('source'),
-            new DependencyDTO('source2')
-        ];
-        return [
-            'apply and change dependencies' => [
-                'pattern' => 'some\namespace',
-                'transforms' => [
-                    'source' => 'target',
-                    'source2' => 'target2'
-                ],
-                'container' => 'some\namespace\test',
-                'dependencies' => $dependencies,
-                'expected' => [new DependencyDTO('example'), new DependencyDTO('target'), new DependencyDTO('target2')],
-            ],
-            'not apply and not change' => [
-                'pattern' => '/some invalid pattern/',
-                'transforms' => [
-                    'source' => 'target',
-                    'source2' => 'target2'
-                ],
-                'container' => 'some\namespace\test',
-                'dependencies' => $dependencies,
-                'expected' => $dependencies,
-            ],
-        ];
     }
 }

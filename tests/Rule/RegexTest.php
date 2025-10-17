@@ -10,47 +10,14 @@ use PHPUnit\Framework\TestCase;
 
 class RegexTest extends TestCase
 {
-    /**
-     * @param string $pattern
-     * @param array<string, string> $transforms
-     * @param string $container
-     * @param DependencyDTO[] $dependencies
-     * @param DependencyDTO[] $expected
-     * @return void
-     *
-     * @dataProvider applyProvider
-     */
-    public function testApply(
-        string $pattern,
-        array $transforms,
-        string $container,
-        array $dependencies,
-        array $expected
-    ): void {
-        $rule = new Regex($pattern, $transforms);
-        $result = $rule->apply($container, $dependencies);
-        foreach ($expected as $index => $dependency) {
-            $this->assertSame($dependency->getName(), $result[$index]->getName());
-        }
-    }
-
-    /**
-     * @return array<string, array{
-     *     pattern: string,
-     *     transforms: array<string, string>,
-     *     container: string,
-     *     dependencies: DependencyDTO[],
-     *     expected: DependencyDTO[]
-     * }>
-     */
-    public static function applyProvider(): array
+    public function testApply(): void
     {
         $dependencies = [
             new DependencyDTO('example'),
             new DependencyDTO('source'),
             new DependencyDTO('source2')
         ];
-        return [
+        $data = [
             'apply and change dependencies' => [
                 'pattern' => '/test/',
                 'transforms' => [
@@ -72,5 +39,29 @@ class RegexTest extends TestCase
                 'expected' => $dependencies,
             ],
         ];
+        foreach ($data as $dataset) {
+            $this->checkDataSet(...$dataset);
+        }
+    }
+    /**
+     * @param string $pattern
+     * @param array<string, string> $transforms
+     * @param string $container
+     * @param DependencyDTO[] $dependencies
+     * @param DependencyDTO[] $expected
+     * @return void
+     */
+    public function checkDataSet(
+        string $pattern,
+        array $transforms,
+        string $container,
+        array $dependencies,
+        array $expected
+    ): void {
+        $rule = new Regex($pattern, $transforms);
+        $result = $rule->apply($container, $dependencies);
+        foreach ($expected as $index => $dependency) {
+            $this->assertSame($dependency->getName(), $result[$index]->getName());
+        }
     }
 }
