@@ -17,7 +17,7 @@ class EqualTest extends TestCase
      * @param DependencyDTO[] $dependencies
      * @param DependencyDTO[] $expected
      * @return void
-     * 
+     *
      * @dataProvider applyProvider
      */
     public function testApply(
