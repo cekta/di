@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test\Rule;
 
 use Cekta\DI\DependencyDTO;
-use Cekta\DI\Rule\Regex;
 use Cekta\DI\Rule\StartWith;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class StartWithTest extends TestCase
@@ -19,8 +17,9 @@ class StartWithTest extends TestCase
      * @param DependencyDTO[] $dependencies
      * @param DependencyDTO[] $expected
      * @return void
+     *
+     * @dataProvider applyProvider
      */
-    #[DataProvider('applyProvider')]
     public function testApply(
         string $pattern,
         array $transforms,

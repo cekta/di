@@ -6,8 +6,6 @@ namespace Cekta\DI\Test\Rule;
 
 use Cekta\DI\DependencyDTO;
 use Cekta\DI\Rule\Equal;
-use Cekta\DI\Rule\Regex;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class EqualTest extends TestCase
@@ -19,8 +17,9 @@ class EqualTest extends TestCase
      * @param DependencyDTO[] $dependencies
      * @param DependencyDTO[] $expected
      * @return void
+     * 
+     * @dataProvider applyProvider
      */
-    #[DataProvider('applyProvider')]
     public function testApply(
         string $pattern,
         array $transforms,
