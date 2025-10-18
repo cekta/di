@@ -7,8 +7,6 @@ namespace Cekta\DI;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Rule\NullRule;
-use ReflectionException;
 
 /**
  * @external
@@ -56,7 +54,7 @@ class Compiler
      * @var string[]
      */
     private array $factories;
-    private Rule $rule;
+    private ReflectionService $reflection_service;
 
     /**
      * @param array<string> $containers
@@ -87,7 +85,7 @@ class Compiler
         $this->definitions = $definitions;
         $this->singletons = $singletons;
         $this->factories = $factories;
-        $this->rule = $rule ?? new NullRule();
+        $this->reflection_service = new ReflectionService($rule);
         $this->generateMap(array_map(fn(string $name) => new DependencyDTO($name), $containers));
         $dependencies = [];
         foreach (array_merge($containers, $this->shared, $this->alias) as $target) {
@@ -147,18 +145,10 @@ class Compiler
             ) {
                 $this->shared[] = $container->getName();
             }
-            try {
-                // @phpstan-ignore argument.type
-                $reflection = new Reflection($container->getName());
-            } catch (ReflectionException $exception) {
-                throw new InvalidContainerForCompile($container->getName(), $this->stack, $exception);
-            }
-            if (!$reflection->isInstantiable()) {
-                throw new NotInstantiable($reflection->getName(), $this->stack);
-            }
-            $this->dependenciesMap[$container->getName()] = $this->rule->apply(
+
+            $this->dependenciesMap[$container->getName()] = $this->reflection_service->getDependencies(
                 $container->getName(),
-                $reflection->getDependencies()
+                $this->stack
             );
             $this->generateMap($this->dependenciesMap[$container->getName()]);
             array_pop($this->stack);

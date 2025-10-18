@@ -14,8 +14,8 @@ class NullRule implements Rule
     /**
      * @inheritdoc
      */
-    public function apply(string $container, array $dependencies): array
+    public function apply(string $container_name, string $dependency_name): string
     {
-        return $dependencies;
+        return $dependency_name;
     }
 }

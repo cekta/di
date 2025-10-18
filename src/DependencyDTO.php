@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-/**
- * @external
- */
 class DependencyDTO
 {
     public function __construct(

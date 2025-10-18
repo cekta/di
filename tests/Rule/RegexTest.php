@@ -12,11 +12,6 @@ class RegexTest extends TestCase
 {
     public function testApply(): void
     {
-        $dependencies = [
-            new DependencyDTO('example'),
-            new DependencyDTO('source'),
-            new DependencyDTO('source2')
-        ];
         $data = [
             'apply and change dependencies' => [
                 'pattern' => '/test/',
@@ -25,8 +20,8 @@ class RegexTest extends TestCase
                     'source2' => 'target2'
                 ],
                 'container' => 'some\namespace\test',
-                'dependencies' => $dependencies,
-                'expected' => [new DependencyDTO('example'), new DependencyDTO('target'), new DependencyDTO('target2')],
+                'dependency_name' => 'source2',
+                'expected' => 'target2',
             ],
             'not apply and not change' => [
                 'pattern' => '/some invalid pattern/',
@@ -35,33 +30,31 @@ class RegexTest extends TestCase
                     'source2' => 'target2'
                 ],
                 'container' => 'some\namespace\test',
-                'dependencies' => $dependencies,
-                'expected' => $dependencies,
+                'dependency_name' => 'source2',
+                'expected' => 'source2',
             ],
         ];
         foreach ($data as $dataset) {
             $this->checkDataSet(...$dataset);
         }
     }
+
     /**
      * @param string $pattern
      * @param array<string, string> $transforms
      * @param string $container
-     * @param DependencyDTO[] $dependencies
-     * @param DependencyDTO[] $expected
+     * @param string $dependency_name
+     * @param string $expected
      * @return void
      */
     public function checkDataSet(
         string $pattern,
         array $transforms,
         string $container,
-        array $dependencies,
-        array $expected
+        string $dependency_name,
+        string $expected
     ): void {
         $rule = new Regex($pattern, $transforms);
-        $result = $rule->apply($container, $dependencies);
-        foreach ($expected as $index => $dependency) {
-            $this->assertSame($dependency->getName(), $result[$index]->getName());
-        }
+        $this->assertSame($expected, $rule->apply($container, $dependency_name));
     }
 }

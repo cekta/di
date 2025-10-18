@@ -25,16 +25,17 @@ class StartWith implements Rule
     /**
      * @inheritdoc
      */
-    public function apply(string $container, array $dependencies): array
+    public function apply(string $container_name, string $dependency_name): string
     {
-        if (str_starts_with($container, $this->needle)) {
-            return array_map(function (DependencyDTO $dto) {
-                if (array_key_exists($dto->getName(), $this->dependency_name_transformers)) {
-                    return new DependencyDTO($this->dependency_name_transformers[$dto->getName()], $dto->isVariadic());
-                }
-                return $dto;
-            }, $dependencies);
+        if (
+            str_starts_with($container_name, $this->needle)
+            && array_key_exists(
+                $dependency_name,
+                $this->dependency_name_transformers
+            )
+        ) {
+            return $this->dependency_name_transformers[$dependency_name];
         }
-        return $dependencies;
+        return $dependency_name;
     }
 }

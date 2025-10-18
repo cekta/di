@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 class NullRuleTest extends TestCase
 {
-    public function testApply()
+    public function testApply(): void
     {
         $rule = new NullRule();
-        $this->assertSame(['dep1', 'dep2'], $rule->apply('test', ['dep1', 'dep2']));
+        $this->assertSame('value', $rule->apply('test', 'value'));
     }
 }

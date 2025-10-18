@@ -10,9 +10,9 @@ namespace Cekta\DI;
 interface Rule
 {
     /**
-     * @param string $container
-     * @param DependencyDTO[] $dependencies
-     * @return DependencyDTO[] modified dependencies list
+     * @param string $container_name
+     * @param string $dependency_name
+     * @return string actual dependency name
      */
-    public function apply(string $container, array $dependencies): array;
+    public function apply(string $container_name, string $dependency_name): string;
 }
