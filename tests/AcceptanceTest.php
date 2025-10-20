@@ -119,6 +119,7 @@ class AcceptanceTest extends TestCase
         $this->assertSame(self::PARAMS['username'], $autowiring->username);
         $this->assertSame(self::PARAMS['password'], $autowiring->password);
         $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->union_type);
+        $this->assertSame(self::PARAMS['...variadic_int'], $autowiring->variadic_int);
         $definition = self::$definitions['dsn'];
         $this->assertSame($definition(self::$container), $autowiring->dsn);
         $this->assertInstanceOf(R1::class, $autowiring->i);
