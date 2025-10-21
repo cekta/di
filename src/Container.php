@@ -22,7 +22,6 @@ class Container
      * @param string $filename
      * @param callable(): LoaderDTO $loader
      * @param array<string, mixed> $params
-     * @param array<string, callable> $definitions
      * @param string $fqcn
      * @param bool $force_compile
      * @param Compiler|null $compiler
@@ -39,7 +38,6 @@ class Container
         string $filename,
         callable $loader,
         array $params = [],
-        array $definitions = [],
         string $fqcn = 'App\Container',
         bool $force_compile = false,
         ?Compiler $compiler = null,
@@ -72,13 +70,12 @@ class Container
                     ] + [
                         'params' => $params,
                         'fqcn' => $fqcn,
-                        'definitions' => $definitions
                     ]
                 )
             );
         }
 
-        $result = new $fqcn($params, $definitions);
+        $result = new $fqcn($params);
         if (!($result instanceof ContainerInterface)) {
             throw new InvalidArgumentException(
                 sprintf(

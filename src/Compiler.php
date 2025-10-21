@@ -43,10 +43,6 @@ class Compiler
      */
     private array $alias;
     /**
-     * @var callable[]
-     */
-    private array $definitions;
-    /**
      * @var string[]
      */
     private array $singletons;
@@ -60,7 +56,6 @@ class Compiler
      * @param array<string> $containers
      * @param array<string, mixed> $params
      * @param array<string, string> $alias
-     * @param array<string, callable> $definitions
      * @param string $fqcn
      * @param array<string> $singletons
      * @param array<string> $factories
@@ -74,7 +69,6 @@ class Compiler
         array $containers = [],
         array $params = [],
         array $alias = [],
-        array $definitions = [],
         string $fqcn = 'App\Container',
         array $singletons = [],
         array $factories = [],
@@ -82,7 +76,6 @@ class Compiler
     ): string {
         $this->params = $params;
         $this->alias = $alias;
-        $this->definitions = $definitions;
         $this->singletons = $singletons;
         $this->factories = $factories;
         $this->reflection_service = new ReflectionService($rule);
@@ -122,10 +115,7 @@ class Compiler
             if (array_key_exists($container->getName(), $this->alias)) {
                 $container = new DependencyDTO($this->alias[$container->getName()], $container->isVariadic());
             }
-            if (
-                array_key_exists($container->getName(), $this->params)
-                || array_key_exists($container->getName(), $this->definitions)
-            ) {
+            if (array_key_exists($container->getName(), $this->params)) {
                 $this->required_keys[] = $container->getName();
                 array_pop($this->stack);
                 continue;
@@ -157,13 +147,10 @@ class Compiler
 
     private function buildDependency(string $target): string
     {
-        if (array_key_exists($target, $this->params)) {
-            return "\$this->params['$target']";
-        }
         if (
             (in_array($target, $this->shared) && count($this->build_stack) !== 0)
             || array_key_exists($target, $this->alias)
-            || array_key_exists($target, $this->definitions)
+            || array_key_exists($target, $this->params)
         ) {
             return "\$this->get('$target')";
         }

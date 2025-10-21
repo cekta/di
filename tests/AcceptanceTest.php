@@ -7,13 +7,16 @@ namespace Cekta\DI\Test;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\LoaderMustReturnDTO;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Lazy;
 use Cekta\DI\LoaderDTO;
 use Cekta\DI\Rule\Regex;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
 use Cekta\DI\Test\AcceptanceTest\AutowiringShared;
+use Cekta\DI\Test\AcceptanceTest\AutowiringVariadicClass;
 use Cekta\DI\Test\AcceptanceTest\D;
 use Cekta\DI\Test\AcceptanceTest\ExampleApplyRule;
 use Cekta\DI\Test\AcceptanceTest\ExamplePopShared;
@@ -41,6 +44,7 @@ class AcceptanceTest extends TestCase
         AutowiringShared::class,
         ExamplePopShared::class,
         ExampleApplyRule::class,
+        AutowiringVariadicClass::class,
     ];
     private const PARAMS = [
         'username' => 'some username',
@@ -49,8 +53,10 @@ class AcceptanceTest extends TestCase
         S::class . '|string' => 'named params: ' . S::class . '|string',
         '...variadic_int' => [1, 3, 5],
     ];
+
+    private array $params = [];
     /**
-     * @var array<string, callable>
+     * @var array<string, Lazy>
      */
     private static array $definitions = [];
     private const ALIAS = [
@@ -67,17 +73,19 @@ class AcceptanceTest extends TestCase
      * @throws NotInstantiable
      * @throws InvalidContainerForCompile
      * @throws InfiniteRecursion
+     * @throws LoaderMustReturnDTO
      */
     protected function setUp(): void
     {
+        $this->params['...' . A::class] = [new A(), new A()];
         self::$definitions = [
-            'dsn' => function (ContainerInterface $container) {
+            'dsn' => new Lazy(function (ContainerInterface $container) {
                 /** @var string $username */
                 $username = $container->get('username');
                 /** @var string $password */
                 $password = $container->get('password');
                 return "definition u: $username, p: $password";
-            }
+            })
         ];
         self::$container = Container::build(
             filename: self::FILE,
@@ -88,9 +96,9 @@ class AcceptanceTest extends TestCase
                     rule: new Regex('/ExampleApplyRule/', ['username' => 'db_username'])
                 );
             },
-            params: self::PARAMS,
-            definitions: self::$definitions,
+            params: self::PARAMS + self::$definitions + $this->params,
             fqcn: self::FQCN,
+            force_compile: true,
         );
     }
 
@@ -120,8 +128,7 @@ class AcceptanceTest extends TestCase
         $this->assertSame(self::PARAMS['password'], $autowiring->password);
         $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->union_type);
         $this->assertSame(self::PARAMS['...variadic_int'], $autowiring->variadic_int);
-        $definition = self::$definitions['dsn'];
-        $this->assertSame($definition(self::$container), $autowiring->dsn);
+        $this->assertSame('definition u: some username, p: some password', $autowiring->dsn);
         $this->assertInstanceOf(R1::class, $autowiring->i);
         $this->assertInstanceOf(AutowiringShared::class, self::$container->get(AutowiringShared::class));
     }
@@ -183,24 +190,18 @@ class AcceptanceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Containers: %s, %s, %s|string, %s, %s must be declared in params or definitions',
+                'Containers: %s, %s, %s, %s, %s, %s, %s must be declared in params',
                 'username',
+                'dsn',
                 'password',
-                S::class,
+                S::class . '|string',
                 '...variadic_int',
                 'db_username',
+                '...' . A::class,
             )
         );
         // @phpstan-ignore class.notFound
-        new (self::FQCN)([], self::$definitions);
-    }
-
-    public function testWithoutRequiredDefinitions(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Containers: dsn must be declared in params or definitions');
-        // @phpstan-ignore class.notFound
-        new (self::FQCN)(self::PARAMS, []);
+        new (self::FQCN)([]);
     }
 
     /**
@@ -232,5 +233,15 @@ class AcceptanceTest extends TestCase
         $obj = self::$container->get(ExampleApplyRule::class);
         $this->assertSame(self::PARAMS['db_username'], $obj->username);
         $this->assertSame(self::PARAMS['password'], $obj->password);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testAutowiringVariadicClass(): void
+    {
+        $obj = self::$container->get(AutowiringVariadicClass::class);
+        $this->assertSame($this->params['...' . A::class], $obj->a_array);
     }
 }

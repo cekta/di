@@ -42,18 +42,16 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
 
     /**
      * @param array<string, mixed> $params
-     * @param array<string, callable> $definitions
-     * @throws \RuntimeException if required params or definition not declared
+     * @throws \RuntimeException if required params not declared
      */
     public function __construct(
         private array $params = [], 
-        private array $definitions = []
     ) {
-        $keys = array_merge(array_keys($this->params), array_keys($this->definitions));
+        $keys = array_merge(array_keys($this->params));
         $diff = array_diff(<?= var_export($required_keys, true) ?>, $keys);
         if (!empty($diff)) {
             $diff = implode(', ', $diff);
-            throw new \InvalidArgumentException("Containers: {$diff} must be declared in params or definitions");
+            throw new \InvalidArgumentException("Containers: {$diff} must be declared in params");
         }
         $this->list_factories = <?= var_export($factories, true) ?>;
         $this->list_singletons = <?= var_export($singletons, true) ?>;
@@ -62,28 +60,29 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
     public function get(string $id)
     {
         switch ($id) {
-            case array_key_exists($id, $this->params) ? $id: false:
-                return $this->params[$id];
             case array_key_exists($id, $this->context) ? $id: false:
                 return $this->context[$id];
             case array_key_exists($id, self::$singletons) ? $id: false:
                 return self::$singletons[$id];
-            case array_key_exists($id, $this->definitions) ? $id: false:
-                if (in_array($id, $this->list_singletons)) {
-                    self::$singletons[$id] = call_user_func($this->definitions[$id], $this);
-                    return self::$singletons[$id];
-                } else if (in_array($id, $this->list_factories)) {
-                    return call_user_func($this->definitions[$id], $this);
-                } else {
-                    $this->context[$id] = call_user_func($this->definitions[$id], $this);
-                    return $this->context[$id];
+            case array_key_exists($id, $this->params) ? $id: false:
+                if ($this->params[$id] instanceof \Cekta\DI\Lazy) {
+                    if (in_array($id, $this->list_singletons)) {
+                        self::$singletons[$id] = $this->params[$id]->load($this);
+                        return self::$singletons[$id];
+                    } elseif (in_array($id, $this->list_factories)) {
+                        return $this->params[$id]->load($this);
+                    } else {
+                        $this->context[$id] = $this->params[$id]->load($this);
+                        return $this->context[$id];
+                    }
                 }
+                return $this->params[$id];
         <?php foreach ($alias as $key => $value) { ?>
             case <?= var_export($key, true) ?>:
             <?php if (in_array($key, $singletons)) { ?>
                 self::$singletons[$id] = $this->get('<?= $value ?>');
                 return self::$singletons[$id];
-            <?php } else if (in_array($key, $factories)) { ?>
+            <?php } elseif (in_array($key, $factories)) { ?>
                 return $this->get('<?= $value ?>');
             <?php } else { ?>
                 $this->context[$id] = $this->get('<?= $value ?>');
@@ -95,7 +94,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
             <?php if (in_array($key, $singletons)) { ?>
                 self::$singletons[$id] = <?= $value ?>;
                 return self::$singletons[$id];
-            <?php } else if (in_array($key, $factories)) { ?>
+            <?php } elseif (in_array($key, $factories)) { ?>
                 return <?= $value ?>;
             <?php } else { ?>
                 $this->context[$id] = <?= $value ?>;
