@@ -8,6 +8,7 @@ use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Lazy;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
 use Cekta\DI\Test\LifeCycleTest\Singleton;

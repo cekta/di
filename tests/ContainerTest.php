@@ -8,7 +8,9 @@ use Cekta\DI\Compiler;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\LoaderMustReturnDTO;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\LoaderDTO;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
@@ -38,8 +40,8 @@ class ContainerTest extends TestCase
             ->willReturn(false);
         Container::build(
             filename: $filename,
-            provider: function () {
-                return [];
+            loader: function () {
+                return new LoaderDTO();
             },
             fqcn: get_class($this->createMock(ContainerInterface::class)),
             compiler: $compiler,
@@ -67,7 +69,7 @@ class ContainerTest extends TestCase
             ->method('compile');
         Container::build(
             filename: 'not important2',
-            provider: function () {
+            loader: function () {
                 return [];
             },
             fqcn: get_class($this->createMock(ContainerInterface::class)),
@@ -93,8 +95,8 @@ class ContainerTest extends TestCase
             ->method('compile');
         Container::build(
             filename: 'not important3',
-            provider: function () {
-                return [];
+            loader: function () {
+                return new LoaderDTO();
             },
             fqcn: get_class($this->createMock(ContainerInterface::class)),
             force_compile: true,
@@ -120,7 +122,7 @@ class ContainerTest extends TestCase
 
         Container::build(
             filename: __FILE__,
-            provider: function () {
+            loader: function () {
                 return [];
             },
             fqcn: $fqcn,
@@ -142,11 +144,25 @@ class ContainerTest extends TestCase
             ->willThrowException(new IOException('some message'));
         Container::build(
             filename: 'not important4',
-            provider: function () {
-                return [];
+            loader: function () {
+                return new LoaderDTO();
             },
             force_compile: true,
             filesystem: $filesystem
         );
+    }
+
+    /**
+     * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
+     */
+    public function testLoaderReturnInvalidResult(): void
+    {
+        $this->expectException(LoaderMustReturnDTO::class);
+        Container::build('test.php', function () {
+            return 'invalid result';
+        });
     }
 }

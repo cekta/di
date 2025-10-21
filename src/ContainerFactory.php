@@ -54,18 +54,22 @@ class ContainerFactory
         array $singletons = [],
         array $factories = [],
     ): ContainerInterface {
+        foreach ($definitions as $key => $definition) {
+            if (!array_key_exists($key, $params)) {
+                $params[$key] = new Lazy($definition);
+            }
+        }
         return Container::build(
             filename: $filename,
-            provider: function () use ($containers, $alias, $singletons, $factories) {
-                return [
-                    'containers' => $containers,
-                    'alias' => $alias,
-                    'singletons' => $singletons,
-                    'factories' => $factories,
-                ];
+            loader: function () use ($containers, $alias, $singletons, $factories) {
+                return new LoaderDTO(
+                    containers: $containers,
+                    alias: $alias,
+                    factories: $factories,
+                    singletons: $singletons,
+                );
             },
             params: $params,
-            definitions: $definitions,
             fqcn: $fqcn,
             force_compile: $force_compile,
             compiler: $this->compiler,
