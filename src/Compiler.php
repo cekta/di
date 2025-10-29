@@ -58,7 +58,6 @@ class Compiler
         $this->reflection_service = new ReflectionService($this->rule);
     }
 
-
     /**
      * @return string
      * @throws InfiniteRecursion
@@ -87,7 +86,7 @@ class Compiler
     }
 
     /**
-     * @param array<DependencyDTO> $containers
+     * @param DependencyDTO[] $containers
      * @throws NotInstantiable
      * @throws InfiniteRecursion
      * @throws InvalidContainerForCompile

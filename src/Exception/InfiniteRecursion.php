@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use Exception;
+use RuntimeException;
 
-class InfiniteRecursion extends Exception
+class InfiniteRecursion extends RuntimeException
 {
     /**
      * @param string $container

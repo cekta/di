@@ -16,21 +16,16 @@ use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\EntrypointApplyRule;
 use Cekta\DI\Test\AcceptanceTest\S;
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-class AcceptanceTest extends AcceptanceBase
+class AcceptanceContainerTest extends AcceptanceBase
 {
     /**
      * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws LoaderMustReturnDTO
-     * @throws InvalidContainerForCompile
      */
     protected function makeContainer(): ContainerInterface
     {
@@ -80,12 +75,7 @@ class AcceptanceTest extends AcceptanceBase
     }
 
     /**
-     * @throws InvalidContainerForCompile
-     * @throws Exception
      * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws LoaderMustReturnDTO
      */
     public function testFileMustBeNOTCompiledIfExist(): void
     {
@@ -109,75 +99,17 @@ class AcceptanceTest extends AcceptanceBase
 
     /**
      * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws InvalidContainerForCompile
      */
     public function testLoaderReturnInvalidResult(): void
     {
         $this->expectException(LoaderMustReturnDTO::class);
         Container::build(
             filename: $this->file,
+            // @phpstan-ignore-next-line
             loader: function () {
                 return 'invalid result';
             },
             force_compile: true
         );
-    }
-
-    /**
-     * @throws IOExceptionInterface
-     * @throws NotInstantiable
-     * @throws InvalidContainerForCompile
-     * @throws InfiniteRecursion
-     * @throws LoaderMustReturnDTO
-     */
-    public function testMakeResultMustImplementContainerInterface(): void
-    {
-        $fqcn = \stdClass::class;
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
-        );
-
-        Container::build(
-            filename: $this->file,
-            loader: function () {
-                return new LoaderDTO();
-            },
-            fqcn: $fqcn,
-        );
-    }
-
-    /**
-     * @throws InvalidContainerForCompile
-     * @throws Exception
-     * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws LoaderMustReturnDTO
-     */
-    public function testFileMustBeCompiledIfNotExist(): void
-    {
-        $filename = __DIR__ . '/' . __CLASS__ . '.' . __METHOD__;
-        $compiler = $this->createMock(Compiler::class);
-        $filesystem = $this->createMock(Filesystem::class);
-        $compiler->expects($this->once())
-            ->method('compile');
-        $filesystem->method('exists')
-            ->willReturn(false);
-        Container::build(
-            filename: $filename,
-            loader: function () {
-                return new LoaderDTO();
-            },
-            fqcn: get_class($this->createMock(ContainerInterface::class)),
-            compiler: $compiler,
-            filesystem: $filesystem
-        );
-        if (file_exists($filename)) {
-            unlink($filename);
-        }
     }
 }

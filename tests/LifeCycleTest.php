@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Lazy;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
@@ -38,11 +35,6 @@ class LifeCycleTest extends TestCase
         file_exists(self::FILE) && unlink(self::FILE);
     }
 
-    /**
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws InvalidContainerForCompile
-     */
     protected function setUp(): void
     {
         if (file_exists(self::FILE)) {
@@ -91,7 +83,9 @@ class LifeCycleTest extends TestCase
         );
         file_put_contents(self::FILE, $compiler->compile());
 
+        // @phpstan-ignore-next-line
         self::$container = new (self::FQCN)($params);
+        // @phpstan-ignore-next-line
         self::$container2 = new (self::FQCN)($params);
     }
 

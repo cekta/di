@@ -9,6 +9,7 @@ use Cekta\DI\ContainerFactory;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -54,11 +55,7 @@ class AcceptanceContainerFactoryTest extends AcceptanceBase
     }
 
     /**
-     * @throws InvalidContainerForCompile
-     * @throws Exception
      * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
      */
     public function testFileMustBeNOTCompiledIfExist(): void
     {
@@ -89,5 +86,21 @@ class AcceptanceContainerFactoryTest extends AcceptanceBase
             ->getProperty('compiler');
         $property->setAccessible(true);
         $this->assertSame($compiler, $property->getValue($factory));
+    }
+
+    /**
+     * @throws IOExceptionInterface
+     */
+    public function testMakeResultMustImplementContainerInterface(): void
+    {
+        $fqcn = \stdClass::class;
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
+        );
+        (new ContainerFactory())->make(
+            filename: $this->file,
+            fqcn: $fqcn,
+        );
     }
 }

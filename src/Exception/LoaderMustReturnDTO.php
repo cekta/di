@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use Exception;
+use RuntimeException;
 
-class LoaderMustReturnDTO extends Exception
+class LoaderMustReturnDTO extends RuntimeException
 {
 }
