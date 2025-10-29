@@ -9,9 +9,9 @@
     </testsuites>
     
 <!--    code coverage for new version phpunit-->
-    <source>
-        <include>
-            <directory>./src</directory>
-        </include>
-    </source>
+<!--    <source>-->
+<!--        <include>-->
+<!--            <directory>./src</directory>-->
+<!--        </include>-->
+<!--    </source>-->
 </phpunit>
