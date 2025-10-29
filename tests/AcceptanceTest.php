@@ -4,100 +4,47 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
+use Cekta\DI\Compiler;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\LoaderMustReturnDTO;
-use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Exception\NotInstantiable;
-use Cekta\DI\Lazy;
 use Cekta\DI\LoaderDTO;
 use Cekta\DI\Rule\Regex;
 use Cekta\DI\Test\AcceptanceTest\A;
-use Cekta\DI\Test\AcceptanceTest\AutowiringInConstructor;
-use Cekta\DI\Test\AcceptanceTest\AutowiringShared;
-use Cekta\DI\Test\AcceptanceTest\AutowiringVariadicClass;
-use Cekta\DI\Test\AcceptanceTest\D;
-use Cekta\DI\Test\AcceptanceTest\ExampleApplyRule;
-use Cekta\DI\Test\AcceptanceTest\ExamplePopShared;
-use Cekta\DI\Test\AcceptanceTest\I;
-use Cekta\DI\Test\AcceptanceTest\R1;
+use Cekta\DI\Test\AcceptanceTest\EntrypointApplyRule;
 use Cekta\DI\Test\AcceptanceTest\S;
-use Cekta\DI\Test\AcceptanceTest\Shared;
 use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use stdClass;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
-class AcceptanceTest extends TestCase
+class AcceptanceTest extends AcceptanceBase
 {
-    private const FILE = __DIR__ . '/Container.php';
-    private const FQCN = 'Cekta\DI\Test\Container';
-    private static ContainerInterface $container;
-    private const TARGETS = [
-        Shared::class,
-        AutowiringInConstructor::class,
-        stdClass::class,
-        AutowiringShared::class,
-        ExamplePopShared::class,
-        ExampleApplyRule::class,
-        AutowiringVariadicClass::class,
-    ];
-    private const PARAMS = [
-        'username' => 'some username',
-        'password' => 'some password',
-        'db_username' => 'some db username',
-        S::class . '|string' => 'named params: ' . S::class . '|string',
-        '...variadic_int' => [1, 3, 5],
-    ];
-
-    private array $params = [];
-    /**
-     * @var array<string, Lazy>
-     */
-    private static array $definitions = [];
-    private const ALIAS = [
-        I::class => R1::class,
-    ];
-
-    public static function tearDownAfterClass(): void
-    {
-        unlink(self::FILE);
-    }
-
     /**
      * @throws IOExceptionInterface
-     * @throws NotInstantiable
-     * @throws InvalidContainerForCompile
      * @throws InfiniteRecursion
+     * @throws NotInstantiable
      * @throws LoaderMustReturnDTO
+     * @throws InvalidContainerForCompile
      */
-    protected function setUp(): void
+    protected function makeContainer(): ContainerInterface
     {
-        $this->params['...' . A::class] = [new A(), new A()];
-        self::$definitions = [
-            'dsn' => new Lazy(function (ContainerInterface $container) {
-                /** @var string $username */
-                $username = $container->get('username');
-                /** @var string $password */
-                $password = $container->get('password');
-                return "definition u: $username, p: $password";
-            })
-        ];
-        self::$container = Container::build(
-            filename: self::FILE,
+        return Container::build(
+            filename: $this->file,
             loader: function () {
                 return new LoaderDTO(
-                    containers: self::TARGETS,
-                    alias: self::ALIAS,
-                    rule: new Regex('/ExampleApplyRule/', ['username' => 'db_username'])
+                    containers: array_merge($this->containers, [EntrypointApplyRule::class]),
+                    alias: $this->alias,
+                    rule: new Regex('/EntrypointApplyRule/', ['username' => 'db_username'])
                 );
             },
-            params: self::PARAMS + self::$definitions + $this->params,
-            fqcn: self::FQCN,
+            params: $this->params,
+            fqcn: $this->fqcn,
             force_compile: true,
         );
     }
@@ -106,83 +53,12 @@ class AcceptanceTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function testNotFound(): void
+    public function testApplyRule(): void
     {
-        $key = 'not exist container';
-        $this->expectException(NotFound::class);
-        $this->expectExceptionMessage("Container `$key` not found");
-        self::$container->get($key);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testAutowiring(): void
-    {
-        /** @var AutowiringInConstructor $autowiring */
-        $autowiring = self::$container->get(AutowiringInConstructor::class);
-        $this->assertInstanceOf(AutowiringInConstructor::class, $autowiring);
-        $this->assertInstanceOf(A::class, $autowiring->a);
-        $this->assertSame(self::PARAMS['username'], $autowiring->username);
-        $this->assertSame(self::PARAMS['password'], $autowiring->password);
-        $this->assertSame(self::PARAMS[S::class . '|string'], $autowiring->union_type);
-        $this->assertSame(self::PARAMS['...variadic_int'], $autowiring->variadic_int);
-        $this->assertSame('definition u: some username, p: some password', $autowiring->dsn);
-        $this->assertInstanceOf(R1::class, $autowiring->i);
-        $this->assertInstanceOf(AutowiringShared::class, self::$container->get(AutowiringShared::class));
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testShared(): void
-    {
-        /** @var Shared $example */
-        $example = self::$container->get(Shared::class);
-        $this->assertInstanceOf(Shared::class, $example);
-        $this->assertSame($example, self::$container->get(Shared::class));
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testSharedDependencyMustBeSame(): void
-    {
-        /** @var Shared $shared */
-        $shared = self::$container->get(Shared::class);
-        /** @var AutowiringInConstructor $autowiring */
-        $autowiring = self::$container->get(AutowiringInConstructor::class);
-        $this->assertSame($shared->s, $autowiring->s);
-    }
-
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testAutowiringWithoutArguments(): void
-    {
-        /** @var stdClass $obj */
-        $obj = self::$container->get(stdClass::class);
-        $this->assertInstanceOf(stdClass::class, $obj);
-        $this->assertSame($obj, self::$container->get(stdClass::class));
-    }
-
-    public function testHas(): void
-    {
-        foreach (self::TARGETS as $key) {
-            $this->assertTrue(self::$container->has($key));
-        }
-
-        foreach (array_keys(self::PARAMS) as $key) {
-            $this->assertFalse(self::$container->has($key));
-        }
-
-        foreach (array_keys(self::$definitions) as $key) {
-            $this->assertFalse(self::$container->has($key));
-        }
+        /** @var EntrypointApplyRule $obj */
+        $obj = $this->container->get(EntrypointApplyRule::class);
+        $this->assertSame($this->params['db_username'], $obj->username);
+        $this->assertSame($this->params['password'], $obj->password);
     }
 
     public function testWithoutRequiredParams(): void
@@ -192,56 +68,116 @@ class AcceptanceTest extends TestCase
             sprintf(
                 'Containers: %s, %s, %s, %s, %s, %s, %s must be declared in params',
                 'username',
-                'dsn',
                 'password',
                 S::class . '|string',
+                'dsn',
                 '...variadic_int',
-                'db_username',
                 '...' . A::class,
+                'db_username',
             )
         );
-        // @phpstan-ignore class.notFound
-        new (self::FQCN)([]);
+        new ($this->fqcn)([]);
     }
 
     /**
-     * @throws ContainerExceptionInterface
+     * @throws InvalidContainerForCompile
+     * @throws Exception
+     * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
+     * @throws LoaderMustReturnDTO
      */
-    public function testNotSharedMustCreatedByNew(): void
+    public function testFileMustBeNOTCompiledIfExist(): void
     {
-        $this->assertFalse(self::$container->has(D::class));
-        $this->expectException(NotFoundExceptionInterface::class);
-        self::$container->get(D::class);
+        $compiler = $this->createMock(Compiler::class);
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->method('exists')
+            ->willReturn(true);
+        $compiler->expects($this->never())
+            ->method('compile');
+        $filename = 'some file not exist.php';
+        Container::build(
+            filename: $filename,
+            loader: function () {
+                return new LoaderDTO();
+            },
+            fqcn: get_class($this->createMock(ContainerInterface::class)),
+            compiler: $compiler,
+            filesystem: $filesystem
+        );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
      */
-    public function testPopSharedTest(): void
+    public function testLoaderReturnInvalidResult(): void
     {
-        $this->assertInstanceOf(ExamplePopShared::class, self::$container->get(ExamplePopShared::class));
+        $this->expectException(LoaderMustReturnDTO::class);
+        Container::build(
+            filename: $this->file,
+            loader: function () {
+                return 'invalid result';
+            },
+            force_compile: true
+        );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws IOExceptionInterface
+     * @throws NotInstantiable
+     * @throws InvalidContainerForCompile
+     * @throws InfiniteRecursion
+     * @throws LoaderMustReturnDTO
      */
-    public function testApplyRule(): void
+    public function testMakeResultMustImplementContainerInterface(): void
     {
-        /** @var ExampleApplyRule $obj */
-        $obj = self::$container->get(ExampleApplyRule::class);
-        $this->assertSame(self::PARAMS['db_username'], $obj->username);
-        $this->assertSame(self::PARAMS['password'], $obj->password);
+        $fqcn = \stdClass::class;
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
+        );
+
+        Container::build(
+            filename: $this->file,
+            loader: function () {
+                return new LoaderDTO();
+            },
+            fqcn: $fqcn,
+        );
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws InvalidContainerForCompile
+     * @throws Exception
+     * @throws IOExceptionInterface
+     * @throws InfiniteRecursion
+     * @throws NotInstantiable
+     * @throws LoaderMustReturnDTO
      */
-    public function testAutowiringVariadicClass(): void
+    public function testFileMustBeCompiledIfNotExist(): void
     {
-        $obj = self::$container->get(AutowiringVariadicClass::class);
-        $this->assertSame($this->params['...' . A::class], $obj->a_array);
+        $filename = __DIR__ . '/' . __CLASS__ . '.' . __METHOD__;
+        $compiler = $this->createMock(Compiler::class);
+        $filesystem = $this->createMock(Filesystem::class);
+        $compiler->expects($this->once())
+            ->method('compile');
+        $filesystem->method('exists')
+            ->willReturn(false);
+        Container::build(
+            filename: $filename,
+            loader: function () {
+                return new LoaderDTO();
+            },
+            fqcn: get_class($this->createMock(ContainerInterface::class)),
+            compiler: $compiler,
+            filesystem: $filesystem
+        );
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
     }
 }

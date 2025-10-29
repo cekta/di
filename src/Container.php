@@ -43,36 +43,32 @@ class Container
         ?Compiler $compiler = null,
         ?Filesystem $filesystem = null,
     ): ContainerInterface {
-        $compiler = $compiler ?? new Compiler();
         $filesystem = $filesystem ?? new Filesystem();
         if (
             !$filesystem->exists($filename)
             || $force_compile
         ) {
-            $dto = call_user_func($loader);
-            /**
-             * @var mixed $dto user loader can return anything
-             * @noinspection PhpRedundantVariableDocTypeInspection
-             */
-            if (!($dto instanceof LoaderDTO)) {
-                throw new LoaderMustReturnDTO();
+            if ($compiler === null) {
+                $dto = call_user_func($loader);
+                /**
+                 * @var mixed $dto user $loader can return anything
+                 * @noinspection PhpRedundantVariableDocTypeInspection
+                 */
+                if (!($dto instanceof LoaderDTO)) {
+                    throw new LoaderMustReturnDTO();
+                }
+                /** @var LoaderDTO $dto */
+                $compiler = new Compiler(
+                    containers: $dto->getContainers(),
+                    params: $params,
+                    alias: $dto->getAlias(),
+                    fqcn: $fqcn,
+                    singletons: $dto->getSingletons(),
+                    factories: $dto->getFactories(),
+                    rule: $dto->getRule(),
+                );
             }
-            /** @var LoaderDTO $dto */
-            $filesystem->dumpFile(
-                $filename,
-                $compiler->compile(
-                    ... [
-                        'containers' => $dto->getContainers(),
-                        'alias' => $dto->getAlias(),
-                        'singletons' => $dto->getSingletons(),
-                        'factories' => $dto->getFactories(),
-                        'rule' => $dto->getRule(),
-                    ] + [
-                        'params' => $params,
-                        'fqcn' => $fqcn,
-                    ]
-                )
-            );
+            $filesystem->dumpFile($filename, $compiler->compile());
         }
 
         $result = new $fqcn($params);

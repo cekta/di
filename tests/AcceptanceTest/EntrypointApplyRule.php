@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\AcceptanceTest;
 
-class AutowiringShared
+class EntrypointApplyRule
 {
     public function __construct(
-        public Shared $shared,
-        public D $d,
+        public string $username,
+        public string $password
     ) {
     }
 }

@@ -17,11 +17,6 @@ class CompilerTest extends TestCase
 {
     private Compiler $compiler;
 
-    protected function setUp(): void
-    {
-        $this->compiler = new Compiler();
-    }
-
     /**
      * @throws InvalidContainerForCompile
      * @throws NotInstantiable
@@ -29,7 +24,8 @@ class CompilerTest extends TestCase
      */
     public function testCompileWithoutNamespace(): void
     {
-        $code = $this->compiler->compile(fqcn: 'Container');
+        $compiler = new Compiler(fqcn: 'Container');
+        $code = $compiler->compile();
         $this->assertNotEmpty($code);
         $this->assertStringNotContainsString('namespace', $code);
     }
@@ -50,12 +46,12 @@ class CompilerTest extends TestCase
             ),
         );
 
-        $this->compiler->compile(
+        (new Compiler(
             containers: [
                 ExampleWithParams::class
             ],
             params: ['username' => 'value username']
-        );
+        ))->compile();
     }
 
     /**
@@ -69,10 +65,10 @@ class CompilerTest extends TestCase
         $this->expectException(NotInstantiable::class);
         $this->expectExceptionMessage("`$name` must be instantiable");
 
-        $this->compiler->compile(
+        (new Compiler(
             containers: [
                 Example::class
             ],
-        );
+        ))->compile();
     }
 }
