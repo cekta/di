@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerFactory;
-use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Compiler;
 use Cekta\DI\Lazy;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
@@ -19,13 +16,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
-use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class LifeCycleTest extends TestCase
 {
-    private static ContainerInterface $container;
-    private static ContainerInterface $container2;
-
     private const FILE = __DIR__ . DIRECTORY_SEPARATOR . 'LifeCycleContainer.php';
     private const FQCN = 'Cekta\DI\Test\LifeCycleContainer';
     private const SCOPED_ALIAS = 'scoped_alias';
@@ -34,65 +27,71 @@ class LifeCycleTest extends TestCase
     private const SINGLETON_DEFINITION = 'singleton_definition';
     private const FACTORY_ALIAS = 'factory_alias';
     private const FACTORY_DEFINITION = 'factory_definition';
+    private static ContainerInterface $container;
+    private static ContainerInterface $container2;
 
-    /**
-     * @throws IOExceptionInterface
-     * @throws InfiniteRecursion
-     * @throws NotInstantiable
-     * @throws InvalidContainerForCompile
-     */
+    public static function setUpBeforeClass(): void
+    {
+        file_exists(self::FILE) && unlink(self::FILE);
+    }
+
     protected function setUp(): void
     {
-        $factory = new ContainerFactory();
+        if (file_exists(self::FILE)) {
+            return;
+        }
         $params = [
-            'filename' => self::FILE,
-            'fqcn' => self::FQCN,
-            'force_compile' => true,
-            'containers' => [
+            self::SCOPED_DEFINITION => new Lazy(function () {
+                return new stdClass();
+            }),
+            self::SINGLETON_DEFINITION => new Lazy(function () {
+                return new stdClass();
+            }),
+            self::FACTORY_DEFINITION => new Lazy(function () {
+                static $index = 0;
+                return $index++;
+            }),
+        ];
+        $compiler = new Compiler(
+            containers: [
                 stdClass::class,
                 SingletonSubContainer::class,
                 FactorySubContainer::class,
                 Singleton::class,
                 Factory::class,
             ],
-            'alias' => [
+            params: $params,
+            alias: [
                 self::SCOPED_ALIAS => stdClass::class,
                 self::SINGLETON_ALIAS => stdClass::class,
                 self::FACTORY_ALIAS => self::FACTORY_DEFINITION,
             ],
-            'definitions' => [
-                self::SCOPED_DEFINITION => function () {
-                    return new stdClass();
-                },
-                self::SINGLETON_DEFINITION => function () {
-                    return new stdClass();
-                },
-                self::FACTORY_DEFINITION => function () {
-                    static $index = 0;
-                    return $index++;
-                },
-            ],
-            'singletons' => [
+            fqcn: self::FQCN,
+            singletons: [
                 Dependency::class,
                 self::SINGLETON_ALIAS,
                 self::SINGLETON_DEFINITION,
                 Singleton::class,
             ],
-            'factories' => [
+            factories: [
                 FactorySubContainer\Dependency::class,
                 FactorySubContainer::class,
                 Factory::class,
                 self::FACTORY_ALIAS,
                 self::FACTORY_DEFINITION,
             ]
-        ];
-        self::$container = $factory->make(...$params);
-        self::$container2 = $factory->make(...$params);
+        );
+        file_put_contents(self::FILE, $compiler->compile());
+
+        // @phpstan-ignore-next-line
+        self::$container = new (self::FQCN)($params);
+        // @phpstan-ignore-next-line
+        self::$container2 = new (self::FQCN)($params);
     }
 
     public static function tearDownAfterClass(): void
     {
-        unlink(self::FILE);
+        file_exists(self::FILE) && unlink(self::FILE);
     }
 
     /**
@@ -106,6 +105,19 @@ class LifeCycleTest extends TestCase
             self::$container->get(stdClass::class),
             self::$container2->get(stdClass::class)
         );
+    }
+
+    private function mustBeScoped(mixed $v1, mixed $v2, mixed $v3): void
+    {
+        $this->assertEquals(
+            $v1,
+            $v3
+        );
+        $this->assertNotSame(
+            $v1,
+            $v3
+        );
+        $this->assertSame($v1, $v2);
     }
 
     /**
@@ -227,18 +239,5 @@ class LifeCycleTest extends TestCase
         $r2 = self::$container->get(FactorySubContainer\Dependency::class);
         $this->assertEquals($r1, $r2);
         $this->assertNotSame($r1, $r2);
-    }
-
-    private function mustBeScoped(mixed $v1, mixed $v2, mixed $v3): void
-    {
-        $this->assertEquals(
-            $v1,
-            $v3
-        );
-        $this->assertNotSame(
-            $v1,
-            $v3
-        );
-        $this->assertSame($v1, $v2);
     }
 }

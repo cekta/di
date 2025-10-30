@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use Exception;
+use RuntimeException;
 
-class NotInstantiable extends Exception
+class NotInstantiable extends RuntimeException
 {
     /**
      * @param string $container

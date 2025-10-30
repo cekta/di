@@ -34,62 +34,48 @@ class Compiler
      * @var array<string>
      */
     private array $required_keys = [];
-    /**
-     * @var array<string, mixed>
-     */
-    private array $params;
-    /**
-     * @var string[]
-     */
-    private array $alias;
-    /**
-     * @var string[]
-     */
-    private array $singletons;
-    /**
-     * @var string[]
-     */
-    private array $factories;
+
     private ReflectionService $reflection_service;
 
     /**
      * @param array<string> $containers
-     * @param array<string, mixed> $params
+     * @param array<string, mixed|Lazy> $params
      * @param array<string, string> $alias
      * @param string $fqcn
      * @param array<string> $singletons
      * @param array<string> $factories
      * @param Rule|null $rule
+     */
+    public function __construct(
+        private array $containers = [],
+        private array $params = [],
+        private array $alias = [],
+        private string $fqcn = 'App\Container',
+        private array $singletons = [],
+        private array $factories = [],
+        private ?Rule $rule = null,
+    ) {
+        $this->reflection_service = new ReflectionService($this->rule);
+    }
+
+    /**
      * @return string
      * @throws InfiniteRecursion
-     * @throws InvalidContainerForCompile
      * @throws NotInstantiable
      */
-    public function compile(
-        array $containers = [],
-        array $params = [],
-        array $alias = [],
-        string $fqcn = 'App\Container',
-        array $singletons = [],
-        array $factories = [],
-        ?Rule $rule = null,
-    ): string {
-        $this->params = $params;
-        $this->alias = $alias;
-        $this->singletons = $singletons;
-        $this->factories = $factories;
-        $this->reflection_service = new ReflectionService($rule);
-        $this->generateMap(array_map(fn(string $name) => new DependencyDTO($name), $containers));
+    public function compile(): string
+    {
+        $this->generateMap(array_map(fn(string $name) => new DependencyDTO($name), $this->containers));
         $dependencies = [];
-        foreach (array_merge($containers, $this->shared, $this->alias) as $target) {
+        foreach (array_merge($this->containers, $this->shared, $this->alias) as $target) {
             $dependencies[$target] = $this->buildDependency($target);
         }
-        $fqcn = new FQCN($fqcn);
+        $fqcn = new FQCN($this->fqcn);
         $template = new Template(__DIR__ . '/../template/container.compiler.php');
         return $template->render([
             'namespace' => $fqcn->getNamespace(),
             'class' => $fqcn->getClass(),
-            'targets' => $containers,
+            'targets' => $this->containers,
             'dependencies' => $dependencies,
             'alias' => $this->alias,
             'required_keys' => array_unique($this->required_keys),
@@ -99,7 +85,7 @@ class Compiler
     }
 
     /**
-     * @param array<DependencyDTO> $containers
+     * @param DependencyDTO[] $containers
      * @throws NotInstantiable
      * @throws InfiniteRecursion
      * @throws InvalidContainerForCompile

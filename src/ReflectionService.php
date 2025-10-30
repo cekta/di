@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Rule\NullRule;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionNamedType;
+use ReflectionParameter;
 
 class ReflectionService
 {
@@ -25,6 +26,7 @@ class ReflectionService
      * @param string $container_name
      * @param array<string> $stack
      * @return array<DependencyDTO>
+     *
      * @throws InvalidContainerForCompile
      * @throws NotInstantiable
      */
@@ -47,18 +49,24 @@ class ReflectionService
         }
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
-            $prefix = $parameter->isVariadic() ? '...' : '';
-            $type = $parameter->getType();
-            $dependency_name = $prefix . $type;
-            if ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
-                $dependency_name = $prefix . $parameter->name;
-            }
-            $dependency_name = $this->rule->apply($container_name, $dependency_name);
-            $parameters[] = new DependencyDTO(
-                name: $dependency_name,
-                variadic: $parameter->isVariadic()
-            );
+            $parameters[] = $this->makeDependencyDTO($parameter);
         }
         return $parameters;
+    }
+
+    private function makeDependencyDTO(ReflectionParameter $parameter): DependencyDTO
+    {
+        $prefix = $parameter->isVariadic() ? '...' : '';
+        $type = $parameter->getType();
+        $dependency_name = $prefix . $type;
+        if ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
+            $dependency_name = $prefix . $parameter->name;
+        }
+        // @phpstan-ignore method.nonObject (getDeclaringClass() always return ReflectionClass)
+        $dependency_name = $this->rule->apply($parameter->getDeclaringClass()->getName(), $dependency_name);
+        return new DependencyDTO(
+            name: $dependency_name,
+            variadic: $parameter->isVariadic()
+        );
     }
 }

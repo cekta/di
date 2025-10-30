@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Exception;
 
-use Exception;
+use RuntimeException;
 use Throwable;
 
-class InvalidContainerForCompile extends Exception
+class InvalidContainerForCompile extends RuntimeException
 {
     /**
      * @param string $container

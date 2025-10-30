@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\AcceptanceTest;
 
-class AutowiringVariadicClass
+class EntrypointVariadicClass
 {
     /**
      * @var A[]

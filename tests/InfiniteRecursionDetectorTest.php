@@ -49,10 +49,6 @@ class InfiniteRecursionDetectorTest extends TestCase
             containers: [
                 A::class,
             ],
-            params: [
-                'username' => 'value for username',
-                'dsn' => 'value for dsn',
-            ]
         );
     }
 }

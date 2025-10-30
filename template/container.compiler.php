@@ -47,7 +47,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
     public function __construct(
         private array $params = [], 
     ) {
-        $keys = array_merge(array_keys($this->params));
+        $keys = array_keys($this->params);
         $diff = array_diff(<?= var_export($required_keys, true) ?>, $keys);
         if (!empty($diff)) {
             $diff = implode(', ', $diff);
