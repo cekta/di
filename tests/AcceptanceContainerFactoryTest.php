@@ -6,15 +6,14 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
 use Cekta\DI\ContainerFactory;
-use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\Exception;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionClass;
 use ReflectionException;
+use stdClass;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -82,7 +81,7 @@ class AcceptanceContainerFactoryTest extends AcceptanceBase
     {
         $compiler = $this->createMock(Compiler::class);
         $factory = new ContainerFactory($compiler);
-        $property = (new \ReflectionClass($factory))
+        $property = (new ReflectionClass($factory))
             ->getProperty('compiler');
         $property->setAccessible(true);
         $this->assertSame($compiler, $property->getValue($factory));
@@ -93,7 +92,7 @@ class AcceptanceContainerFactoryTest extends AcceptanceBase
      */
     public function testMakeResultMustImplementContainerInterface(): void
     {
-        $fqcn = \stdClass::class;
+        $fqcn = stdClass::class;
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf('Invalid fqcn: `%s`, must be instanceof %s', $fqcn, ContainerInterface::class)
@@ -101,6 +100,29 @@ class AcceptanceContainerFactoryTest extends AcceptanceBase
         (new ContainerFactory())->make(
             filename: $this->file,
             fqcn: $fqcn,
+        );
+    }
+
+    /**
+     * @throws IOExceptionInterface
+     */
+    public function testInvalidContainerForCompile(): void
+    {
+        $container = 'invalid container name for ReflectionClass';
+        $this->expectException(InvalidContainerForCompile::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Invalid container:`%s` for compile, stack: %s',
+                $container,
+                implode(', ', [$container])
+            ),
+        );
+        $factory = new ContainerFactory();
+        $factory->make(
+            filename: 'any name not important.php',
+            containers: [
+                $container
+            ],
         );
     }
 }

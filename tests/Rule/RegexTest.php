@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\Rule;
 
-use Cekta\DI\DependencyDTO;
 use Cekta\DI\Rule\Regex;
 use PHPUnit\Framework\TestCase;
 

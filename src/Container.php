@@ -6,7 +6,7 @@ namespace Cekta\DI;
 
 use Cekta\DI\Exception\InfiniteRecursion;
 use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Exception\LoaderMustReturnDTO;
+use Cekta\DI\Exception\InvalidLoaderResult;
 use Cekta\DI\Exception\NotInstantiable;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
@@ -32,7 +32,7 @@ class Container
      * @throws InfiniteRecursion Invalid compile, infinite recursion in dependencies
      * @throws InvalidContainerForCompile
      * @throws NotInstantiable if container cant be created (interface or abstract class)
-     * @throws LoaderMustReturnDTO if loader return not DTO
+     * @throws InvalidLoaderResult if loader return not DTO
      */
     public static function build(
         string $filename,
@@ -55,7 +55,7 @@ class Container
                  * @noinspection PhpRedundantVariableDocTypeInspection
                  */
                 if (!($dto instanceof LoaderDTO)) {
-                    throw new LoaderMustReturnDTO();
+                    throw new InvalidLoaderResult();
                 }
                 /** @var LoaderDTO $dto */
                 $compiler = new Compiler(

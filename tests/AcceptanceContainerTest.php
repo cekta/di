@@ -6,10 +6,7 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
 use Cekta\DI\Container;
-use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Exception\LoaderMustReturnDTO;
-use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Exception\InvalidLoaderResult;
 use Cekta\DI\LoaderDTO;
 use Cekta\DI\Rule\Regex;
 use Cekta\DI\Test\AcceptanceTest\A;
@@ -102,7 +99,8 @@ class AcceptanceContainerTest extends AcceptanceBase
      */
     public function testLoaderReturnInvalidResult(): void
     {
-        $this->expectException(LoaderMustReturnDTO::class);
+        $this->expectException(InvalidLoaderResult::class);
+        $this->expectExceptionMessage(sprintf('callable must return instanceof %s', LoaderDTO::class));
         Container::build(
             filename: $this->file,
             // @phpstan-ignore-next-line

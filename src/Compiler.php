@@ -61,7 +61,6 @@ class Compiler
     /**
      * @return string
      * @throws InfiniteRecursion
-     * @throws InvalidContainerForCompile
      * @throws NotInstantiable
      */
     public function compile(): string

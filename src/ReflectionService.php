@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotInstantiable;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Rule\NullRule;
 use ReflectionClass;
 use ReflectionException;

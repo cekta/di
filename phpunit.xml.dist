@@ -14,4 +14,12 @@
 <!--            <directory>./src</directory>-->
 <!--        </include>-->
 <!--    </source>-->
+
+<!--    code coverage for phpunit 9.x-->
+<!--    <coverage>-->
+<!--        <include>-->
+<!--            <directory suffix=".php">src</directory>-->
+<!--        </include>-->
+<!--    </coverage>-->
+
 </phpunit>
