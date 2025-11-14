@@ -44,7 +44,7 @@ class CompilerTest extends TestCase
             containers: [EntrypointBugOfAlias::class],
             params: [
                 'some_argument_name' => 'value from params',
-            ], 
+            ],
             alias: [
                 'some_argument_name' => 'invalid name',
             ],
