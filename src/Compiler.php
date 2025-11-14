@@ -98,13 +98,13 @@ class Compiler
             }
             $this->stack[] = $container->getName();
 
-            if (array_key_exists($container->getName(), $this->alias)) {
-                $container = new DependencyDTO($this->alias[$container->getName()], $container->isVariadic());
-            }
             if (array_key_exists($container->getName(), $this->params)) {
                 $this->required_keys[] = $container->getName();
                 array_pop($this->stack);
                 continue;
+            }
+            if (array_key_exists($container->getName(), $this->alias)) {
+                $container = new DependencyDTO($this->alias[$container->getName()], $container->isVariadic());
             }
             if (in_array($container->getName(), $this->shared)) {
                 array_pop($this->stack);
