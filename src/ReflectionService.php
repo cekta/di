@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Exception\InvalidContainerForCompile;
-use Cekta\DI\Rule\NullRule;
+use Cekta\DI\Exception\NotInstantiable;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionNamedType;
@@ -14,12 +13,14 @@ use ReflectionParameter;
 
 class ReflectionService
 {
-    private Rule $rule;
-
+    /**
+     * @param array<string, mixed|Lazy> $params
+     * @param string[] $alias
+     */
     public function __construct(
-        ?Rule $rule = null,
+        private array $params,
+        private array $alias,
     ) {
-        $this->rule = $rule ?? new NullRule();
     }
 
     /**
@@ -58,12 +59,18 @@ class ReflectionService
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
         $type = $parameter->getType();
-        $dependency_name = $prefix . $type;
-        if ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
-            $dependency_name = $prefix . $parameter->name;
-        }
         // @phpstan-ignore method.nonObject (getDeclaringClass() always return ReflectionClass)
-        $dependency_name = $this->rule->apply($parameter->getDeclaringClass()->getName(), $dependency_name);
+        $custom_name = "$prefix{$parameter->getDeclaringClass()->getName()}\${$parameter->name}";
+        if (
+            array_key_exists($custom_name, $this->params)
+            || array_key_exists($custom_name, $this->alias)
+        ) {
+            $dependency_name = $custom_name;
+        } elseif ($type instanceof ReflectionNamedType && $type->isBuiltin() || $type === null) {
+            $dependency_name = $prefix . $parameter->name;
+        } else {
+            $dependency_name = $prefix . $type;
+        }
         return new DependencyDTO(
             name: $dependency_name,
             variadic: $parameter->isVariadic()

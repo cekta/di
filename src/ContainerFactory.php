@@ -52,7 +52,7 @@ class ContainerFactory
     ): ContainerInterface {
         foreach ($definitions as $key => $definition) {
             if (!array_key_exists($key, $params)) {
-                $params[$key] = new Lazy($definition);
+                $params[$key] = new LazyClosure($definition);
             }
         }
         return Container::build(

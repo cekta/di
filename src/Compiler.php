@@ -36,6 +36,10 @@ class Compiler
     private array $required_keys = [];
 
     private ReflectionService $reflection_service;
+    /**
+     * @var string[]
+     */
+    private array $used_alias = [];
 
     /**
      * @param array<string> $containers
@@ -44,7 +48,6 @@ class Compiler
      * @param string $fqcn
      * @param array<string> $singletons
      * @param array<string> $factories
-     * @param Rule|null $rule
      */
     public function __construct(
         private array $containers = [],
@@ -53,9 +56,8 @@ class Compiler
         private string $fqcn = 'App\Container',
         private array $singletons = [],
         private array $factories = [],
-        private ?Rule $rule = null,
     ) {
-        $this->reflection_service = new ReflectionService($this->rule);
+        $this->reflection_service = new ReflectionService($this->params, $this->alias);
     }
 
     /**
@@ -67,7 +69,7 @@ class Compiler
     {
         $this->generateMap(array_map(fn(string $name) => new DependencyDTO($name), $this->containers));
         $dependencies = [];
-        foreach (array_merge($this->containers, $this->shared, $this->alias) as $target) {
+        foreach (array_merge($this->containers, $this->shared, $this->used_alias) as $target) {
             $dependencies[$target] = $this->buildDependency($target);
         }
         $fqcn = new FQCN($this->fqcn);
@@ -104,7 +106,14 @@ class Compiler
                 continue;
             }
             if (array_key_exists($container->getName(), $this->alias)) {
+                $this->used_alias[] = $container->getName();
+                $this->used_alias[] = $this->alias[$container->getName()];
                 $container = new DependencyDTO($this->alias[$container->getName()], $container->isVariadic());
+            }
+            if (array_key_exists($container->getName(), $this->params)) {
+                $this->required_keys[] = $container->getName();
+                array_pop($this->stack);
+                continue;
             }
             if (in_array($container->getName(), $this->shared)) {
                 array_pop($this->stack);

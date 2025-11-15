@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Exception\NotFound;
-use Cekta\DI\Lazy;
+use Cekta\DI\LazyClosure;
 use Cekta\DI\Test\AcceptanceTest\A;
-use Cekta\DI\Test\AcceptanceTest\C;
 use Cekta\DI\Test\AcceptanceTest\ContainerCreatedWithNew;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
@@ -26,7 +25,7 @@ abstract class AcceptanceBase extends TestCase
     protected ContainerInterface $container;
 
     /**
-     * @var array<string, mixed|Lazy>
+     * @var array<string, mixed|LazyClosure>
      */
     protected array $params = [];
     /**
@@ -34,6 +33,9 @@ abstract class AcceptanceBase extends TestCase
      */
     protected array $alias = [
         I::class => R1::class,
+        'argument_to_custom_alias' => 'argument_to_custom_alias_value',
+        EntrypointSharedDependency::class . '$argument_to_custom_alias' => 'argument_to_custom_alias_custom_value',
+        EntrypointSharedDependency::class . '$argument_to_custom_alias2' => 'argument_to_custom_alias_custom_value',
     ];
 
     protected string $file = __DIR__ . '/AcceptanceTest/Container.php';
@@ -54,11 +56,16 @@ abstract class AcceptanceBase extends TestCase
         $this->params = [
             'username' => 'some username',
             'password' => 'some password',
+            'argument_to_custom_param' => 'default param',
+            EntrypointSharedDependency::class . '$argument_to_custom_param' => 'custom value param',
+            'argument_to_custom_alias_value' => 'default value for alias',
+            'argument_to_custom_alias_custom_value' => 'custom value for alias',
             'db_username' => 'some db username',
             S::class . '|string' => 'named params: ' . S::class . '|string',
             '...variadic_int' => [1, 3, 5],
+            '...' . EntrypointSharedDependency::class . '$variadic_int' => [9, 8, 7],
             '...' . A::class => [new A(), new A()],
-            'dsn' => new Lazy(function (ContainerInterface $container) {
+            'dsn' => new LazyClosure(function (ContainerInterface $container) {
                 /** @var string $username */
                 $username = $container->get('username');
                 /** @var string $password */
@@ -121,11 +128,7 @@ abstract class AcceptanceBase extends TestCase
             $autowiring->password,
             'string(primitive) params must be inject'
         );
-        $this->assertInstanceOf(
-            EntrypointSharedDependency::class,
-            $autowiring->exampleShared,
-            'other entrypoint must be correct inject'
-        );
+
         $this->assertInstanceOf(
             ContainerCreatedWithNew::class,
             $autowiring->created_with_new,
@@ -135,6 +138,26 @@ abstract class AcceptanceBase extends TestCase
             R1::class,
             $autowiring->i,
             'alias for interface must be correct resolved'
+        );
+        $this->assertInstanceOf(
+            S::class,
+            $autowiring->s,
+            'autowiring first dependency',
+        );
+        $this->assertSame(
+            $autowiring->s,
+            $autowiring->s2,
+            'must be auto shared between one entrypoint'
+        );
+        $this->assertSame(
+            $autowiring->s,
+            $autowiring->s3,
+            'must be called array_pop on shared',
+        );
+        $this->assertSame(
+            $autowiring->s,
+            $autowiring->s4,
+            'must be called array_pop on everytime',
         );
         $this->assertSame(
             $this->params[S::class . '|string'],
@@ -147,18 +170,24 @@ abstract class AcceptanceBase extends TestCase
             'lazy loading params must be correct inject'
         );
         $this->assertSame(
+            $this->params['argument_to_custom_param'],
+            $autowiring->argument_to_custom_param,
+            'must default value from param, no custom param'
+        );
+        $this->assertSame(
+            $this->params['argument_to_custom_alias_value'],
+            $autowiring->argument_to_custom_alias,
+            'must default alias, no custom alias'
+        );
+        $this->assertInstanceOf(
+            EntrypointSharedDependency::class,
+            $autowiring->exampleShared,
+            'other entrypoint must be correct inject'
+        );
+        $this->assertSame(
             $this->params['...variadic_int'],
             $autowiring->variadic_int,
             'variadic params must be inject'
-        );
-        $this->assertInstanceOf(
-            S::class,
-            $autowiring->s
-        );
-        $this->assertSame(
-            $autowiring->s,
-            $autowiring->s2,
-            'must be auto shared between one entrypoint'
         );
     }
 
@@ -177,6 +206,25 @@ abstract class AcceptanceBase extends TestCase
             $entrypoint_shared->s,
             $autowiring->s,
             'dependency between few entrypoint must be auto shared (same)'
+        );
+        $this->assertSame(
+            $this->params[EntrypointSharedDependency::class . '$argument_to_custom_param'],
+            $entrypoint_shared->argument_to_custom_param,
+            'must be set custom param only for this class'
+        );
+        $this->assertSame(
+            $this->params['argument_to_custom_alias_custom_value'],
+            $entrypoint_shared->argument_to_custom_alias,
+            'must be used custom alias only for this class'
+        );
+        $this->assertSame(
+            $this->params['argument_to_custom_alias_custom_value'],
+            $entrypoint_shared->argument_to_custom_alias2,
+            'after alias must be correct detect param with array_pop stack'
+        );
+        $this->assertSame(
+            $this->params['...' . EntrypointSharedDependency::class . '$variadic_int'],
+            $entrypoint_shared->variadic_int
         );
     }
 

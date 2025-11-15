@@ -28,7 +28,8 @@ composer require cekta/di
 ## How it works
 ![test](./how.png)
 
-1. Create script /bin/compile.php (or command for symfony/console, or use Container::make) in project 
+1. Create script /bin/compile.php (or command for symfony/console, or use Container::make) in project
+
 ```php
 <?php
 
@@ -50,7 +51,7 @@ $compiler = new \Cekta\DI\Compiler(
         'options' => [],
         'db_type' => 'sqlite',
         'db_path' => __DIR__ . '/../db.sqlite',
-        'dsn' => new \Cekta\DI\Lazy(function (\Psr\Container\ContainerInterface $c) {
+        'dsn' => new \Cekta\DI\LazyClosure(function (\Psr\Container\ContainerInterface $c) {
             return sprintf('%s:%s',$c->get('db_type'), $c->get($c->get('db_path')));
         }),
     ], 
@@ -65,6 +66,7 @@ file_put_contens($filename, $compiler->compile());
 ```
 2. add run compiler on ci/cd (build or deploy stage), or run it manually for regenerate MyController
 4. Use it
+
 ```php
 <?php
 require __DIR__ . '/vendor/autoload.php';
@@ -77,7 +79,7 @@ $container = new App\Runtime\MyContainer([
     'options' => [],
     'db_type' => 'sqlite',
     'db_path' => __DIR__ . '/../db.sqlite',
-    'dsn' => new \Cekta\DI\Lazy(function (\Psr\Container\ContainerInterface $c) {
+    'dsn' => new \Cekta\DI\LazyClosure(function (\Psr\Container\ContainerInterface $c) {
         return sprintf('%s:%s',$c->get('db_type'), $c->get($c->get('db_path')));
     }),
 ]);

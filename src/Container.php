@@ -65,7 +65,6 @@ class Container
                     fqcn: $fqcn,
                     singletons: $dto->getSingletons(),
                     factories: $dto->getFactories(),
-                    rule: $dto->getRule(),
                 );
             }
             $filesystem->dumpFile($filename, $compiler->compile());
