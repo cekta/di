@@ -24,8 +24,8 @@ class Container
      * @param array<string, mixed> $params
      * @param string $fqcn
      * @param bool $force_compile
-     * @param Compiler|null $compiler
-     * @param Filesystem|null $filesystem
+     * @param Compiler|null $compiler only for test (non-public)
+     * @param Filesystem|null $filesystem only for test (non-public)
      * @return ContainerInterface
      *
      * @throws IOExceptionInterface if file not writable, or other problem with IO
@@ -65,7 +65,6 @@ class Container
                     fqcn: $fqcn,
                     singletons: $dto->getSingletons(),
                     factories: $dto->getFactories(),
-                    rule: $dto->getRule(),
                 );
             }
             $filesystem->dumpFile($filename, $compiler->compile());

@@ -6,20 +6,7 @@ namespace Cekta\DI;
 
 use Psr\Container\ContainerInterface;
 
-class Lazy
+interface Lazy
 {
-    /**
-     * @var callable
-     */
-    private $callback;
-
-    public function __construct(callable $callback)
-    {
-        $this->callback = $callback;
-    }
-
-    public function load(ContainerInterface $container): mixed
-    {
-        return call_user_func($this->callback, $container);
-    }
+    public function load(ContainerInterface $container): mixed;
 }

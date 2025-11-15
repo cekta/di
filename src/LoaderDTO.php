@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Rule\NullRule;
-
 class LoaderDTO
 {
-    private Rule $rule;
-
     /**
      * @param string[] $containers
      * @param array<string, string> $alias
@@ -21,9 +17,7 @@ class LoaderDTO
         private array $alias = [],
         private array $factories = [],
         private array $singletons = [],
-        ?Rule $rule = null,
     ) {
-        $this->rule = $rule ?? new NullRule();
     }
 
     /**
@@ -56,10 +50,5 @@ class LoaderDTO
     public function getSingletons(): array
     {
         return $this->singletons;
-    }
-
-    public function getRule(): Rule
-    {
-        return $this->rule;
     }
 }

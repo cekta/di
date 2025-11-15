@@ -8,9 +8,10 @@ use Cekta\DI\Compiler;
 use Cekta\DI\Container;
 use Cekta\DI\Exception\InvalidLoaderResult;
 use Cekta\DI\LoaderDTO;
-use Cekta\DI\Rule\Regex;
 use Cekta\DI\Test\AcceptanceTest\A;
-use Cekta\DI\Test\AcceptanceTest\EntrypointApplyRule;
+use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
+use Cekta\DI\Test\AcceptanceTest\EntrypointBugOfAlias;
+use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\S;
 use InvalidArgumentException;
 use Psr\Container\ContainerExceptionInterface;
@@ -30,9 +31,8 @@ class AcceptanceContainerTest extends AcceptanceBase
             filename: $this->file,
             loader: function () {
                 return new LoaderDTO(
-                    containers: array_merge($this->containers, [EntrypointApplyRule::class]),
+                    containers: $this->containers,
                     alias: $this->alias,
-                    rule: new Regex('/EntrypointApplyRule/', ['username' => 'db_username'])
                 );
             },
             params: $this->params,
@@ -41,31 +41,23 @@ class AcceptanceContainerTest extends AcceptanceBase
         );
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    public function testApplyRule(): void
-    {
-        /** @var EntrypointApplyRule $obj */
-        $obj = $this->container->get(EntrypointApplyRule::class);
-        $this->assertSame($this->params['db_username'], $obj->username);
-        $this->assertSame($this->params['password'], $obj->password);
-    }
-
     public function testWithoutRequiredParams(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Containers: %s, %s, %s, %s, %s, %s, %s must be declared in params',
+                'Containers: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
                 'username',
                 'password',
                 S::class . '|string',
                 'dsn',
+                'argument_to_custom_param',
+                'argument_to_custom_alias_value',
+                EntrypointSharedDependency::class . '$argument_to_custom_param',
+                'argument_to_custom_alias_custom_value',
+                '...' . EntrypointSharedDependency::class . '$variadic_int',
                 '...variadic_int',
                 '...' . A::class,
-                'db_username',
             )
         );
         new ($this->fqcn)([]);
@@ -109,5 +101,39 @@ class AcceptanceContainerTest extends AcceptanceBase
             },
             force_compile: true
         );
+    }
+
+    /**
+     * @return void
+     * @throws ContainerExceptionInterface
+     * @throws IOExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @see https://github.com/cekta/di/issues/146
+     */
+    public function testParamMaxPriority(): void
+    {
+        $expected = 'value from params';
+        $filename = __DIR__ . '/ContainerTeatParamMaxPriority.php';
+        file_exists($filename) && unlink($filename);
+        $container = Container::build(
+            filename: $filename,
+            fqcn: 'Cekta\DI\Test\ContainerTeatParamMaxPriority',
+            params: [
+                'some_argument_name' => $expected,
+            ],
+            loader: function () {
+                return new LoaderDTO(
+                    containers: [EntrypointBugOfAlias::class],
+                    alias: [
+                        'some_argument_name' => 'invalid name',
+                    ],
+                );
+            }
+        );
+        $this->assertSame(
+            $expected,
+            $container->get(AcceptanceTest\EntrypointBugOfAlias::class)->some_argument_name
+        );
+        file_exists($filename) && unlink($filename);
     }
 }

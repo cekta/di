@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\AcceptanceTest;
 
-class EntrypointApplyRule
+class EntrypointBugOfAlias
 {
     public function __construct(
-        public string $username,
-        public string $password
+        public string $some_argument_name
     ) {
     }
 }
