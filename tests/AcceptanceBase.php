@@ -9,6 +9,7 @@ use Cekta\DI\LazyClosure;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\ContainerCreatedWithNew;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
+use Cekta\DI\Test\AcceptanceTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointVariadicClass;
 use Cekta\DI\Test\AcceptanceTest\I;
@@ -49,6 +50,7 @@ abstract class AcceptanceBase extends TestCase
         EntrypointAutowiring::class,
         EntrypointSharedDependency::class,
         EntrypointVariadicClass::class,
+        EntrypointOverwriteExtendConstructor::class,
     ];
 
     protected function setUp(): void
@@ -56,6 +58,7 @@ abstract class AcceptanceBase extends TestCase
         $this->params = [
             'username' => 'some username',
             'password' => 'some password',
+            EntrypointOverwriteExtendConstructor::class . '$username' => 'base constructor overwritten username',
             'argument_to_custom_param' => 'default param',
             EntrypointSharedDependency::class . '$argument_to_custom_param' => 'custom value param',
             'argument_to_custom_alias_value' => 'default value for alias',
@@ -251,6 +254,16 @@ abstract class AcceptanceBase extends TestCase
             $this->params['...' . A::class],
             $obj->a_array,
             'variadic params without primitive must be correct injected'
+        );
+    }
+
+    public function testOverwrittenExtendConstructor()
+    {
+        $obj = $this->container->get(EntrypointOverwriteExtendConstructor::class);
+        $this->assertSame(
+            $this->params[EntrypointOverwriteExtendConstructor::class . '$username'],
+            $obj->username,
+            'value from base constructor must be overwritten by custom rule '
         );
     }
 

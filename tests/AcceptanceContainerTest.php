@@ -11,6 +11,7 @@ use Cekta\DI\LoaderDTO;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
 use Cekta\DI\Test\AcceptanceTest\EntrypointBugOfAlias;
+use Cekta\DI\Test\AcceptanceTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\S;
 use InvalidArgumentException;
@@ -46,7 +47,7 @@ class AcceptanceContainerTest extends AcceptanceBase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Containers: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
+                'Containers: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
                 'username',
                 'password',
                 S::class . '|string',
@@ -58,6 +59,7 @@ class AcceptanceContainerTest extends AcceptanceBase
                 '...' . EntrypointSharedDependency::class . '$variadic_int',
                 '...variadic_int',
                 '...' . A::class,
+                EntrypointOverwriteExtendConstructor::class . '$username',
             )
         );
         new ($this->fqcn)([]);
