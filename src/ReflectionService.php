@@ -50,17 +50,16 @@ class ReflectionService
         }
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
-            $parameters[] = $this->makeDependencyDTO($parameter);
+            $parameters[] = $this->makeDependencyDTO($reflection->getName(), $parameter);
         }
         return $parameters;
     }
 
-    private function makeDependencyDTO(ReflectionParameter $parameter): DependencyDTO
+    private function makeDependencyDTO(string $class, ReflectionParameter $parameter): DependencyDTO
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
         $type = $parameter->getType();
-        // @phpstan-ignore method.nonObject (getDeclaringClass() always return ReflectionClass)
-        $custom_name = "$prefix{$parameter->getDeclaringClass()->getName()}\${$parameter->name}";
+        $custom_name = "$prefix{$class}\${$parameter->name}";
         if (
             array_key_exists($custom_name, $this->params)
             || array_key_exists($custom_name, $this->alias)
