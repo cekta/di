@@ -2,3 +2,4 @@
 /vendor
 /.phpunit.result.cache
 /tests/Container.php
+/book

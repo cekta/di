@@ -15,8 +15,12 @@
  * High code quality (see the badges).
  * Supports opcache compilation (fast).
 
-## Video demonstration (russian)
+## Install via [composer](https://getcomposer.org/)
 
-[![Watch the video](https://img.youtube.com/vi/0OrVX1V6s5E/0.jpg)](https://www.youtube.com/watch?v=0OrVX1V6s5E)
+```
+composer require cekta/di
+```
+
+[Russian documentation](./docs/readme.md)
 
 more complex example see in [acceptance test](./tests/AcceptanceBase.php)
