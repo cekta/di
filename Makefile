@@ -33,4 +33,4 @@ docker-run-8.4: docker-build-8.4 docker-ci
 docker-shell:
 	docker compose run -it --rm --entrypoint /bin/sh app 
 docker-pages-build:
-	docker compose run --rm -it pages build
+	docker compose run --rm pages build
