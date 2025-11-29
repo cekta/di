@@ -16,8 +16,9 @@ composer require cekta/di
 Возможно список действий вам покажется слишком детальным и очевидным, подробный список позволит другим не допустить
 "детских" ошибок.
 
-1. Все команды выполняем в папке с проектом (ОЧЕВИДНОЕ), / - корень проекта.
-2. Давайте вынесем генеримый код нашим приложением в отдельную папку,  
+Все команды выполняем в папке с проектом (ОЧЕВИДНОЕ), / - корень проекта.
+
+1. Давайте вынесем генеримый код нашим приложением в отдельную папку,  
    например /runtime (ОПИЦОНАЛЬНО)
     1. Создаем папку
        ```
@@ -38,7 +39,7 @@ composer require cekta/di
         ```
        $ composer dumpautoload
        ```
-3. Создадим самую простую зависимость, которые мы будем получать,  
+2. Создадим самую простую зависимость, которые мы будем получать,  
    **/src/Example.php**
     ```php
     <?php
@@ -52,7 +53,7 @@ composer require cekta/di
     }
     
     ```
-4. Создадим class где будем задавать основную конфигурацию проекта,  
+3. Создадим class где будем задавать основную конфигурацию проекта,  
    **/src/Project.php**
     ```php
     <?php
@@ -99,7 +100,7 @@ composer require cekta/di
             if (file_put_contents($this->container_file, $content, LOCK_EX) === false) {
                 throw new RuntimeException("$this->container_file cant compile");
             }
-            chmod($this->container_file, $this->container_permission);
+            chmod($this->container_file, $this->container_permission); // опционально
         }
     
         private function params()
@@ -111,9 +112,7 @@ composer require cekta/di
     }
     
     ```
-5. Сделаем скрипт, который будет генерировать код.  
-    Вы можете использовать [symfony/console](https://packagist.org/packages/symfony/console) 
-    и преобразовать скрипт в команду или использовать другой CLI.  
+4. Сделаем скрипт, который будет генерировать код.  
     **/bin/compile.php**
     ```php
     #!/usr/bin/env php
@@ -126,11 +125,13 @@ composer require cekta/di
     $project = new \App\Project($_ENV);
     $project->compile();
     ```
-6. Сгенерируем код
+   Вы можете использовать [symfony/console](https://packagist.org/packages/symfony/console)
+   и преобразовать скрипт в команду или использовать другой CLI.
+5. Сгенерируем код
     ```
     $ php bin/compile.php
     ```
-7. Используем сгенерированный код у себя, простейший пример вашего приложения.  
+6. Используем сгенерированный код у себя, простейший пример вашего приложения.  
    **/app.php**
     ```php
     #!/usr/bin/env php
@@ -143,12 +144,17 @@ composer require cekta/di
     
     var_dump($container->get(App\Example::class));
     ```
-8. Убедимся что все работает
+7. Убедимся что все работает
     ```
     $ php app.php
     object(App\Example)#1 (0) {
     }
     ```
+
+## Пример выполнения всех этих действий
+
+1. [Разворачивание проекта](https://github.com/cekta/di-example-usage/commit/dcd1edaad83c6ebe621a5c9ae48cb11c634a7bdc)
+2. [Интегрируем cekta/di](https://github.com/cekta/di-example-usage/commit/c071b21fac50bdee943dd477b5f2c140c9608668)
 
 ## Использование
 
