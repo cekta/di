@@ -1,3 +1,4 @@
+name: ci
 jobs:
   badge:
     runs-on: ubuntu-latest
@@ -14,12 +15,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: docker compose up
+          
+      - name: run
         run: docker compose up --exit-code-from app
         env:
           UID: 0
           PHP_VERSION: ${{ matrix.php }}
           INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
+
 on:
   pull_request:
     branches:
