@@ -1,0 +1,66 @@
+name: ci/cd
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [
+          '8.0',
+          '8.1',
+          '8.2',
+          '8.3',
+          '8.4'
+        ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: run
+        run: docker compose up --exit-code-from app
+        env:
+          UID: 0
+          PHP_VERSION: ${{ matrix.php }}
+          INFECTION_BADGE_API_KEY: ${{secrets.INFECTION_BADGE_API_KEY}}
+          
+  deploy:
+    environment:
+      name: deploy to github pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: build pages
+        run: make docker-pages-build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './book'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
