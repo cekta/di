@@ -29,6 +29,8 @@ jobs:
         
       - name: pages build
         run: make docker-pages-build
+        env:
+          UID: 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

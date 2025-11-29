@@ -1,11 +1,9 @@
-default: update
-	mdbook serve -n 0.0.0.0
 ci: update test
 install:
 	composer install
-test: phpcs phpstan phpunit infection
 update:
 	composer update
+test: phpcs phpstan phpunit infection
 phpcs:
 	./vendor/bin/phpcs
 phpstan:
@@ -14,11 +12,9 @@ phpunit:
 	./vendor/bin/phpunit
 infection:
 	./vendor/bin/infection --show-mutations
-pages-build:
-	mdbook build
 
-docker-ci: up
-	docker compose run app ci
+docker-ci: 
+	docker compose run --rm -it app ci
 docker-build-8.0:
 	PHP_VERSION=8.0 docker compose build
 docker-build-8.1:
@@ -34,9 +30,7 @@ docker-run-8.1: docker-build-8.1 docker-ci
 docker-run-8.2: docker-build-8.2 docker-ci
 docker-run-8.3: docker-build-8.3 docker-ci
 docker-run-8.4: docker-build-8.4 docker-ci
-up:
-	docker compose up -d --remove-orphans
-docker-shell: up
-	docker compose exec -it app sh
+docker-shell:
+	docker compose run -it --rm --entrypoint /bin/sh app 
 docker-pages-build:
-	docker compose run --rm app pages-build
+	docker compose run --rm -it pages build
