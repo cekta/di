@@ -1,165 +1,187 @@
-# Начало
+# Начало работы
 
 ## Установка
-
 ```
 composer require cekta/di
 ```
 
-## Первичная настройка (Полный пример)
+## Настройка проекта
 
-Может показаться что слишком много действий по настройке, но какие-то действия делаются единожды.
+### 1. Создайте структуру проекта
 
-Также первичная настройка содержит в опциональные, но рекомендуемые действия, для того чтобы в дальнейшем было
-максимально просто пользоваться библиотекой.
+Создайте папку для сгенерированного кода:
 
-Возможно список действий вам покажется слишком детальным и очевидным, подробный список позволит другим не допустить
-"детских" ошибок.
+```
+mkdir runtime
+```
 
-Все команды выполняем в папке с проектом (ОЧЕВИДНОЕ), / - корень проекта.
+Обновите `composer.json`, добавив автозагрузку:
 
-1. Давайте вынесем генеримый код нашим приложением в отдельную папку,  
-   например /runtime (ОПИЦОНАЛЬНО)
-    1. Создаем папку
-       ```
-       $ mkdir /runtime
-       ```
-    2. Выделяем namespace для сгенерированных классов (например App\Runtime\*) и добавляем его в composer.json
-       ```json
-       ...
-       "autoload": {
-         "psr-4": {
-           "App\\": "src/",
-           "App\\Runtime\\": "runtime/"
-         }
-       },
-       ...
-       ```
-    3. Обновляем autoload чтобы изменения применялись
-        ```
-       $ composer dumpautoload
-       ```
-2. Создадим самую простую зависимость, которые мы будем получать,  
-   **/src/Example.php**
-    ```php
-    <?php
-    
-    declare(strict_types=1);
-    
-    namespace App;
-    
-    class Example
+```
+"autoload": {
+  "psr-4": {
+    "App\\": "src/",
+    "App\\Runtime\\": "runtime/"
+  }
+}
+```
+
+Выполните:
+
+```
+composer dumpautoload
+```
+
+### 2. Создайте тестовый класс
+
+src/Example.php:
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App;
+
+class Example
+{
+}
+```
+
+### 3. Настройте класс проекта
+
+src/Project.php:
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App;
+
+use Cekta\DI\Compiler;
+use Psr\Container\ContainerInterface;
+use RuntimeException;
+
+class Project
+{
+    private string $container_file;
+    private string $container_fqcn = 'App\\Runtime\\Container';
+
+    public function __construct(private array $env)
     {
+        $this->container_file = realpath(__DIR__ . '/..') . '/runtime/Container.php';
     }
-    
-    ```
-3. Создадим class где будем задавать основную конфигурацию проекта,  
-   **/src/Project.php**
-    ```php
-    <?php
-    
-    declare(strict_types=1);
-    
-    namespace App;
-    
-    use Cekta\DI\Compiler;
-    use Psr\Container\ContainerInterface;
-    use RuntimeException;
-    
-    class Project
+
+    public function createContainer(): ContainerInterface
     {
-        private string $container_file;
-        private string $container_fqcn;
-        private int $container_permission;
-    
-        public function __construct(private array $env)
-        {
-            $this->container_file = realpath(__DIR__ . '/..') . '/runtime/Container.php';
-            $this->container_fqcn = 'App\\Runtime\\Container';
-            $this->container_permission = 0777;
+        if (!class_exists($this->container_fqcn)) {
+            throw new RuntimeException("$this->container_fqcn не найден");
         }
-    
-        public function createContainer(): ContainerInterface
-        {
-            if (!class_exists($this->container_fqcn)) {
-                throw new RuntimeException("$this->container_fqcn class not found, maybe need generate ?");
-            }
-            return new ($this->container_fqcn)($this->params());
-        }
-    
-        public function compile(): void
-        {
-            // Ваша конфигурация для кода генерации
-            $content = (new Compiler(
-                containers: [
-                    Example::class,
-                ],
-                params: $this->params(),
-                fqcn: $this->container_fqcn,
-            ))->compile();
-            if (file_put_contents($this->container_file, $content, LOCK_EX) === false) {
-                throw new RuntimeException("$this->container_file cant compile");
-            }
-            chmod($this->container_file, $this->container_permission); // опционально
-        }
-    
-        private function params()
-        {
-            return [
-                // Ваши параметры, можно использовать $this->env
-            ];
-        }
+        return new ($this->container_fqcn)($this->params());
     }
-    
-    ```
-4. Сделаем скрипт, который будет генерировать код.  
-    **/bin/compile.php**
-    ```php
-    #!/usr/bin/env php
-    <?php
-    
-    declare(strict_types=1);
-    
-    require_once __DIR__ . '/../vendor/autoload.php';
-    
-    $project = new \App\Project($_ENV);
-    $project->compile();
-    ```
-   Вы можете использовать [symfony/console](https://packagist.org/packages/symfony/console)
-   и преобразовать скрипт в команду или использовать другой CLI.
-5. Сгенерируем код
-    ```
-    $ php bin/compile.php
-    ```
-6. Используем сгенерированный код у себя, простейший пример вашего приложения.  
-   **/app.php**
-    ```php
-    #!/usr/bin/env php
-    <?php
-    
-    declare(strict_types=1);
-    
-    $project = new \App\Project($_ENV);
-    $container = $project->createContainer();
-    
-    var_dump($container->get(App\Example::class));
-    ```
-7. Убедимся что все работает
-    ```
-    $ php app.php
-    object(App\Example)#1 (0) {
+
+    public function compile(): void
+    {
+        $content = (new Compiler(
+            containers: [Example::class],
+            params: $this->params(),
+            fqcn: $this->container_fqcn,
+        ))->compile();
+
+        if (file_put_contents($this->container_file, $content, LOCK_EX) === false) {
+            throw new RuntimeException("Не удалось сгенерировать $this->container_file");
+        }
+        chmod($this->container_file, 0777);
     }
-    ```
 
-## Пример выполнения всех этих действий
+    private function params(): array
+    {
+        return [];
+    }
+}
+```
 
-1. [Разворачивание проекта](https://github.com/cekta/di-example-usage/commit/dcd1edaad83c6ebe621a5c9ae48cb11c634a7bdc)
-2. [Интегрируем cekta/di](https://github.com/cekta/di-example-usage/commit/c071b21fac50bdee943dd477b5f2c140c9608668)
+### 4. Создайте скрипт генерации
 
-## Использование
+/bin/build.php:
 
-Все эти действия выполняются единожды, в дальнейшем надо будет лишь пользоваться:
-1. Изменять конфигурацию вашего проекта.  
-    (редактировать класс App\Project в двух помеченных комментариями местах из шага 4)
-2. Генерировать код. (выполнять одну команду из шага 6)
-3. Использовать полученный результат у себя в проекте и внедрять зависимости.
+```php
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$project = new \App\Project($_ENV);
+$project->compile();
+```
+
+### 5. Сгенерируйте контейнер
+
+```
+php bin/build.php
+```
+
+### 6. Проверьте работу
+
+/app.php
+
+```php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+$project = new \App\Project($_ENV);
+$container = $project->createContainer();
+
+var_dump($container->get(App\Example::class));
+```
+
+Запустите:
+
+```
+php app.php
+```
+
+Ожидаемый вывод:
+
+```
+object(App\Example)#1 (0) {
+}
+```
+
+### 7. Настройте автоматическую генерацию (опционально)
+
+Добавьте в composer.json:
+
+```json
+{
+  "scripts": {
+    "post-autoload-dump": ["php ./bin/build.php"]
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}
+```
+
+Теперь при обновлении автозагрузки контейнер будет генерироваться автоматически:
+
+```
+composer dumpautoload
+```
+
+### Примеры реализации
+
+* [Создание проекта](https://github.com/cekta/di-example-usage/commit/dcd1edaad83c6ebe621a5c9ae48cb11c634a7bdc)
+* [Интеграция cekta/di](https://github.com/cekta/di-example-usage/commit/c071b21fac50bdee943dd477b5f2c140c9608668)
+
+### Дальнейшие шаги
+
+После настройки используйте библиотеку следующим образом:
+
+1. Изменяйте конфигурацию в классе `App\Project`
+2. Генерируйте контейнер: `php bin/build.php` или `composer dumpautoload`
+3. Используйте контейнер в приложении: `$container->get(Service::class)`
+
+Готово к использованию!
