@@ -1,26 +1,85 @@
-# Getting started with Cekta/DI
+# Cekta/DI - PSR-11 Container Implementation
+
 [![Telegram chat](https://img.shields.io/badge/telegram-RU%20chat-179cde.svg?logo=telegram)](https://t.me/dev_ru)
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fcekta%2Fdi%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/cekta/di/master)
 [![Latest Stable Version](https://poser.pugx.org/cekta/di/v/stable)](https://packagist.org/packages/cekta/di)
 [![License](https://poser.pugx.org/cekta/di/license)](https://packagist.org/packages/cekta/di)
 
-[psr/container](https://www.php-fig.org/psr/psr-11/) implementation for humans
+A modern, high-performance PSR-11 Container implementation designed for developers who value simplicity and performance.
 
-## Features
+## ✨ Features
 
- * Autowiring support Union Types, Intersection Types, DNF Types, and variadic arguments
- * Supports Autowiring with automatic constructor-based configuration
- * Allows you to manually configure any dependency via closures.
- * Support interface and abstract classes
- * High code quality (see the badges).
- * Supports opcache compilation (fast).
+* 🚀 Zero Runtime Overhead - All dependencies are resolved during compilation, not at runtime
+* ⚡ OPcache Ready - Generated code works perfectly with PHP's opcode cache
+* 🔧 Flexible Configuration - Mix autowiring with explicit configuration
+* 📦 Full PSR-11 Compliance - Implements the standard Container Interface
+* 🔄 Modern PHP Support - Works with Union Types, Intersection Types, DNF Types, and variadic arguments
+* 🧩 Interface & Abstract Class Support - Full dependency injection for abstractions
+* 🎯 High Code Quality - Rigorously tested with mutation testing
 
-## Install via [composer](https://getcomposer.org/)
+## 📦 Installation
 
-```
+```bash
 composer require cekta/di
 ```
 
-[Russian documentation](./docs/readme.md)
+## 🚀 Quick Start
 
-more complex example see in [acceptance test](./tests/AcceptanceBase.php)
+bin/build.php:
+```php
+use Cekta\DI\Compiler;
+
+// Configure your dependencies.
+$compiler = new Compiler(
+    containers: [App\Controller::class],
+    fqcn: 'App\\Runtime\\Container'
+);
+
+// Generate the container
+$code = $compiler->compile();
+file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
+```
+
+app.php:
+```php
+use Cekta\DI\Compiler;
+
+// Use it in your application
+$container = new App\Runtime\Container();
+$controller = $container->get(App\Controller::class);
+```
+
+## 📚 Documentation
+
+* [Getting Started](https://cekta.github.io/di/start.html) - Installation and basic setup
+* [Containers](https://cekta.github.io/di/containers.html) - Defining your application's entry points
+* [Parameters](https://cekta.github.io/di/params.html) - Configuring values and instances
+* [Aliases](https://cekta.github.io/di/alias.html) - Mapping interfaces to implementation
+* [Lifecycle Management](https://cekta.github.io/di/lifecycle.html) - Scoped, Singleton, and Factory dependencies
+* [Priority Resolution](https://cekta.github.io/di/priority.html) - Understanding dependency resolution order
+* [Autoconfiguration](https://cekta.github.io/di/autoconfiguration.html) - Automatically discovering dependencies
+* [Service Locator](https://cekta.github.io/di/service-locato.html) - Using ContainerInterface as a dependency
+* [Argument Resolution](https://cekta.github.io/di/arguments.html) - How arguments become dependency names
+* [Troubleshooting](https://cekta.github.io/di/infinite-recursion.html) - Handling circular dependencies
+
+## 🎯 Why Cekta/DI?
+
+### ✅ Advantages
+
+* **No runtime reflection** - All dependency resolution happens during compilation
+* **Predictable performance** - No dynamic analysis slowing down your application
+* **Easy debugging** - Generated container is plain PHP code you can read and understand
+* **Production ready** - Works seamlessly with OPcache for maximum performance
+
+### 🔧 Use Cases
+* **High-traffic applications** where every millisecond counts
+* **Microservices** requiring fast startup times
+* **CLI applications** with complex dependency graphs
+* **Projects transitioning** from runtime DI containers
+
+## 🤝 Community
+Join the [Telegram chat](https://t.me/dev_ru) for discussions in English or Russian.
+
+---
+
+Cekta/DI - Dependency injection that gets out of your way and lets you focus on building great applications.
