@@ -19,7 +19,6 @@ A modern, high-performance PSR-11 Container implementation designed for develope
 * 🧩 **Interface & Abstract Class Support** - Full dependency injection for abstractions
 * 🎯 **High Code Quality** - Rigorously tested with mutation testing
 * ✅ **Easy debugging** - Generated container is plain PHP code you can read and understand
-* 💡 **Easy debugging** - Generated container is plain PHP code you can read and understand
 
 ## 📦 Installation
 
@@ -63,7 +62,7 @@ $controller = $container->get(App\Controller::class);
 
 ## 📚 Documentation
 
-https://cekta.github.io/di/ [RU]
+https://cekta.github.io/di/
 
 * [Getting Started](https://cekta.github.io/di/start.html) - Installation and basic setup
 * [Containers](https://cekta.github.io/di/containers.html) - Defining your application's entry points

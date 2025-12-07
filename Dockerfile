@@ -6,4 +6,4 @@ RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions xdebug @composer && \
     apk add --update --no-cache make
 WORKDIR /app
-ENTRYPOINT ["make"]
+ENTRYPOINT ["composer"]
