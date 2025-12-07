@@ -6,13 +6,12 @@ services:
       args:
         PHP_VERSION: ${PHP_VERSION:-8.2}
     user: ${UID:-1000}
-    tty: true
     volumes:
       - ./:/app
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     command:
-      - ci
+      - test
 
   pages:
     image: peaceiris/mdbook:latest

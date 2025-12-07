@@ -40,6 +40,19 @@
       "email": "smpl@itmywork.com"
     }
   ],
+  "scripts": {
+    "test": [
+      "@composer update",
+      "@phpcs",
+      "@phpstan",
+      "phpunit",
+      "@infection"
+    ],
+    "phpcs": "./vendor/bin/phpcs",
+    "phpstan": "./vendor/bin/phpstan analyse --memory-limit=-1",
+    "phpunit": "./vendor/bin/phpunit",
+    "infection": "./vendor/bin/infection --show-mutations"
+  },
   "config": {
     "allow-plugins": {
       "infection/extension-installer": true
