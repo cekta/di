@@ -9,13 +9,17 @@ A modern, high-performance PSR-11 Container implementation designed for develope
 
 ## ✨ Features
 
-* 🚀 Zero Runtime Overhead - All dependencies are resolved during compilation, not at runtime
-* ⚡ OPcache Ready - Generated code works perfectly with PHP's opcode cache
-* 🔧 Flexible Configuration - Mix autowiring with explicit configuration
-* 📦 Full PSR-11 Compliance - Implements the standard Container Interface
-* 🔄 Modern PHP Support - Works with Union Types, Intersection Types, DNF Types, and variadic arguments
-* 🧩 Interface & Abstract Class Support - Full dependency injection for abstractions
-* 🎯 High Code Quality - Rigorously tested with mutation testing
+* 🚀 **Zero Runtime Overhead** - All dependencies are resolved during compilation, not at runtime
+  * **No runtime reflection** - All dependency resolution happens during compilation
+  * **Predictable performance** - No dynamic analysis slowing down your application
+* ⚡ **OPcache Ready** - Generated code works perfectly with PHP's opcode cache
+* 🔧 **Flexible Configuration** - Mix autowiring with explicit configuration
+* 📦 **Full PSR-11 Compliance** - Implements the standard Container Interface
+* 🔄 **Modern PHP Support** - Works with Union Types, Intersection Types, DNF Types, and variadic arguments
+* 🧩 **Interface & Abstract Class Support** - Full dependency injection for abstractions
+* 🎯 **High Code Quality** - Rigorously tested with mutation testing
+* ✅ **Easy debugging** - Generated container is plain PHP code you can read and understand
+* 💡 **Easy debugging** - Generated container is plain PHP code you can read and understand
 
 ## 📦 Installation
 
@@ -24,6 +28,14 @@ composer require cekta/di
 ```
 
 ## 🚀 Quick Start
+
+src/Controller.php:
+```php
+namespace App;
+
+class Controller {
+}
+```
 
 bin/build.php:
 ```php
@@ -51,6 +63,8 @@ $controller = $container->get(App\Controller::class);
 
 ## 📚 Documentation
 
+https://cekta.github.io/di/ [RU]
+
 * [Getting Started](https://cekta.github.io/di/start.html) - Installation and basic setup
 * [Containers](https://cekta.github.io/di/containers.html) - Defining your application's entry points
 * [Parameters](https://cekta.github.io/di/params.html) - Configuring values and instances
@@ -58,24 +72,9 @@ $controller = $container->get(App\Controller::class);
 * [Lifecycle Management](https://cekta.github.io/di/lifecycle.html) - Scoped, Singleton, and Factory dependencies
 * [Priority Resolution](https://cekta.github.io/di/priority.html) - Understanding dependency resolution order
 * [Autoconfiguration](https://cekta.github.io/di/autoconfiguration.html) - Automatically discovering dependencies
-* [Service Locator](https://cekta.github.io/di/service-locato.html) - Using ContainerInterface as a dependency
+* [Service Locator](https://cekta.github.io/di/service-locator.html) - Using ContainerInterface as a dependency
 * [Argument Resolution](https://cekta.github.io/di/arguments.html) - How arguments become dependency names
 * [Troubleshooting](https://cekta.github.io/di/infinite-recursion.html) - Handling circular dependencies
-
-## 🎯 Why Cekta/DI?
-
-### ✅ Advantages
-
-* **No runtime reflection** - All dependency resolution happens during compilation
-* **Predictable performance** - No dynamic analysis slowing down your application
-* **Easy debugging** - Generated container is plain PHP code you can read and understand
-* **Production ready** - Works seamlessly with OPcache for maximum performance
-
-### 🔧 Use Cases
-* **High-traffic applications** where every millisecond counts
-* **Microservices** requiring fast startup times
-* **CLI applications** with complex dependency graphs
-* **Projects transitioning** from runtime DI containers
 
 ## 🤝 Community
 Join the [Telegram chat](https://t.me/dev_ru) for discussions in English or Russian.

@@ -9,11 +9,11 @@
 - [containers](./containers.md)
 - [params](./params.md)
 - [alias](./alias.md)
-- [Жизненный цикл (singletons, factories)](lifecycle.md)
+- [Управление жизненным циклом зависимостей](lifecycle.md)
 
 # Продвинутые часть
-- [Порядок загрузки зависимостей](priority.md)
+- [Приоритет загрузки зависимостей](priority.md)
 - [Автоматическая конфигурация зависимостей](autoconfiguration.md)
-- [ContainerInterface для service locator](service-locator.md)
-- [Преобразование аргумент => имя зависимости](arguments.md)
-- [Неразрешимая цепочка зависимостей](infinite-recursion.md)
+- [Service Locator с использованием ContainerInterface](service-locator.md)
+- [Преобразование аргументов в имена зависимостей](arguments.md)
+- [Обнаружение бесконечной рекурсии зависимостей](infinite-recursion.md)
