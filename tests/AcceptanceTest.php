@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
+use Cekta\DI\Compiler;
+use Cekta\DI\Exception\InfiniteRecursion;
+use Cekta\DI\Exception\InvalidContainerForCompile;
 use Cekta\DI\Exception\NotFound;
+use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\LazyClosure;
 use Cekta\DI\Test\AcceptanceTest\A;
+use Cekta\DI\Test\AcceptanceTest\CircularDependency;
 use Cekta\DI\Test\AcceptanceTest\ContainerCreatedWithNew;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
+use Cekta\DI\Test\AcceptanceTest\EntrypointCircularDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointVariadicClass;
 use Cekta\DI\Test\AcceptanceTest\I;
 use Cekta\DI\Test\AcceptanceTest\R1;
 use Cekta\DI\Test\AcceptanceTest\S;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
 
-abstract class AcceptanceBase extends TestCase
+class AcceptanceTest extends TestCase
 {
+    private bool $is_compiled = false;
     protected ContainerInterface $container;
 
     /**
@@ -77,10 +85,18 @@ abstract class AcceptanceBase extends TestCase
             })
         ];
 
-        $this->container = $this->makeContainer();
-    }
+        if (!$this->is_compiled) {
+            $compiler = new Compiler(
+                containers: $this->containers,
+                params: $this->params,
+                alias: $this->alias,
+                fqcn: $this->fqcn,
+            );
+            file_put_contents($this->file, $compiler->compile());
+        }
 
-    abstract protected function makeContainer(): ContainerInterface;
+        $this->container = new ($this->fqcn)($this->params);
+    }
 
     protected function tearDown(): void
     {
@@ -257,8 +273,13 @@ abstract class AcceptanceBase extends TestCase
         );
     }
 
-    public function testOverwrittenExtendConstructor()
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testOverwrittenExtendConstructor(): void
     {
+        /** @var EntrypointOverwriteExtendConstructor $obj */
         $obj = $this->container->get(EntrypointOverwriteExtendConstructor::class);
         $this->assertSame(
             $this->params[EntrypointOverwriteExtendConstructor::class . '$username'],
@@ -274,5 +295,47 @@ abstract class AcceptanceBase extends TestCase
     {
         $this->expectException(NotFoundExceptionInterface::class);
         $this->container->get(ContainerCreatedWithNew::class);
+    }
+
+    public function testWithoutRequiredParams(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Containers: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
+                'username',
+                'password',
+                S::class . '|string',
+                'dsn',
+                'argument_to_custom_param',
+                'argument_to_custom_alias_value',
+                EntrypointSharedDependency::class . '$argument_to_custom_param',
+                'argument_to_custom_alias_custom_value',
+                '...' . EntrypointSharedDependency::class . '$variadic_int',
+                '...variadic_int',
+                '...' . A::class,
+                EntrypointOverwriteExtendConstructor::class . '$username',
+            )
+        );
+        new ($this->fqcn)([]);
+    }
+
+    /**
+     * @throws InvalidContainerForCompile
+     * @throws NotInstantiable
+     */
+    public function testInfiniteRecursion(): void
+    {
+        $this->expectException(InfiniteRecursion::class);
+        $this->expectExceptionMessage(
+            sprintf(
+                'Infinite recursion detected for `%s`, stack: %s, %s',
+                EntrypointCircularDependency::class,
+                EntrypointCircularDependency::class,
+                CircularDependency::class
+            )
+        );
+
+        (new Compiler(containers: [EntrypointCircularDependency::class]))->compile();
     }
 }

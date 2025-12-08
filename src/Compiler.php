@@ -50,12 +50,12 @@ class Compiler
      * @param array<string> $factories
      */
     public function __construct(
-        private array $containers = [],
-        private array $params = [],
-        private array $alias = [],
-        private string $fqcn = 'App\Container',
-        private array $singletons = [],
-        private array $factories = [],
+        private readonly array $containers = [],
+        private readonly array $params = [],
+        private readonly array $alias = [],
+        private readonly string $fqcn = 'App\Container',
+        private readonly array $singletons = [],
+        private readonly array $factories = [],
     ) {
         $this->reflection_service = new ReflectionService($this->params, $this->alias);
     }
@@ -75,8 +75,8 @@ class Compiler
         $fqcn = new FQCN($this->fqcn);
         $template = new Template(__DIR__ . '/../template/container.compiler.php');
         return $template->render([
-            'namespace' => $fqcn->getNamespace(),
-            'class' => $fqcn->getClass(),
+            'namespace' => $fqcn->namespace,
+            'class' => $fqcn->className,
             'targets' => $this->containers,
             'dependencies' => $dependencies,
             'alias' => $this->alias,
