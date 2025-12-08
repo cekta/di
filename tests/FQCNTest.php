@@ -13,7 +13,7 @@ class FQCNTest extends TestCase
     public function testWithoutNamespace(): void
     {
         $obj = new FQCN('stdClass');
-        $this->assertSame(stdClass::class, $obj->getClass());
-        $this->assertSame('', $obj->getNamespace());
+        $this->assertSame(stdClass::class, $obj->className);
+        $this->assertSame('', $obj->namespace);
     }
 }
