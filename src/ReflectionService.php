@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\NotFoundOnCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionClass;
 use ReflectionException;
@@ -26,9 +26,9 @@ class ReflectionService
     /**
      * @param string $container_name
      * @param array<string> $stack
-     * @return array<DependencyDTO>
+     * @return array<Dependency>
      *
-     * @throws InvalidContainerForCompile
+     * @throws NotFoundOnCompile
      * @throws NotInstantiable
      */
     public function getDependencies(string $container_name, array $stack): array
@@ -36,8 +36,8 @@ class ReflectionService
         try {
             // @phpstan-ignore argument.type
             $reflection = new ReflectionClass($container_name);
-        } catch (ReflectionException $exception) {
-            throw new InvalidContainerForCompile($container_name, $stack, $exception);
+        } catch (ReflectionException) {
+            throw new NotFoundOnCompile($container_name, $stack);
         }
 
         if (!$reflection->isInstantiable()) {
@@ -55,7 +55,7 @@ class ReflectionService
         return $parameters;
     }
 
-    private function makeDependencyDTO(string $class, ReflectionParameter $parameter): DependencyDTO
+    private function makeDependencyDTO(string $class, ReflectionParameter $parameter): Dependency
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
         $type = $parameter->getType();
@@ -70,7 +70,7 @@ class ReflectionService
         } else {
             $dependency_name = $prefix . $type;
         }
-        return new DependencyDTO(
+        return new Dependency(
             name: $dependency_name,
             variadic: $parameter->isVariadic()
         );

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-class DependencyDTO
+/**
+ * @internal not for public usage
+ */
+class Dependency
 {
     public function __construct(
         private string $name,

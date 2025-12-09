@@ -18,7 +18,7 @@
     "phpunit/phpunit": "@stable",
     "squizlabs/php_codesniffer": "@stable",
     "phpstan/phpstan": "@stable",
-    "infection/infection": "@stable"
+    "infection/infection": "@dev"
   },
   "autoload": {
     "psr-4": {
