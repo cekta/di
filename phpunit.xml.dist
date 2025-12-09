@@ -8,18 +8,10 @@
         </testsuite>
     </testsuites>
     
-<!--    code coverage for new version phpunit-->
-<!--    <source>-->
-<!--        <include>-->
-<!--            <directory>./src</directory>-->
-<!--        </include>-->
-<!--    </source>-->
-
-<!--    code coverage for phpunit 9.x-->
-<!--    <coverage>-->
-<!--        <include>-->
-<!--            <directory suffix=".php">src</directory>-->
-<!--        </include>-->
-<!--    </coverage>-->
+    <source>
+        <include>
+            <directory>./src</directory>
+        </include>
+    </source>
 
 </phpunit>

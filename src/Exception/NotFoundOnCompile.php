@@ -5,20 +5,22 @@ declare(strict_types=1);
 namespace Cekta\DI\Exception;
 
 use RuntimeException;
+use Throwable;
 
-class InfiniteRecursion extends RuntimeException
+class NotFoundOnCompile extends RuntimeException
 {
     /**
      * @param string $container
-     * @param string[] $stack
+     * @param array<string> $stack
      */
     public function __construct(string $container, array $stack)
     {
         parent::__construct(
-            sprintf(
-                "Infinite recursion detected for `$container`, stack: %s",
+            message: sprintf(
+                '`%s` not found on compile, stack: %s',
+                $container,
                 implode(', ', $stack)
-            )
+            ),
         );
     }
 }

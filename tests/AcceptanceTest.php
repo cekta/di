@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\CircularDependency as CircularDependencyException;
 use Cekta\DI\Exception\NotFound;
-use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\LazyClosure;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\CircularDependency;
@@ -320,16 +318,12 @@ class AcceptanceTest extends TestCase
         new ($this->fqcn)([]);
     }
 
-    /**
-     * @throws InvalidContainerForCompile
-     * @throws NotInstantiable
-     */
     public function testInfiniteRecursion(): void
     {
-        $this->expectException(InfiniteRecursion::class);
+        $this->expectException(CircularDependencyException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Infinite recursion detected for `%s`, stack: %s, %s',
+                '`%s` has circular dependency, stack: %s, %s',
                 EntrypointCircularDependency::class,
                 EntrypointCircularDependency::class,
                 CircularDependency::class

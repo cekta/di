@@ -6,17 +6,17 @@ namespace Cekta\DI\Exception;
 
 use RuntimeException;
 
-class NotInstantiable extends RuntimeException
+class CircularDependency extends RuntimeException
 {
     /**
      * @param string $container
-     * @param array<string> $stack
+     * @param string[] $stack
      */
     public function __construct(string $container, array $stack)
     {
         parent::__construct(
             sprintf(
-                "`$container` not instantiable, stack: %s",
+                "`$container` has circular dependency, stack: %s",
                 implode(', ', $stack)
             )
         );

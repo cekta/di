@@ -4,42 +4,17 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\InfiniteRecursion;
-use Cekta\DI\Exception\InvalidContainerForCompile;
+use Cekta\DI\Exception\CircularDependency;
 use Cekta\DI\Exception\NotInstantiable;
 
 /**
  * @external
+ * maybe rename to Configuration ?
  */
 class Compiler
 {
-    /**
-     * @var array<string>
-     */
-    private array $shared = [];
-
-    /**
-     * @var array<string>
-     */
-    private array $build_stack = [];
-    /**
-     * @var array<string>
-     */
-    private array $stack = [];
-    /**
-     * @var array<string, DependencyDTO[]>
-     */
-    private array $dependenciesMap = [];
-    /**
-     * @var array<string>
-     */
-    private array $required_keys = [];
-
-    private ReflectionService $reflection_service;
-    /**
-     * @var string[]
-     */
-    private array $used_alias = [];
+    private InternalCompiler $internal_compiler;
+    private Template $template;
 
     /**
      * @param array<string> $containers
@@ -50,116 +25,36 @@ class Compiler
      * @param array<string> $factories
      */
     public function __construct(
-        private readonly array $containers = [],
-        private readonly array $params = [],
-        private readonly array $alias = [],
-        private readonly string $fqcn = 'App\Container',
-        private readonly array $singletons = [],
-        private readonly array $factories = [],
+        public readonly array $containers = [],
+        public readonly array $params = [],
+        public readonly array $alias = [],
+        public readonly string $fqcn = 'App\Container',
+        public readonly array $singletons = [],
+        public readonly array $factories = [],
     ) {
-        $this->reflection_service = new ReflectionService($this->params, $this->alias);
+        $this->internal_compiler = new InternalCompiler();
+        $this->template = new Template(__DIR__ . '/../template/container.compiler.php');
     }
 
     /**
+     * toString() ?
      * @return string
-     * @throws InfiniteRecursion
+     * @throws CircularDependency
      * @throws NotInstantiable
      */
     public function compile(): string
     {
-        $this->generateMap(array_map(fn(string $name) => new DependencyDTO($name), $this->containers));
-        $dependencies = [];
-        foreach (array_merge($this->containers, $this->shared, $this->used_alias) as $target) {
-            $dependencies[$target] = $this->buildDependency($target);
-        }
+        [$dependencies, $required_keys] = ($this->internal_compiler)($this);
         $fqcn = new FQCN($this->fqcn);
-        $template = new Template(__DIR__ . '/../template/container.compiler.php');
-        return $template->render([
+        return $this->template->render([
             'namespace' => $fqcn->namespace,
             'class' => $fqcn->className,
             'targets' => $this->containers,
             'dependencies' => $dependencies,
             'alias' => $this->alias,
-            'required_keys' => array_unique($this->required_keys),
+            'required_keys' => $required_keys,
             'singletons' => $this->singletons,
             'factories' => $this->factories,
         ]);
-    }
-
-    /**
-     * @param DependencyDTO[] $containers
-     * @throws NotInstantiable
-     * @throws InfiniteRecursion
-     * @throws InvalidContainerForCompile
-     */
-    private function generateMap(array $containers): void
-    {
-        foreach ($containers as $container) {
-            if (in_array($container->getName(), $this->stack)) {
-                throw new InfiniteRecursion($container->getName(), $this->stack);
-            }
-            $this->stack[] = $container->getName();
-
-            if (array_key_exists($container->getName(), $this->params)) {
-                $this->required_keys[] = $container->getName();
-                array_pop($this->stack);
-                continue;
-            }
-            if (array_key_exists($container->getName(), $this->alias)) {
-                $this->used_alias[] = $container->getName();
-                $this->used_alias[] = $this->alias[$container->getName()];
-                $container = new DependencyDTO($this->alias[$container->getName()], $container->isVariadic());
-            }
-            if (array_key_exists($container->getName(), $this->params)) {
-                $this->required_keys[] = $container->getName();
-                array_pop($this->stack);
-                continue;
-            }
-            if (in_array($container->getName(), $this->shared)) {
-                array_pop($this->stack);
-                continue;
-            }
-            if (array_key_exists($container->getName(), $this->dependenciesMap)) {
-                $this->shared[] = $container->getName();
-                array_pop($this->stack);
-                continue;
-            }
-            if (
-                in_array($container->getName(), $this->singletons)
-                || in_array($container->getName(), $this->factories)
-            ) {
-                $this->shared[] = $container->getName();
-            }
-
-            $this->dependenciesMap[$container->getName()] = $this->reflection_service->getDependencies(
-                $container->getName(),
-                $this->stack
-            );
-            $this->generateMap($this->dependenciesMap[$container->getName()]);
-            array_pop($this->stack);
-        }
-    }
-
-    private function buildDependency(string $target): string
-    {
-        if (
-            (in_array($target, $this->shared) && count($this->build_stack) !== 0)
-            || array_key_exists($target, $this->alias)
-            || array_key_exists($target, $this->params)
-        ) {
-            return "\$this->get('$target')";
-        }
-        $this->build_stack[] = $target;
-        $container = "new \\$target(";
-        if (array_key_exists($target, $this->dependenciesMap)) {
-            foreach ($this->dependenciesMap[$target] as $dependency) {
-                $name = $dependency->getName();
-                $variadic = $dependency->isVariadic() === true ? '...' : '';
-                $container .= "$variadic{$this->buildDependency($name)}, ";
-            }
-        }
-        $container .= ')';
-        array_pop($this->build_stack);
-        return $container;
     }
 }
