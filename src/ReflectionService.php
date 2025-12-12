@@ -72,7 +72,7 @@ class ReflectionService
         }
         return new Dependency(
             name: $dependency_name,
-            variadic: $parameter->isVariadic()
+            parameter: $parameter,
         );
     }
 }

@@ -40,17 +40,22 @@ class InternalCompiler
      * @var string[]
      */
     private array $used_alias = [];
-    private Compiler $config;
+    private Configuration $config;
 
     /**
-     * @param Compiler $config
+     * @param Configuration $config
      * @return array<string[], string[]>
      */
-    public function __invoke(Compiler $config): array
+    public function __invoke(Configuration $config): array
     {
         $this->config = $config;
         $this->reflection_service = new ReflectionService($this->config->params, $this->config->alias);
-        $this->generateMap(array_map(fn(string $name) => new Dependency($name), $this->config->containers));
+        foreach ($this->config->containers as $container) {
+            $this->stack[] = $container;
+            $this->dependenciesMap[$container] = $this->reflection_service->getDependencies($container, $this->stack);
+            $this->generateMap($this->dependenciesMap[$container]);
+            array_pop($this->stack);
+        }
         $dependencies = [];
         foreach (array_merge($this->config->containers, $this->shared, $this->used_alias) as $target) {
             $dependencies[$target] = $this->buildDependency($target);
@@ -66,48 +71,59 @@ class InternalCompiler
      */
     private function generateMap(array $containers): void
     {
-        foreach ($containers as $container) {
-            if (in_array($container->getName(), $this->stack)) {
-                throw new CircularDependency($container->getName(), $this->stack);
+        foreach ($containers as $dependency) {
+            if (in_array($dependency->name, $this->stack)) {
+                throw new CircularDependency($dependency->name, $this->stack);
             }
-            $this->stack[] = $container->getName();
+            $this->stack[] = $dependency->name;
 
-            if (array_key_exists($container->getName(), $this->config->params)) {
-                $this->required_keys[] = $container->getName();
+            if (array_key_exists($dependency->name, $this->config->params)) {
+                $this->required_keys[] = $dependency->name;
                 array_pop($this->stack);
                 continue;
             }
-            if (array_key_exists($container->getName(), $this->config->alias)) {
-                $this->used_alias[] = $container->getName();
-                $this->used_alias[] = $this->config->alias[$container->getName()];
-                $container = new Dependency($this->config->alias[$container->getName()], $container->isVariadic());
+            if (array_key_exists($dependency->name, $this->config->alias)) {
+                $this->used_alias[] = $dependency->name;
+                $this->used_alias[] = $this->config->alias[$dependency->name];
+                $dependency = new Dependency(
+                    name: $this->config->alias[$dependency->name],
+                    parameter: $dependency->parameter
+                );
             }
-            if (array_key_exists($container->getName(), $this->config->params)) {
-                $this->required_keys[] = $container->getName();
+            if (array_key_exists($dependency->name, $this->config->params)) {
+                $this->required_keys[] = $dependency->name;
                 array_pop($this->stack);
                 continue;
             }
-            if (in_array($container->getName(), $this->shared)) {
+            if (in_array($dependency->name, $this->shared)) {
                 array_pop($this->stack);
                 continue;
             }
-            if (array_key_exists($container->getName(), $this->dependenciesMap)) {
-                $this->shared[] = $container->getName();
+            if (array_key_exists($dependency->name, $this->dependenciesMap)) {
+                $this->shared[] = $dependency->name;
                 array_pop($this->stack);
                 continue;
             }
             if (
-                in_array($container->getName(), $this->config->singletons)
-                || in_array($container->getName(), $this->config->factories)
+                in_array($dependency->name, $this->config->singletons)
+                || in_array($dependency->name, $this->config->factories)
             ) {
-                $this->shared[] = $container->getName();
+                $this->shared[] = $dependency->name;
             }
 
-            $this->dependenciesMap[$container->getName()] = $this->reflection_service->getDependencies(
-                $container->getName(),
+            if (
+                $dependency->parameter->isOptional()
+                && !array_key_exists($dependency->name, $this->config->alias)
+            ) {
+                array_pop($this->stack);
+                continue;
+            }
+
+            $this->dependenciesMap[$dependency->name] = $this->reflection_service->getDependencies(
+                $dependency->name,
                 $this->stack
             );
-            $this->generateMap($this->dependenciesMap[$container->getName()]);
+            $this->generateMap($this->dependenciesMap[$dependency->name]);
             array_pop($this->stack);
         }
     }
@@ -122,15 +138,27 @@ class InternalCompiler
             return "\$this->get('$target')";
         }
         $this->build_stack[] = $target;
-        $container = "new \\$target(";
+
+        $args = '...[';
+        $variadic = '';
         if (array_key_exists($target, $this->dependenciesMap)) {
             foreach ($this->dependenciesMap[$target] as $dependency) {
-                $name = $dependency->getName();
-                $variadic = $dependency->isVariadic() === true ? '...' : '';
-                $container .= "$variadic{$this->buildDependency($name)}, ";
+                if (
+                    $dependency->parameter->isOptional()
+                    && !array_key_exists($dependency->name, $this->config->params)
+                    && !array_key_exists($dependency->name, $this->config->alias)
+                ) {
+                    continue;
+                }
+                if ($dependency->parameter->isVariadic()) {
+                    $variadic = "...{$this->buildDependency($dependency->name)}";
+                } else {
+                    $args .= "'{$dependency->parameter->getName()}' => {$this->buildDependency($dependency->name)}, ";
+                }
             }
         }
-        $container .= ')';
+        $args .= ']';
+        $container = "new \\$target($args, $variadic)";
         array_pop($this->build_stack);
         return $container;
     }

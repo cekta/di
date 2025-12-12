@@ -47,7 +47,7 @@ $std_alias_custom->name = 'alias custom';
 $std_alias = new \stdClass();
 $std_alias->name = 'alias';
 
-new \Cekta\DI\Compiler(
+new \Cekta\DI\Configuration(
     containers: [Example::class],
     params: [
         Example::class . '$std_class' => $std_param_custom, // Приоритет 1

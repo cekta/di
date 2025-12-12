@@ -61,7 +61,7 @@ class ServiceLocator
 ### Шаг 1: Конфигурация компилятора
 
 ```php
-new \Cekta\DI\Compiler(
+new \Cekta\DI\Configuration(
     containers: [
         ServiceLocator::class,
     ],

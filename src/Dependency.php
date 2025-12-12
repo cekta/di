@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use ReflectionParameter;
+
 /**
  * @internal not for public usage
  */
-class Dependency
+readonly class Dependency
 {
     public function __construct(
-        private string $name,
-        private bool $variadic = false
+        public string $name,
+        public ReflectionParameter $parameter,
     ) {
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function isVariadic(): bool
-    {
-        return $this->variadic;
     }
 }

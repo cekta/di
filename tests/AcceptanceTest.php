@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Compiler;
+use Cekta\DI\Configuration;
 use Cekta\DI\Exception\CircularDependency as CircularDependencyException;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\LazyClosure;
@@ -13,13 +13,16 @@ use Cekta\DI\Test\AcceptanceTest\CircularDependency;
 use Cekta\DI\Test\AcceptanceTest\ContainerCreatedWithNew;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
 use Cekta\DI\Test\AcceptanceTest\EntrypointCircularDependency;
+use Cekta\DI\Test\AcceptanceTest\EntrypointOptionalArgument;
 use Cekta\DI\Test\AcceptanceTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointVariadicClass;
 use Cekta\DI\Test\AcceptanceTest\I;
 use Cekta\DI\Test\AcceptanceTest\R1;
 use Cekta\DI\Test\AcceptanceTest\S;
+use Cekta\DI\Test\AcceptanceTest\SWithParam;
 use InvalidArgumentException;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -57,6 +60,7 @@ class AcceptanceTest extends TestCase
         EntrypointSharedDependency::class,
         EntrypointVariadicClass::class,
         EntrypointOverwriteExtendConstructor::class,
+        EntrypointOptionalArgument::class,
     ];
 
     protected function setUp(): void
@@ -84,7 +88,7 @@ class AcceptanceTest extends TestCase
         ];
 
         if (!$this->is_compiled) {
-            $compiler = new Compiler(
+            $compiler = new Configuration(
                 containers: $this->containers,
                 params: $this->params,
                 alias: $this->alias,
@@ -108,10 +112,10 @@ class AcceptanceTest extends TestCase
     public function testAllContainersMustBeAvailableAndGettable(): void
     {
         foreach ($this->containers as $key) {
-            $this->assertTrue($this->container->has($key), 'available for get');
-            $this->assertNotEmpty($this->container->get($key), 'all containers must be gettable');
+            Assert::assertTrue($this->container->has($key), 'available for get');
+            Assert::assertNotEmpty($this->container->get($key), 'all containers must be gettable');
         }
-        $this->assertFalse($this->container->has('invalid name'));
+        Assert::assertFalse($this->container->has('invalid name'));
     }
 
     /**
@@ -134,74 +138,74 @@ class AcceptanceTest extends TestCase
     {
         /** @var EntrypointAutowiring $autowiring */
         $autowiring = $this->container->get(EntrypointAutowiring::class);
-        $this->assertInstanceOf(EntrypointAutowiring::class, $autowiring);
-        $this->assertSame(
+        Assert::assertInstanceOf(EntrypointAutowiring::class, $autowiring);
+        Assert::assertSame(
             $this->params['username'],
             $autowiring->username,
             'string(primitive) params must be inject'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['password'],
             $autowiring->password,
             'string(primitive) params must be inject'
         );
 
-        $this->assertInstanceOf(
+        Assert::assertInstanceOf(
             ContainerCreatedWithNew::class,
             $autowiring->created_with_new,
             'autowiring dependency must be correct'
         );
-        $this->assertInstanceOf(
+        Assert::assertInstanceOf(
             R1::class,
             $autowiring->i,
             'alias for interface must be correct resolved'
         );
-        $this->assertInstanceOf(
+        Assert::assertInstanceOf(
             S::class,
             $autowiring->s,
             'autowiring first dependency',
         );
-        $this->assertSame(
+        Assert::assertSame(
             $autowiring->s,
             $autowiring->s2,
             'must be auto shared between one entrypoint'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $autowiring->s,
             $autowiring->s3,
             'must be called array_pop on shared',
         );
-        $this->assertSame(
+        Assert::assertSame(
             $autowiring->s,
             $autowiring->s4,
             'must be called array_pop on everytime',
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params[S::class . '|string'],
             $autowiring->union_type,
             'union|dfn params must work'
         );
-        $this->assertSame(
+        Assert::assertSame(
             'definition u: some username, p: some password',
             $autowiring->dsn,
             'lazy loading params must be correct inject'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['argument_to_custom_param'],
             $autowiring->argument_to_custom_param,
             'must default value from param, no custom param'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['argument_to_custom_alias_value'],
             $autowiring->argument_to_custom_alias,
             'must default alias, no custom alias'
         );
-        $this->assertInstanceOf(
+        Assert::assertInstanceOf(
             EntrypointSharedDependency::class,
             $autowiring->exampleShared,
             'other entrypoint must be correct inject'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['...variadic_int'],
             $autowiring->variadic_int,
             'variadic params must be inject'
@@ -212,34 +216,74 @@ class AcceptanceTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
+    public function testOptionalArgument(): void
+    {
+        $obj = $this->container->get(EntrypointOptionalArgument::class);
+        Assert::assertInstanceOf(EntrypointOptionalArgument::class, $obj);
+        Assert::assertInstanceOf(I::class, $obj->i);
+        Assert::assertSame('default value', $obj->string_default);
+        Assert::assertInstanceOf(SWithParam::class, $obj->s);
+        Assert::assertSame('default param', $obj->s->name);
+        Assert::assertSame('other value', $obj->must_continue_not_break);
+    }
+
+    public function testOptionalArgumentOverwrite(): void
+    {
+        $params = [
+            'string_default' => 'overwritten value',
+        ];
+        $compiler = new Configuration(
+            containers: [
+                EntrypointOptionalArgument::class,
+            ],
+            params: $params,
+            alias: [
+                I::class => R1::class,
+            ],
+            fqcn: 'Cekta\DI\Test\AcceptanceTest\ContainerOptionalArgumentOverwrite',
+        );
+        $filename = __DIR__ . '/AcceptanceTest/ContainerOptionalArgumentOverwrite.php';
+        file_put_contents($filename, $compiler->compile());
+        /** @var ContainerInterface $container */
+        $container = new ('Cekta\DI\Test\AcceptanceTest\ContainerOptionalArgumentOverwrite')($params);
+        $obj = $container->get(EntrypointOptionalArgument::class);
+        Assert::assertInstanceOf(EntrypointOptionalArgument::class, $obj);
+        Assert::assertSame('other value', $obj->must_continue_not_break);
+        unlink($filename);
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testAuthShareDependencyBetweenEntrypoint(): void
     {
         /** @var EntrypointSharedDependency $entrypoint_shared */
         $entrypoint_shared = $this->container->get(EntrypointSharedDependency::class);
-        $this->assertInstanceOf(EntrypointSharedDependency::class, $entrypoint_shared);
+        Assert::assertInstanceOf(EntrypointSharedDependency::class, $entrypoint_shared);
         /** @var EntrypointAutowiring $autowiring */
         $autowiring = $this->container->get(EntrypointAutowiring::class);
-        $this->assertSame(
+        Assert::assertSame(
             $entrypoint_shared->s,
             $autowiring->s,
             'dependency between few entrypoint must be auto shared (same)'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params[EntrypointSharedDependency::class . '$argument_to_custom_param'],
             $entrypoint_shared->argument_to_custom_param,
             'must be set custom param only for this class'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['argument_to_custom_alias_custom_value'],
             $entrypoint_shared->argument_to_custom_alias,
             'must be used custom alias only for this class'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['argument_to_custom_alias_custom_value'],
             $entrypoint_shared->argument_to_custom_alias2,
             'after alias must be correct detect param with array_pop stack'
         );
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['...' . EntrypointSharedDependency::class . '$variadic_int'],
             $entrypoint_shared->variadic_int
         );
@@ -253,7 +297,7 @@ class AcceptanceTest extends TestCase
     {
         /** @var stdClass $obj */
         $obj = $this->container->get(stdClass::class);
-        $this->assertInstanceOf(stdClass::class, $obj);
+        Assert::assertInstanceOf(stdClass::class, $obj);
     }
 
     /**
@@ -264,7 +308,7 @@ class AcceptanceTest extends TestCase
     {
         /** @var EntrypointVariadicClass $obj */
         $obj = $this->container->get(EntrypointVariadicClass::class);
-        $this->assertSame(
+        Assert::assertSame(
             $this->params['...' . A::class],
             $obj->a_array,
             'variadic params without primitive must be correct injected'
@@ -279,7 +323,7 @@ class AcceptanceTest extends TestCase
     {
         /** @var EntrypointOverwriteExtendConstructor $obj */
         $obj = $this->container->get(EntrypointOverwriteExtendConstructor::class);
-        $this->assertSame(
+        Assert::assertSame(
             $this->params[EntrypointOverwriteExtendConstructor::class . '$username'],
             $obj->username,
             'value from base constructor must be overwritten by custom rule '
@@ -330,6 +374,6 @@ class AcceptanceTest extends TestCase
             )
         );
 
-        (new Compiler(containers: [EntrypointCircularDependency::class]))->compile();
+        (new Configuration(containers: [EntrypointCircularDependency::class]))->compile();
     }
 }

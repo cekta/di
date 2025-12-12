@@ -81,7 +81,7 @@ class C
 #### Конфигурация:
 
 ```php
-new \Cekta\DI\Compiler(
+new \Cekta\DI\Configuration(
     containers: [\App\Example::class],
     // params и alias не указаны - работает autowiring
 )->compile();

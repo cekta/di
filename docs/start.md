@@ -57,7 +57,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use Cekta\DI\Compiler;
+use Cekta\DI\Configuration;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 
@@ -81,7 +81,7 @@ class Project
 
     public function compile(): void
     {
-        $content = (new Compiler(
+        $content = (new Configuration(
             containers: [Example::class],
             params: $this->params(),
             fqcn: $this->container_fqcn,
