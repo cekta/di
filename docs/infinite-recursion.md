@@ -35,7 +35,7 @@ class B {
     public function __construct(public A $a) {}
 }
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [A::class],
 )->compile();
 ```

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 use Cekta\DI\Exception\NotFoundOnCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\CompilerTest\Example;
@@ -16,7 +16,7 @@ class CompilerTest extends TestCase
 {
     public function testCompileWithoutNamespace(): void
     {
-        $compiler = new Configuration(fqcn: 'Container');
+        $compiler = new Compiler(fqcn: 'Container');
         $code = $compiler->compile();
         Assert::assertNotEmpty($code);
         Assert::assertStringNotContainsString('namespace', $code);
@@ -28,7 +28,7 @@ class CompilerTest extends TestCase
         $this->expectException(NotInstantiable::class);
         $this->expectExceptionMessage("`$name` not instantiable");
 
-        (new Configuration(
+        (new Compiler(
             containers: [
                 Example::class
             ],
@@ -41,6 +41,6 @@ class CompilerTest extends TestCase
         $this->expectException(NotFoundOnCompile::class);
         $this->expectExceptionMessage("`$container` not found on compile, stack: $container");
 
-        (new Configuration(containers: [$container]))->compile();
+        (new Compiler(containers: [$container]))->compile();
     }
 }

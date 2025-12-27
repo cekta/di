@@ -112,7 +112,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 
 // Интерфейс-маркер для автоматического добавления
 interface MarkerForContainer {}
@@ -131,7 +131,7 @@ $discover->containerImplement(MarkerForContainer::class);
 $containers = $discover->loadContainers();
 
 // Генерируем контейнер
-$code = (new Configuration(
+$code = (new Compiler(
     containers: $containers,
     fqcn: 'App\\Runtime\\Container',
 ))->compile();

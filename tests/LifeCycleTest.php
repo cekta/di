@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 use Cekta\DI\LazyClosure;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
@@ -53,13 +53,16 @@ class LifeCycleTest extends TestCase
                 return $index++;
             }),
         ];
-        $compiler = new Configuration(
+        $compiler = new Compiler(
             containers: [
                 stdClass::class,
                 SingletonSubContainer::class,
                 FactorySubContainer::class,
                 Singleton::class,
                 Factory::class,
+                self::SCOPED_ALIAS,
+                self::SINGLETON_ALIAS,
+                self::FACTORY_ALIAS,
             ],
             params: $params,
             alias: [

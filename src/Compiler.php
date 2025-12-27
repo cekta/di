@@ -4,11 +4,40 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use JetBrains\PhpStorm\Deprecated;
+use Cekta\DI\Exception\CircularDependency;
+use Cekta\DI\Exception\NotInstantiable;
 
 /**
- * @deprecated use Configuration::class, only for backward compatability in v2.X
+ * @external
  */
-class Compiler extends Configuration
+readonly class Compiler
 {
+    public FQCN $fqcn;
+    /**
+     * @param array<string> $containers
+     * @param array<string, mixed|Lazy> $params
+     * @param array<string, string> $alias
+     * @param string $fqcn
+     * @param array<string> $singletons
+     * @param array<string> $factories
+     */
+    public function __construct(
+        public array $containers = [],
+        public array $params = [],
+        public array $alias = [],
+        string $fqcn = 'App\Container',
+        public array $singletons = [],
+        public array $factories = [],
+    ) {
+        $this->fqcn = new FQCN($fqcn);
+    }
+
+    /**
+     * @return string
+     */
+    public function compile(): string
+    {
+        $internal_compiler = new InternalCompiler();
+        return $internal_compiler->generate($this);
+    }
 }

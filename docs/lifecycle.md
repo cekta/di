@@ -39,7 +39,7 @@ class Scoped {}
 class Singleton {}
 class Factory {}
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [
         Scoped::class,
         Singleton::class,
@@ -120,7 +120,7 @@ Factory:
 
 ```php
 <?php
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [
         HttpController::class,
         UserRepository::class,

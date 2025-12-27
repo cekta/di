@@ -32,7 +32,7 @@ class Base {}
 class E1 extends Base {}
 class E2 extends Base {}
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class],
     alias: [
         I::class => R2::class,      // Для I используем R2
@@ -91,7 +91,7 @@ interface I {}
 class R1 implements I {}
 class R2 implements I {}
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class],
     alias: [
         I::class => R2::class,                     // По умолчанию для I используем R2
@@ -180,7 +180,7 @@ alias: [
 ### Пример комплексного использования:
 
 ```php
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Controller::class],
     alias: [
         RepositoryInterface::class => DatabaseRepository::class,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 use Cekta\DI\Exception\CircularDependency as CircularDependencyException;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\LazyClosure;
@@ -48,7 +48,7 @@ class AcceptanceTest extends TestCase
         EntrypointSharedDependency::class . '$argument_to_custom_alias2' => 'argument_to_custom_alias_custom_value',
     ];
 
-    protected string $file = __DIR__ . '/AcceptanceTest/Container.php';
+    protected static string $file = __DIR__ . '/AcceptanceTest/Container.php';
     protected string $fqcn = 'Cekta\DI\Test\AcceptanceTest\Container';
 
     /**
@@ -62,6 +62,11 @@ class AcceptanceTest extends TestCase
         EntrypointOverwriteExtendConstructor::class,
         EntrypointOptionalArgument::class,
     ];
+
+    public static function setUpBeforeClass(): void
+    {
+        file_exists(static::$file) && unlink(static::$file);
+    }
 
     protected function setUp(): void
     {
@@ -88,13 +93,13 @@ class AcceptanceTest extends TestCase
         ];
 
         if (!$this->is_compiled) {
-            $compiler = new Configuration(
+            $compiler = new Compiler(
                 containers: $this->containers,
                 params: $this->params,
                 alias: $this->alias,
                 fqcn: $this->fqcn,
             );
-            file_put_contents($this->file, $compiler->compile());
+            file_put_contents(static::$file, $compiler->compile());
         }
 
         $this->container = new ($this->fqcn)($this->params);
@@ -102,7 +107,7 @@ class AcceptanceTest extends TestCase
 
     protected function tearDown(): void
     {
-        unlink($this->file);
+        unlink(static::$file);
     }
 
     /**
@@ -232,7 +237,7 @@ class AcceptanceTest extends TestCase
         $params = [
             'string_default' => 'overwritten value',
         ];
-        $compiler = new Configuration(
+        $compiler = new Compiler(
             containers: [
                 EntrypointOptionalArgument::class,
             ],
@@ -374,6 +379,6 @@ class AcceptanceTest extends TestCase
             )
         );
 
-        (new Configuration(containers: [EntrypointCircularDependency::class]))->compile();
+        (new Compiler(containers: [EntrypointCircularDependency::class]))->compile();
     }
 }

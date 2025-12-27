@@ -27,7 +27,7 @@ class Example
     public function __construct(private string $username, private string $password){}
 }
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class],
     params: [
         'username' => 'my default username',
@@ -85,7 +85,7 @@ class Example2 {
     public function __construct(private string $username, private string $password) {}
 }
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class, Example2::class],
     params: [
         'username' => 'default_username',
@@ -113,7 +113,7 @@ class Example {
     ) {}
 }
 
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class],
     params: [
         Example::class . '$a2' => new B(), // B extends A
@@ -142,7 +142,7 @@ interface Lazy {
 ### Пример с LazyClosure:
 
 ```php
-new \Cekta\DI\Configuration(
+new \Cekta\DI\Compiler(
     containers: [Example::class, 'db_type', 'db_path'],
     params: [
         'username' => $env['DB_USERNAME'] ?? null,

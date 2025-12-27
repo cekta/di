@@ -39,10 +39,10 @@ class Controller {
 bin/build.php:
 
 ```php
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 
 // Configure your dependencies.
-$compiler = new Configuration(
+$compiler = new Compiler(
     containers: [App\Controller::class],
     fqcn: 'App\\Runtime\\Container'
 );
@@ -55,7 +55,7 @@ file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
 app.php:
 
 ```php
-use Cekta\DI\Configuration;
+use Cekta\DI\Compiler;
 
 // Use it in your application
 $container = new App\Runtime\Container();
