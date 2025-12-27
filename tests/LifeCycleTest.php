@@ -11,6 +11,7 @@ use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
 use Cekta\DI\Test\LifeCycleTest\Singleton;
 use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer;
 use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer\Dependency;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -59,6 +60,9 @@ class LifeCycleTest extends TestCase
                 FactorySubContainer::class,
                 Singleton::class,
                 Factory::class,
+                self::SCOPED_ALIAS,
+                self::SINGLETON_ALIAS,
+                self::FACTORY_ALIAS,
             ],
             params: $params,
             alias: [
@@ -109,15 +113,15 @@ class LifeCycleTest extends TestCase
 
     private function mustBeScoped(mixed $v1, mixed $v2, mixed $v3): void
     {
-        $this->assertEquals(
+        Assert::assertEquals(
             $v1,
             $v3
         );
-        $this->assertNotSame(
+        Assert::assertNotSame(
             $v1,
             $v3
         );
-        $this->assertSame($v1, $v2);
+        Assert::assertSame($v1, $v2);
     }
 
     /**
@@ -152,7 +156,7 @@ class LifeCycleTest extends TestCase
      */
     public function testSingletonAutowiring(): void
     {
-        $this->assertSame(
+        Assert::assertSame(
             self::$container->get(Singleton::class),
             self::$container2->get(Singleton::class)
         );
@@ -164,7 +168,7 @@ class LifeCycleTest extends TestCase
      */
     public function testSingletonAlias(): void
     {
-        $this->assertSame(
+        Assert::assertSame(
             self::$container->get(self::SINGLETON_ALIAS),
             self::$container2->get(self::SINGLETON_ALIAS)
         );
@@ -176,7 +180,7 @@ class LifeCycleTest extends TestCase
      */
     public function testSingletonDefinition(): void
     {
-        $this->assertSame(
+        Assert::assertSame(
             self::$container->get(self::SINGLETON_DEFINITION),
             self::$container2->get(self::SINGLETON_DEFINITION)
         );
@@ -190,8 +194,8 @@ class LifeCycleTest extends TestCase
     {
         $v1 = self::$container->get(Factory::class);
         $v2 = self::$container->get(Factory::class);
-        $this->assertEquals($v1, $v2);
-        $this->assertNotSame($v1, $v2);
+        Assert::assertEquals($v1, $v2);
+        Assert::assertNotSame($v1, $v2);
     }
 
     /**
@@ -202,7 +206,7 @@ class LifeCycleTest extends TestCase
     {
         $v1 = self::$container->get(self::FACTORY_ALIAS);
         $v2 = self::$container->get(self::FACTORY_ALIAS);
-        $this->assertNotEquals($v1, $v2);
+        Assert::assertNotEquals($v1, $v2);
     }
 
     /**
@@ -213,7 +217,7 @@ class LifeCycleTest extends TestCase
     {
         $v1 = self::$container->get(self::FACTORY_DEFINITION);
         $v2 = self::$container->get(self::FACTORY_DEFINITION);
-        $this->assertNotEquals($v1, $v2);
+        Assert::assertNotEquals($v1, $v2);
     }
 
     /**
@@ -226,7 +230,7 @@ class LifeCycleTest extends TestCase
         $life_cycle1 = self::$container->get(SingletonSubContainer::class);
         /** @var SingletonSubContainer $life_cycle2 */
         $life_cycle2 = self::$container2->get(SingletonSubContainer::class);
-        $this->assertSame($life_cycle1->dependency, $life_cycle2->dependency);
+        Assert::assertSame($life_cycle1->dependency, $life_cycle2->dependency);
     }
 
     /**
@@ -237,7 +241,7 @@ class LifeCycleTest extends TestCase
     {
         $r1 = self::$container->get(FactorySubContainer\Dependency::class);
         $r2 = self::$container->get(FactorySubContainer\Dependency::class);
-        $this->assertEquals($r1, $r2);
-        $this->assertNotSame($r1, $r2);
+        Assert::assertEquals($r1, $r2);
+        Assert::assertNotSame($r1, $r2);
     }
 }

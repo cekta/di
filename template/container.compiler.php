@@ -5,7 +5,6 @@
  * @var string $class
  * @var array<string> $targets
  * @var array<string, string> $dependencies
- * @var array<string, string> $alias
  * @var string[] $required_keys
  * @var string[] $singletons
  * @var string[] $factories
@@ -39,6 +38,10 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
      * @var string[]
      */
     private array $list_factories;
+    /**
+     * @var string[]
+     */
+    private array $targets;
 
     /**
      * @param array<string, mixed> $params
@@ -55,6 +58,7 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         }
         $this->list_factories = <?= var_export($factories, true) ?>;
         $this->list_singletons = <?= var_export($singletons, true) ?>;
+        $this->targets = <?= var_export($targets, true) ?>;
     }
 
     public function get(string $id)
@@ -77,18 +81,6 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
                     }
                 }
                 return $this->params[$id];
-        <?php foreach ($alias as $key => $value) { ?>
-            case <?= var_export($key, true) ?>:
-            <?php if (in_array($key, $singletons)) { ?>
-                self::$singletons[$id] = $this->get('<?= $value ?>');
-                return self::$singletons[$id];
-            <?php } elseif (in_array($key, $factories)) { ?>
-                return $this->get('<?= $value ?>');
-            <?php } else { ?>
-                $this->context[$id] = $this->get('<?= $value ?>');
-                return $this->context[$id];
-            <?php } ?>
-        <?php } ?>
         <?php foreach ($dependencies as $key => $value) { ?>
             case <?= var_export($key, true) ?>:
             <?php if (in_array($key, $singletons)) { ?>
@@ -108,6 +100,6 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
 
     public function has(string $id): bool
     {
-        return in_array($id, <?= var_export($targets, true) ?>);
+        return in_array($id, $this->targets);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
+use Cekta\DI\DependencyMap\Parameter;
 use Cekta\DI\Exception\NotFoundOnCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use ReflectionClass;
@@ -26,12 +27,12 @@ class ReflectionService
     /**
      * @param string $container_name
      * @param array<string> $stack
-     * @return array<Dependency>
+     * @return array<Parameter>
      *
      * @throws NotFoundOnCompile
      * @throws NotInstantiable
      */
-    public function getDependencies(string $container_name, array $stack): array
+    public function getParameters(string $container_name, array $stack): array
     {
         try {
             // @phpstan-ignore argument.type
@@ -50,12 +51,21 @@ class ReflectionService
         }
         $parameters = [];
         foreach ($constructor->getParameters() as $parameter) {
-            $parameters[] = $this->makeDependencyDTO($reflection->getName(), $parameter);
+            $parameter = $this->makeDependencyDTO($reflection->getName(), $parameter);
+            if (
+                !$parameter->is_optional
+                || (
+                    array_key_exists($parameter->name, $this->alias)
+                    || array_key_exists($parameter->name, $this->params)
+                )
+            ) {
+                $parameters[] = $parameter;
+            }
         }
         return $parameters;
     }
 
-    private function makeDependencyDTO(string $class, ReflectionParameter $parameter): Dependency
+    private function makeDependencyDTO(string $class, ReflectionParameter $parameter): Parameter
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
         $type = $parameter->getType();
@@ -70,9 +80,11 @@ class ReflectionService
         } else {
             $dependency_name = $prefix . $type;
         }
-        return new Dependency(
+        return new Parameter(
             name: $dependency_name,
-            variadic: $parameter->isVariadic()
+            argument_name: $parameter->name,
+            is_optional: $parameter->isOptional(),
+            is_variadic: $parameter->isVariadic(),
         );
     }
 }

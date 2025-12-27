@@ -37,6 +37,7 @@ class Controller {
 ```
 
 bin/build.php:
+
 ```php
 use Cekta\DI\Compiler;
 
@@ -52,6 +53,7 @@ file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
 ```
 
 app.php:
+
 ```php
 use Cekta\DI\Compiler;
 

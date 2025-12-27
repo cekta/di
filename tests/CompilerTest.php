@@ -9,6 +9,7 @@ use Cekta\DI\Exception\NotFoundOnCompile;
 use Cekta\DI\Exception\NotInstantiable;
 use Cekta\DI\Test\CompilerTest\Example;
 use Iterator;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
 class CompilerTest extends TestCase
@@ -17,8 +18,8 @@ class CompilerTest extends TestCase
     {
         $compiler = new Compiler(fqcn: 'Container');
         $code = $compiler->compile();
-        $this->assertNotEmpty($code);
-        $this->assertStringNotContainsString('namespace', $code);
+        Assert::assertNotEmpty($code);
+        Assert::assertStringNotContainsString('namespace', $code);
     }
 
     public function testCompileNotInstantiable(): void
