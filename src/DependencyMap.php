@@ -22,14 +22,14 @@ class DependencyMap
      * @var array<string>
      */
     private array $stack = [];
-    private Compiler $config;
+    private ContainerBuilder $config;
     private ReflectionService $reflection_service;
 
     /**
-     * @param Compiler $config
+     * @param ContainerBuilder $config
      * @return array<string, Dependency>
      */
-    public function generate(Compiler $config): array
+    public function generate(ContainerBuilder $config): array
     {
         $this->config = $config;
         $this->reflection_service = new ReflectionService($this->config->params, $this->config->alias);

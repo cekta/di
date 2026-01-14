@@ -6,11 +6,17 @@ namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
 use Cekta\DI\Exception\CircularDependency as CircularDependencyException;
+use Cekta\DI\Exception\IntersectConfiguration;
 use Cekta\DI\Exception\NotFound;
-use Cekta\DI\LazyClosure;
+use Cekta\DI\Module;
+use Cekta\DI\Project;
 use Cekta\DI\Test\AcceptanceTest\A;
 use Cekta\DI\Test\AcceptanceTest\CircularDependency;
 use Cekta\DI\Test\AcceptanceTest\ContainerCreatedWithNew;
+use Cekta\DI\Test\AcceptanceTest\Discovery\Entrypoint;
+use Cekta\DI\Test\AcceptanceTest\Discovery\EntrypointExample;
+use Cekta\DI\Test\AcceptanceTest\Discovery\ProjectModule;
+use Cekta\DI\Test\AcceptanceTest\Discovery\ProjectSecondModule;
 use Cekta\DI\Test\AcceptanceTest\EntrypointAutowiring;
 use Cekta\DI\Test\AcceptanceTest\EntrypointCircularDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointOptionalArgument;
@@ -18,6 +24,7 @@ use Cekta\DI\Test\AcceptanceTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\AcceptanceTest\EntrypointSharedDependency;
 use Cekta\DI\Test\AcceptanceTest\EntrypointVariadicClass;
 use Cekta\DI\Test\AcceptanceTest\I;
+use Cekta\DI\Test\AcceptanceTest\ProjectAppModule;
 use Cekta\DI\Test\AcceptanceTest\R1;
 use Cekta\DI\Test\AcceptanceTest\S;
 use Cekta\DI\Test\AcceptanceTest\SWithParam;
@@ -27,87 +34,49 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionClass;
 use stdClass;
 
 class AcceptanceTest extends TestCase
 {
-    private bool $is_compiled = false;
     protected ContainerInterface $container;
+    protected Project $project;
 
-    /**
-     * @var array<string, mixed|LazyClosure>
-     */
-    protected array $params = [];
-    /**
-     * @var array<string, string>
-     */
-    protected array $alias = [
-        I::class => R1::class,
-        'argument_to_custom_alias' => 'argument_to_custom_alias_value',
-        EntrypointSharedDependency::class . '$argument_to_custom_alias' => 'argument_to_custom_alias_custom_value',
-        EntrypointSharedDependency::class . '$argument_to_custom_alias2' => 'argument_to_custom_alias_custom_value',
-    ];
-
-    protected static string $file = __DIR__ . '/AcceptanceTest/Container.php';
-    protected string $fqcn = 'Cekta\DI\Test\AcceptanceTest\Container';
-
-    /**
-     * @var string[]
-     */
-    protected array $containers = [
-        stdClass::class, // example class without dependencies
-        EntrypointAutowiring::class,
-        EntrypointSharedDependency::class,
-        EntrypointVariadicClass::class,
-        EntrypointOverwriteExtendConstructor::class,
-        EntrypointOptionalArgument::class,
-    ];
-
-    public static function setUpBeforeClass(): void
-    {
-        file_exists(static::$file) && unlink(static::$file);
-    }
+    private ProjectAppModule $app;
+    private string $container_fqcn = 'Cekta\DI\Test\AcceptanceTest\AppContainer';
 
     protected function setUp(): void
     {
-        $this->params = [
-            'username' => 'some username',
-            'password' => 'some password',
-            EntrypointOverwriteExtendConstructor::class . '$username' => 'base constructor overwritten username',
-            'argument_to_custom_param' => 'default param',
-            EntrypointSharedDependency::class . '$argument_to_custom_param' => 'custom value param',
-            'argument_to_custom_alias_value' => 'default value for alias',
-            'argument_to_custom_alias_custom_value' => 'custom value for alias',
-            'db_username' => 'some db username',
-            S::class . '|string' => 'named params: ' . S::class . '|string',
-            '...variadic_int' => [1, 3, 5],
-            '...' . EntrypointSharedDependency::class . '$variadic_int' => [9, 8, 7],
-            '...' . A::class => [new A(), new A()],
-            'dsn' => new LazyClosure(function (ContainerInterface $container) {
-                /** @var string $username */
-                $username = $container->get('username');
-                /** @var string $password */
-                $password = $container->get('password');
-                return "definition u: $username, p: $password";
-            })
-        ];
-
-        if (!$this->is_compiled) {
-            $compiler = new Compiler(
-                containers: $this->containers,
-                params: $this->params,
-                alias: $this->alias,
-                fqcn: $this->fqcn,
-            );
-            file_put_contents(static::$file, $compiler->compile());
-        }
-
-        $this->container = new ($this->fqcn)($this->params);
+        $this->app = new ProjectAppModule();
+        $this->project = new Project(
+            discover_filename: __DIR__ . '/AcceptanceTest/discover.php',
+            container_filename: __DIR__ . '/AcceptanceTest/AppContainer.php',
+            container_fqcn: $this->container_fqcn,
+            modules: [$this->app],
+        );
+        $this->container = $this->project->container();
     }
 
     protected function tearDown(): void
     {
-        unlink(static::$file);
+        $this->project->clean();
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        $reflection = new ReflectionClass(self::class);
+        foreach ($reflection->getMethods() as $method) {
+            foreach (
+                [
+                    __DIR__ . '/AcceptanceTest/' . $method->name . '.php',
+                    __DIR__ . '/AcceptanceTest/' . ucfirst($method->name) . 'Container.php',
+                ] as $filename
+            ) {
+                if (file_exists($filename)) {
+                    unlink($filename);
+                }
+            }
+        }
     }
 
     /**
@@ -116,7 +85,7 @@ class AcceptanceTest extends TestCase
      */
     public function testAllContainersMustBeAvailableAndGettable(): void
     {
-        foreach ($this->containers as $key) {
+        foreach ($this->app->containers as $key) {
             Assert::assertTrue($this->container->has($key), 'available for get');
             Assert::assertNotEmpty($this->container->get($key), 'all containers must be gettable');
         }
@@ -145,12 +114,12 @@ class AcceptanceTest extends TestCase
         $autowiring = $this->container->get(EntrypointAutowiring::class);
         Assert::assertInstanceOf(EntrypointAutowiring::class, $autowiring);
         Assert::assertSame(
-            $this->params['username'],
+            $this->app->container_params['username'],
             $autowiring->username,
             'string(primitive) params must be inject'
         );
         Assert::assertSame(
-            $this->params['password'],
+            $this->app->container_params['password'],
             $autowiring->password,
             'string(primitive) params must be inject'
         );
@@ -186,7 +155,7 @@ class AcceptanceTest extends TestCase
             'must be called array_pop on everytime',
         );
         Assert::assertSame(
-            $this->params[S::class . '|string'],
+            $this->app->container_params[S::class . '|string'],
             $autowiring->union_type,
             'union|dfn params must work'
         );
@@ -196,12 +165,12 @@ class AcceptanceTest extends TestCase
             'lazy loading params must be correct inject'
         );
         Assert::assertSame(
-            $this->params['argument_to_custom_param'],
+            $this->app->container_params['argument_to_custom_param'],
             $autowiring->argument_to_custom_param,
             'must default value from param, no custom param'
         );
         Assert::assertSame(
-            $this->params['argument_to_custom_alias_value'],
+            $this->app->container_params['argument_to_custom_alias_value'],
             $autowiring->argument_to_custom_alias,
             'must default alias, no custom alias'
         );
@@ -211,7 +180,7 @@ class AcceptanceTest extends TestCase
             'other entrypoint must be correct inject'
         );
         Assert::assertSame(
-            $this->params['...variadic_int'],
+            $this->app->container_params['...variadic_int'],
             $autowiring->variadic_int,
             'variadic params must be inject'
         );
@@ -232,6 +201,10 @@ class AcceptanceTest extends TestCase
         Assert::assertSame('other value', $obj->must_continue_not_break);
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testOptionalArgumentOverwrite(): void
     {
         $params = [
@@ -249,7 +222,10 @@ class AcceptanceTest extends TestCase
         );
         $filename = __DIR__ . '/AcceptanceTest/ContainerOptionalArgumentOverwrite.php';
         file_put_contents($filename, $compiler->compile());
-        /** @var ContainerInterface $container */
+        /**
+         * @var ContainerInterface $container
+         * @phpstan-ignore class.notFound
+         */
         $container = new ('Cekta\DI\Test\AcceptanceTest\ContainerOptionalArgumentOverwrite')($params);
         $obj = $container->get(EntrypointOptionalArgument::class);
         Assert::assertInstanceOf(EntrypointOptionalArgument::class, $obj);
@@ -274,22 +250,22 @@ class AcceptanceTest extends TestCase
             'dependency between few entrypoint must be auto shared (same)'
         );
         Assert::assertSame(
-            $this->params[EntrypointSharedDependency::class . '$argument_to_custom_param'],
+            $this->app->container_params[EntrypointSharedDependency::class . '$argument_to_custom_param'],
             $entrypoint_shared->argument_to_custom_param,
             'must be set custom param only for this class'
         );
         Assert::assertSame(
-            $this->params['argument_to_custom_alias_custom_value'],
+            $this->app->container_params['argument_to_custom_alias_custom_value'],
             $entrypoint_shared->argument_to_custom_alias,
             'must be used custom alias only for this class'
         );
         Assert::assertSame(
-            $this->params['argument_to_custom_alias_custom_value'],
+            $this->app->container_params['argument_to_custom_alias_custom_value'],
             $entrypoint_shared->argument_to_custom_alias2,
             'after alias must be correct detect param with array_pop stack'
         );
         Assert::assertSame(
-            $this->params['...' . EntrypointSharedDependency::class . '$variadic_int'],
+            $this->app->container_params['...' . EntrypointSharedDependency::class . '$variadic_int'],
             $entrypoint_shared->variadic_int
         );
     }
@@ -314,7 +290,7 @@ class AcceptanceTest extends TestCase
         /** @var EntrypointVariadicClass $obj */
         $obj = $this->container->get(EntrypointVariadicClass::class);
         Assert::assertSame(
-            $this->params['...' . A::class],
+            $this->app->container_params['...' . A::class],
             $obj->a_array,
             'variadic params without primitive must be correct injected'
         );
@@ -329,7 +305,7 @@ class AcceptanceTest extends TestCase
         /** @var EntrypointOverwriteExtendConstructor $obj */
         $obj = $this->container->get(EntrypointOverwriteExtendConstructor::class);
         Assert::assertSame(
-            $this->params[EntrypointOverwriteExtendConstructor::class . '$username'],
+            $this->app->container_params[EntrypointOverwriteExtendConstructor::class . '$username'],
             $obj->username,
             'value from base constructor must be overwritten by custom rule '
         );
@@ -364,7 +340,7 @@ class AcceptanceTest extends TestCase
                 EntrypointOverwriteExtendConstructor::class . '$username',
             )
         );
-        new ($this->fqcn)([]);
+        new ($this->container_fqcn)([]);
     }
 
     public function testInfiniteRecursion(): void
@@ -380,5 +356,179 @@ class AcceptanceTest extends TestCase
         );
 
         (new Compiler(containers: [EntrypointCircularDependency::class]))->compile();
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
+    public function testDiscovery(): void
+    {
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [
+                new ProjectModule(),
+                new ProjectSecondModule(),
+            ],
+            function () {
+                $classes = [EntrypointExample::class, Entrypoint::class, stdClass::class];
+                foreach ($classes as $class) {
+                    yield new ReflectionClass($class);
+                }
+            }
+        );
+        $project->clean();
+        // generate discovery
+        $container = $project->container();
+        Assert::assertInstanceOf(EntrypointExample::class, $container->get(EntrypointExample::class));
+        Assert::assertSame([EntrypointExample::class], $container->get('for_test'));
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+        // usage generated discovery
+        $container = $project->container();
+        Assert::assertInstanceOf(EntrypointExample::class, $container->get(EntrypointExample::class));
+        Assert::assertSame([EntrypointExample::class], $container->get('for_test'));
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testEmptyDiscoverFileMustBeUpdate(): void
+    {
+        $data = [];
+        file_put_contents(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            '<?php return ' . var_export($data, true) . ';'
+        );
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [new ProjectSecondModule()]
+        );
+        $container = $project->container();
+
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testDiscoveryWithOldDataMustBeUpdate(): void
+    {
+        $data = [
+            'modules' => [],
+        ];
+        file_put_contents(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            '<?php return ' . var_export($data, true) . ';'
+        );
+
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [new ProjectSecondModule()],
+        );
+        $container = $project->container();
+
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+    }
+
+    public function testCleanExist(): void
+    {
+        touch(__DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php');
+        touch(__DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php');
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [$this->createMock(Module::class)],
+        );
+        $project->clean();
+        Assert::assertFalse(file_exists(__DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'));
+        Assert::assertFalse(file_exists(__DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php'));
+    }
+
+    public function testCleanNotExist(): void
+    {
+        $discover_filename = __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php';
+        $container_filename = __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php';
+        Assert::assertFalse(file_exists($discover_filename));
+        Assert::assertFalse(file_exists($container_filename));
+        $project = new Project(
+            $discover_filename,
+            $container_filename,
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [$this->createMock(Module::class)],
+        );
+        $project->clean();
+        Assert::assertFalse(file_exists($discover_filename));
+        Assert::assertFalse(file_exists($container_filename));
+    }
+
+    public function testCreateProjectWithoutModules(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('`modules` must be not empty');
+        new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [],
+        );
+    }
+
+    public function testDiscoveryIntersect(): void
+    {
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [
+                new AcceptanceTest\DiscoveryIntersection\Module([], [
+                    'test_intersection' => '1',
+                ]),
+                new AcceptanceTest\DiscoveryIntersection\Module([], [
+                    'test_intersection' => '2',
+                ]),
+            ]
+        );
+        $this->expectException(IntersectConfiguration::class);
+        $project->container();
+    }
+
+    public function testCreateContainerIntersect(): void
+    {
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [
+                new AcceptanceTest\DiscoveryIntersection\Module([], []),
+                new AcceptanceTest\DiscoveryIntersection\Module([], []),
+            ]
+        );
+        $project->container();
+
+        $project = new Project(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            [
+                new AcceptanceTest\DiscoveryIntersection\Module([], [
+                    'test_intersection' => '1',
+                ]),
+                new AcceptanceTest\DiscoveryIntersection\Module([], [
+                    'test_intersection' => '1',
+                ]),
+            ]
+        );
+        $this->expectException(IntersectConfiguration::class);
+        $project->container();
     }
 }

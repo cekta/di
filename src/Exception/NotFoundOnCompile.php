@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Cekta\DI\Exception;
 
 use RuntimeException;
-use Throwable;
 
 class NotFoundOnCompile extends RuntimeException
 {
