@@ -15,6 +15,6 @@ class IntersectConfiguration extends \RuntimeException
     public function __construct(array $intersect, string $key)
     {
         $keys = implode(', ', array_keys($intersect));
-        parent::__construct("Intersect $key, for keys: $keys ");
+        parent::__construct("Intersect $key, for keys: $keys");
     }
 }

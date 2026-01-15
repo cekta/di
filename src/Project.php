@@ -110,10 +110,6 @@ class Project
             $r['params'] = $module->params($encoded_module);
             foreach (['params', 'alias'] as $key) {
                 $record = $r[$key] ?? [];
-                $intersect = array_intersect_key($params[$key], $record);
-                if (!empty($intersect)) {
-                    throw new IntersectConfiguration($intersect, $key);
-                }
                 $params[$key] = [...$params[$key], ...$record];
             }
 

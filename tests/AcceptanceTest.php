@@ -57,11 +57,6 @@ class AcceptanceTest extends TestCase
         $this->container = $this->project->container();
     }
 
-    protected function tearDown(): void
-    {
-        $this->project->clean();
-    }
-
     public static function tearDownAfterClass(): void
     {
         $reflection = new ReflectionClass(self::class);
@@ -75,6 +70,17 @@ class AcceptanceTest extends TestCase
                 if (file_exists($filename)) {
                     unlink($filename);
                 }
+            }
+        }
+
+        foreach (
+            [
+                __DIR__ . '/AcceptanceTest/discover.php',
+                __DIR__ . '/AcceptanceTest/AppContainer.php'
+            ] as $filename
+        ) {
+            if (file_exists($filename)) {
+                unlink($filename);
             }
         }
     }
@@ -483,25 +489,6 @@ class AcceptanceTest extends TestCase
         );
     }
 
-    public function testDiscoveryIntersect(): void
-    {
-        $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
-            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
-            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
-            [
-                new AcceptanceTest\DiscoveryIntersection\Module([], [
-                    'test_intersection' => '1',
-                ]),
-                new AcceptanceTest\DiscoveryIntersection\Module([], [
-                    'test_intersection' => '2',
-                ]),
-            ]
-        );
-        $this->expectException(IntersectConfiguration::class);
-        $project->container();
-    }
-
     public function testCreateContainerIntersect(): void
     {
         $project = new Project(
@@ -529,6 +516,7 @@ class AcceptanceTest extends TestCase
             ]
         );
         $this->expectException(IntersectConfiguration::class);
+        $this->expectExceptionMessage('Intersect params, for keys: test_intersection');
         $project->container();
     }
 }
