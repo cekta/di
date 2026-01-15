@@ -12,7 +12,7 @@ use ReflectionException;
 use ReflectionNamedType;
 use ReflectionParameter;
 
-class ReflectionService
+readonly class ReflectionService
 {
     /**
      * @param array<string, mixed|Lazy> $params
@@ -69,7 +69,7 @@ class ReflectionService
     {
         $prefix = $parameter->isVariadic() ? '...' : '';
         $type = $parameter->getType();
-        $custom_name = "$prefix{$class}\${$parameter->name}";
+        $custom_name = "$prefix$class\$$parameter->name";
         if (
             array_key_exists($custom_name, $this->params)
             || array_key_exists($custom_name, $this->alias)

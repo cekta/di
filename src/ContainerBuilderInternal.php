@@ -8,7 +8,7 @@ use Cekta\DI\DependencyMap\Dependency\Alias;
 use Cekta\DI\DependencyMap\Dependency\AutowiringShared;
 use Cekta\DI\DependencyMap\Dependency\Param;
 
-class InternalCompiler
+class ContainerBuilderInternal
 {
     private DependencyMap $dependency_map;
     private Template $template;
@@ -19,7 +19,7 @@ class InternalCompiler
         $this->template = new Template(__DIR__ . '/../template/container.compiler.php');
     }
 
-    public function generate(Compiler $configuration): string
+    public function generate(ContainerBuilder $configuration): string
     {
         $dependency_map = $this->dependency_map->generate($configuration);
 

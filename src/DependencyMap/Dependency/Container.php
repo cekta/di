@@ -8,6 +8,6 @@ final readonly class Container extends Autowiring
 {
     protected function renderAsArgument(array $dm): string
     {
-        return "\$this->get('{$this->name}')";
+        return "\$this->get('$this->name')";
     }
 }

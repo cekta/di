@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Cekta\DI;
 
-use Cekta\DI\Exception\CircularDependency;
-use Cekta\DI\Exception\NotInstantiable;
-
 /**
- * @external
+ * @external in v2.x
+ * @deprecated use ContainerBuilder in new version.
  */
 readonly class Compiler
 {
-    public FQCN $fqcn;
+    private ContainerBuilder $container_builder;
+
     /**
      * @param array<string> $containers
      * @param array<string, mixed|Lazy> $params
@@ -22,22 +21,24 @@ readonly class Compiler
      * @param array<string> $factories
      */
     public function __construct(
-        public array $containers = [],
-        public array $params = [],
-        public array $alias = [],
+        array $containers = [],
+        array $params = [],
+        array $alias = [],
         string $fqcn = 'App\Container',
-        public array $singletons = [],
-        public array $factories = [],
+        array $singletons = [],
+        array $factories = [],
     ) {
-        $this->fqcn = new FQCN($fqcn);
+        $this->container_builder = new ContainerBuilder(
+            containers: $containers,
+            params: $params,
+            alias: $alias,
+            fqcn: $fqcn,
+            singletons: $singletons,
+            factories: $factories
+        );
     }
-
-    /**
-     * @return string
-     */
     public function compile(): string
     {
-        $internal_compiler = new InternalCompiler();
-        return $internal_compiler->generate($this);
+        return $this->container_builder->build();
     }
 }

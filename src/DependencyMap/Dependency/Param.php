@@ -13,6 +13,6 @@ final readonly class Param extends Dependency
      */
     public function render(array $dm): string
     {
-        return "\$this->get('{$this->name}')";
+        return "\$this->get('$this->name')";
     }
 }
