@@ -16,21 +16,23 @@ readonly class Composer
     }
 
     /**
-     * @return iterable<ReflectionClass<object>>
+     * @return array<ReflectionClass<object>>
      */
-    public function __invoke(): iterable
+    public function __invoke(): array
     {
         $data = require $this->filename;
         if (!is_array($data)) {
             throw new InvalidArgumentException("`$this->filename` must return array");
         }
+        $result = [];
         foreach (array_keys($data) as $class) {
             try {
                 // @phpstan-ignore argument.type
-                yield new ReflectionClass($class);
+                $result[] = new ReflectionClass($class);
             } catch (ReflectionException) {
                 continue;
             }
         }
+        return $result;
     }
 }

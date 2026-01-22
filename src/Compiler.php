@@ -29,7 +29,7 @@ readonly class Compiler
         array $factories = [],
     ) {
         $this->container_builder = new ContainerBuilder(
-            containers: $containers,
+            entries: $containers,
             params: $params,
             alias: $alias,
             fqcn: $fqcn,

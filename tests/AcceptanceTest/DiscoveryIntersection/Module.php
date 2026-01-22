@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\AcceptanceTest\DiscoveryIntersection;
 
-use ReflectionClass;
-
 readonly class Module implements \Cekta\DI\Module
 {
     /**
      * @param array{
-     *      containers?: string[],
+     *      entries?: string[],
      *      alias?: array<string, string>,
      *      singletons?: string[],
      *      factories?: string[],
@@ -23,21 +21,20 @@ readonly class Module implements \Cekta\DI\Module
     ) {
     }
 
-    public function buildArguments(string $encoded_module): array
+    public function onBuild(string $encoded_module): array
     {
         return $this->build_arguments;
     }
 
-    public function params(string $encoded_module): array
+    public function onCreate(string $encoded_module): array
     {
         return $this->params;
     }
 
-    public function discover(ReflectionClass $class): void
-    {
-    }
-
-    public function getEncodedModule(): string
+    /**
+     * @inheritdoc
+     */
+    public function onDiscover(array $classes): string
     {
         return '';
     }

@@ -21,7 +21,6 @@ class TemplateTest extends TestCase
         $template = new Template(__DIR__ . '/../readme.md');
         $method = (new ReflectionClass($template))
             ->getMethod('handleResult');
-        $method->setAccessible(true);
         $method->invoke($template, false);
     }
 }

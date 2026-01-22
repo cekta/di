@@ -15,7 +15,7 @@ class ProjectAppModule implements Module
     /**
      * @var string[]
      */
-    public array $containers = [
+    public array $entries = [
         stdClass::class,
         EntrypointAutowiring::class,
         EntrypointSharedDependency::class,
@@ -39,10 +39,10 @@ class ProjectAppModule implements Module
     /**
      * @inheritdoc
      */
-    public function buildArguments(string $encoded_module): array
+    public function onBuild(string $encoded_module): array
     {
         return [
-            'containers' => $this->containers,
+            'entries' => $this->entries,
             'alias' => $this->alias,
             'factories' => [],
             'singletons' => [],
@@ -52,7 +52,7 @@ class ProjectAppModule implements Module
     /**
      * @inheritdoc
      */
-    public function params(string $encoded_module): array
+    public function onCreate(string $encoded_module): array
     {
         if (empty($this->container_params)) {
             $this->container_params = [
@@ -83,14 +83,7 @@ class ProjectAppModule implements Module
     /**
      * @inheritdoc
      */
-    public function discover(ReflectionClass $class): void
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEncodedModule(): string
+    public function onDiscover(array $classes): string
     {
         return '';
     }

@@ -10,12 +10,12 @@ use ReflectionClass;
 class ProjectSecondModule implements Module
 {
     public const SECOND_TEST = 'second value';
-    public function buildArguments(string $encoded_module): array
+    public function onBuild(string $encoded_module): array
     {
         return [];
     }
 
-    public function params(string $encoded_module): array
+    public function onCreate(string $encoded_module): array
     {
         $params = json_decode($encoded_module, true);
         if (!is_array($params)) {
@@ -24,11 +24,10 @@ class ProjectSecondModule implements Module
         return $params;
     }
 
-    public function discover(ReflectionClass $class): void
-    {
-    }
-
-    public function getEncodedModule(): string
+    /**
+     * @inheritdoc
+     */
+    public function onDiscover(array $classes): string
     {
         $params = [
             'second_test' => self::SECOND_TEST,

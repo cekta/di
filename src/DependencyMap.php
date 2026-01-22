@@ -33,7 +33,7 @@ class DependencyMap
     {
         $this->config = $config;
         $this->reflection_service = new ReflectionService($this->config->params, $this->config->alias);
-        foreach ($this->config->containers as $container) {
+        foreach ($this->config->entries as $container) {
             $this->match($container);
         }
         return $this->dependencies_map;
@@ -45,7 +45,7 @@ class DependencyMap
             $dependency = new Param($name);
         } elseif (array_key_exists($name, $this->config->alias)) {
             $dependency = new Alias($name, $this->config->alias[$name]);
-        } elseif (in_array($name, $this->config->containers)) {
+        } elseif (in_array($name, $this->config->entries)) {
             $dependency = new Container(
                 $name,
                 ...$this->reflection_service->getParameters($name, $this->stack)

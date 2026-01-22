@@ -49,10 +49,10 @@ class AcceptanceTest extends TestCase
     {
         $this->app = new ProjectAppModule();
         $this->project = new Project(
-            discover_filename: __DIR__ . '/AcceptanceTest/discover.php',
+            modules: [$this->app],
             container_filename: __DIR__ . '/AcceptanceTest/AppContainer.php',
             container_fqcn: $this->container_fqcn,
-            modules: [$this->app],
+            discover_filename: __DIR__ . '/AcceptanceTest/discover.php',
         );
         $this->container = $this->project->container();
     }
@@ -89,11 +89,11 @@ class AcceptanceTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    public function testAllContainersMustBeAvailableAndGettable(): void
+    public function testAllEntriesMustBeAvailableAndGettable(): void
     {
-        foreach ($this->app->containers as $key) {
+        foreach ($this->app->entries as $key) {
             Assert::assertTrue($this->container->has($key), 'available for get');
-            Assert::assertNotEmpty($this->container->get($key), 'all containers must be gettable');
+            Assert::assertNotEmpty($this->container->get($key), 'all entries must be gettable');
         }
         Assert::assertFalse($this->container->has('invalid name'));
     }
@@ -331,7 +331,7 @@ class AcceptanceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             sprintf(
-                'Containers: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
+                'Entries: %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s must be declared in params',
                 'username',
                 'password',
                 S::class . '|string',
@@ -371,18 +371,20 @@ class AcceptanceTest extends TestCase
     public function testDiscovery(): void
     {
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
-            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
-            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
             [
                 new ProjectModule(),
                 new ProjectSecondModule(),
             ],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
             function () {
                 $classes = [EntrypointExample::class, Entrypoint::class, stdClass::class];
+                $result = [];
                 foreach ($classes as $class) {
-                    yield new ReflectionClass($class);
+                    $result[] = new ReflectionClass($class);
                 }
+                return $result;
             }
         );
         $project->clean();
@@ -410,10 +412,10 @@ class AcceptanceTest extends TestCase
             '<?php return ' . var_export($data, true) . ';'
         );
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            [new ProjectSecondModule()],
             __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
             'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
-            [new ProjectSecondModule()]
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'
         );
         $container = $project->container();
 
@@ -424,10 +426,49 @@ class AcceptanceTest extends TestCase
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
+    public function testDiscoverFileReturnNotArray(): void
+    {
+        $data = 'not array value';
+        file_put_contents(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            '<?php return ' . var_export($data, true) . ';'
+        );
+        $project = new Project(
+            [new ProjectSecondModule()],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'
+        );
+        $container = $project->container();
+
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+    }
+
+    public function testDiscoverGeneratedOnce(): void
+    {
+        $module = $this->createMock(Module::class);
+        $module->expects($this->once())
+            ->method('onDiscover')
+            ->willReturn('');
+        $project = new Project(
+            [$module],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'
+        );
+        $project->container(); // discover must be generated
+        $project->container(); // discover must be from file
+    }
+
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     public function testDiscoveryWithOldDataMustBeUpdate(): void
     {
         $data = [
-            'modules' => [],
+            'modules' => ['test from module1', 'test from module2'],
         ];
         file_put_contents(
             __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
@@ -435,10 +476,35 @@ class AcceptanceTest extends TestCase
         );
 
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            [new ProjectSecondModule()],
             __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
             'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+        );
+        $container = $project->container();
+
+        Assert::assertSame(ProjectSecondModule::SECOND_TEST, $container->get('second_test'));
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    public function testDiscoveryModulesNotArray(): void
+    {
+        $data = [
+            'modules' => 'not array value',
+        ];
+        file_put_contents(
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            '<?php return ' . var_export($data, true) . ';'
+        );
+
+        $project = new Project(
             [new ProjectSecondModule()],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
         );
         $container = $project->container();
 
@@ -450,10 +516,10 @@ class AcceptanceTest extends TestCase
         touch(__DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php');
         touch(__DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php');
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            [$this->createMock(Module::class)],
             __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
             'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
-            [$this->createMock(Module::class)],
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
         );
         $project->clean();
         Assert::assertFalse(file_exists(__DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'));
@@ -467,10 +533,10 @@ class AcceptanceTest extends TestCase
         Assert::assertFalse(file_exists($discover_filename));
         Assert::assertFalse(file_exists($container_filename));
         $project = new Project(
-            $discover_filename,
+            [$this->createMock(Module::class)],
             $container_filename,
             'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
-            [$this->createMock(Module::class)],
+            $discover_filename,
         );
         $project->clean();
         Assert::assertFalse(file_exists($discover_filename));
@@ -482,30 +548,27 @@ class AcceptanceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('`modules` must be not empty');
         new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
+            [],
             __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
             'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
-            [],
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
         );
     }
 
     public function testCreateContainerIntersect(): void
     {
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
-            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
-            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
             [
                 new AcceptanceTest\DiscoveryIntersection\Module([], []),
                 new AcceptanceTest\DiscoveryIntersection\Module([], []),
-            ]
+            ],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'
         );
         $project->container();
 
         $project = new Project(
-            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php',
-            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
-            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
             [
                 new AcceptanceTest\DiscoveryIntersection\Module([], [
                     'test_intersection' => '1',
@@ -513,7 +576,10 @@ class AcceptanceTest extends TestCase
                 new AcceptanceTest\DiscoveryIntersection\Module([], [
                     'test_intersection' => '1',
                 ]),
-            ]
+            ],
+            __DIR__ . '/AcceptanceTest/' . ucfirst(__FUNCTION__) . 'Container.php',
+            'Cekta\DI\Test\AcceptanceTest\\' . ucfirst(__FUNCTION__) . 'Container',
+            __DIR__ . '/AcceptanceTest/' . __FUNCTION__ . '.php'
         );
         $this->expectException(IntersectConfiguration::class);
         $this->expectExceptionMessage('Intersect params, for keys: test_intersection');
