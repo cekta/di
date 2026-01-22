@@ -3,7 +3,7 @@
 /**
  * @var string $namespace
  * @var string $class
- * @var array<string> $targets
+ * @var array<string> $entries
  * @var array<string, string> $dependencies
  * @var string[] $required_keys
  * @var string[] $singletons
@@ -54,11 +54,11 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         $diff = array_diff(<?= var_export($required_keys, true) ?>, $keys);
         if (!empty($diff)) {
             $diff = implode(', ', $diff);
-            throw new \InvalidArgumentException("Containers: {$diff} must be declared in params");
+            throw new \InvalidArgumentException("Entries: {$diff} must be declared in params");
         }
         $this->list_factories = <?= var_export($factories, true) ?>;
         $this->list_singletons = <?= var_export($singletons, true) ?>;
-        $this->targets = <?= var_export($targets, true) ?>;
+        $this->targets = <?= var_export($entries, true) ?>;
     }
 
     public function get(string $id)

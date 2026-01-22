@@ -8,7 +8,7 @@ readonly class ContainerBuilder
 {
     public FQCN $fqcn;
     /**
-     * @param array<string> $containers
+     * @param array<string> $entries
      * @param array<string, mixed|Lazy> $params
      * @param array<string, string> $alias
      * @param string $fqcn
@@ -16,7 +16,7 @@ readonly class ContainerBuilder
      * @param array<string> $factories
      */
     public function __construct(
-        public array $containers = [],
+        public array $entries = [],
         public array $params = [],
         public array $alias = [],
         string $fqcn = 'App\Container',

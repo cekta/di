@@ -45,7 +45,7 @@ class ContainerBuilderInternal
         return $this->template->render([
             'namespace' => $configuration->fqcn->namespace,
             'class' => $configuration->fqcn->className,
-            'targets' => $configuration->containers,
+            'entries' => $configuration->entries,
             'singletons' => $configuration->singletons,
             'factories' => $configuration->factories,
 

@@ -12,29 +12,26 @@ use ReflectionClass;
 interface Module
 {
     /**
+     * method call every time to get params for Container object
+     * @return array<string, mixed>
+     */
+    public function onCreate(string $encoded_module): array;
+
+    /**
+     * method call once, when build (generation) Container class
      * @return array{
-     *     containers?: string[],
+     *     entries?: string[],
      *     alias?: array<string, string>,
      *     singletons?: string[],
      *     factories?: string[],
      * }
      */
-    public function buildArguments(string $encoded_module): array;
+    public function onBuild(string $encoded_module): array;
 
     /**
-     * @return array<string, mixed>
-     */
-    public function params(string $encoded_module): array;
-
-    /**
-     * @param ReflectionClass<object> $class
-     * @return void
-     */
-    public function discover(ReflectionClass $class): void;
-
-    /**
-     * called after discovery all classes, to store data for module
+     * method call once, when make discovery project
+     * @param array<ReflectionClass<object>> $classes
      * @return string
      */
-    public function getEncodedModule(): string;
+    public function onDiscover(array $classes): string;
 }

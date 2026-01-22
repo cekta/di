@@ -20,28 +20,25 @@ class Project
      */
     private array $cached_modules;
     /**
-     * @var Closure(): iterable<ReflectionClass<object>>
+     * @var Closure(): array<ReflectionClass<object>>
      */
     private readonly Closure $class_loader;
 
     /**
      * @param array<Module> $modules
-     * @param ?callable(): iterable<ReflectionClass<object>> $class_loader
+     * @param ?callable(): array<ReflectionClass<object>> $class_loader
      */
     public function __construct(
-        private readonly string $discover_filename,
+        private readonly array $modules,
         private readonly string $container_filename,
         private readonly string $container_fqcn,
-        private readonly array $modules,
+        private readonly string $discover_filename,
         ?callable $class_loader = null,
     ) {
-        if ($class_loader === null) {
-            $class_loader = function () {
-                return [];
-            };
-        }
         /** @noinspection PhpClosureCanBeConvertedToFirstClassCallableInspection */
-        $this->class_loader = Closure::fromCallable($class_loader);
+        $this->class_loader = Closure::fromCallable($class_loader ?? function () {
+            return [];
+        });
 
         if (empty($this->modules)) {
             throw new InvalidArgumentException('`modules` must be not empty');
@@ -72,7 +69,7 @@ class Project
                 !is_array($data = require $this->discover_filename)
                 || !array_key_exists('modules', $data)
                 || !is_array($data['modules'])
-                || !empty(array_diff_key($this->modules, $data['modules']))
+                || !empty(array_diff_key($data['modules'], $this->modules))
             )
         ) {
             file_put_contents(
@@ -98,7 +95,7 @@ class Project
     private function buildContainer(): string
     {
         $params = [
-            'containers' => [],
+            'entries' => [],
             'alias' => [],
             'params' => [],
             'singletons' => [],
@@ -106,19 +103,19 @@ class Project
         ];
         foreach ($this->modules as $key => $module) {
             $encoded_module = $this->cached_modules[$key];
-            $r = $module->buildArguments($encoded_module);
-            $r['params'] = $module->params($encoded_module);
+            $r = $module->onBuild($encoded_module);
+            $r['params'] = $module->onCreate($encoded_module);
             foreach (['params', 'alias'] as $key) {
                 $record = $r[$key] ?? [];
                 $params[$key] = [...$params[$key], ...$record];
             }
 
-            foreach (['containers', 'singletons', 'factories'] as $key) {
+            foreach (['entries', 'singletons', 'factories'] as $key) {
                 $params[$key] = [...$params[$key], ...($r[$key] ?? [])];
             }
         }
         $builder = new ContainerBuilder(
-            containers: $params['containers'],
+            entries: $params['entries'],
             params: $params['params'],
             alias: $params['alias'], // @phpstan-ignore argument.type
             fqcn: $this->container_fqcn,
@@ -132,7 +129,7 @@ class Project
     {
         $params = [];
         foreach ($this->modules as $key => $module) {
-            $record = $module->params($this->cached_modules[$key] ?? '');
+            $record = $module->onCreate($this->cached_modules[$key] ?? '');
             $intersect = array_intersect_key($params, $record);
             if (!empty($intersect)) {
                 throw new IntersectConfiguration($intersect, 'params');
@@ -145,17 +142,15 @@ class Project
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
      */
     private function buildDiscover(): array
     {
-        foreach (($this->class_loader)() as $class) {
-            foreach ($this->modules as $module1) {
-                $module1->discover($class);
-            }
+        $result = [];
+        $classes = ($this->class_loader)();
+        foreach ($this->modules as $module) {
+            $result[] = $module->onDiscover($classes);
         }
-        return array_map(function ($module) {
-            return $module->getEncodedModule();
-        }, $this->modules);
+        return $result;
     }
 }
