@@ -6,7 +6,7 @@ namespace Cekta\DI\ClassLoader;
 
 use InvalidArgumentException;
 use ReflectionClass;
-use ReflectionException;
+use Throwable;
 
 readonly class Composer
 {
@@ -40,7 +40,7 @@ readonly class Composer
             try {
                 // @phpstan-ignore argument.type
                 $result[] = new ReflectionClass($class);
-            } catch (ReflectionException) {
+            } catch (Throwable) {
                 continue;
             }
         }
