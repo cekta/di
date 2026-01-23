@@ -37,4 +37,18 @@ class ComposerTest extends TestCase
         $this->expectExceptionMessage("`$filename` must return array");
         iterator_to_array($loader());
     }
+
+    /**
+     * when container deleted after dump autoload optimize,
+     * container cant load Container class because registered class but file not found (warning in composer ClassLoader)
+     * @return void
+     */
+    public function testWithDeletedFilesClass(): void
+    {
+        $loader = new Composer(__DIR__ . '/Composer/with_deleted_files.php');
+        /** @var ReflectionClass<object>[] $result */
+        $result = iterator_to_array($loader());
+        Assert::assertSame(stdClass::class, $result[0]->name);
+        Assert::assertCount(1, $result);
+    }
 }

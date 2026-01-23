@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    stdClass::class => 'some record',
+    stdClass::class => __DIR__ . '/example.php',
     'some_invalid_value' => 'other record',
-    Iterator::class => 'next value',
+    Iterator::class => __DIR__ . '/example.php',
 ];
