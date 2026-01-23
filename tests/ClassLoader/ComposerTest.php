@@ -29,6 +29,20 @@ class ComposerTest extends TestCase
         Assert::assertSame(Iterator::class, $result[1]->name);
     }
 
+    /**
+     * some library can drop exception on use deprecated
+     * @see https://github.com/Nyholm/psr7/blob/889d890ba25e4264ad92ce56b18ef8218611ca51/src/Factory/HttplugFactory.php#L15
+     * @return void
+     */
+    public function testExampleWithIgnore()
+    {
+        $loader = new Composer(__DIR__ . '/Composer/example.php', [Iterator::class]);
+        /** @var ReflectionClass<object>[] $result */
+        $result = iterator_to_array($loader());
+        Assert::assertSame(stdClass::class, $result[0]->name);
+        Assert::assertCount(1, $result);
+    }
+
     public function testWithoutReturn(): void
     {
         $filename = __DIR__ . '/Composer/without_return.php';

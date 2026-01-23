@@ -10,8 +10,12 @@ use ReflectionException;
 
 readonly class Composer
 {
+    /**
+     * @param array<string> $excludes excludes class from filename
+     */
     public function __construct(
-        public string $filename
+        private string $filename,
+        private array $excludes = [],
     ) {
     }
 
@@ -27,7 +31,10 @@ readonly class Composer
         /** @var array<string, string> $data */
         $result = [];
         foreach ($data as $class => $file) {
-            if (!file_exists($file)) {
+            if (
+                in_array($class, $this->excludes)
+                || !file_exists($file)
+            ) {
                 continue;
             }
             try {
