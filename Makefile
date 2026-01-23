@@ -1,3 +1,4 @@
+.PHONY: docs
 shell:
 	docker compose run -it --rm --entrypoint /bin/sh app 
 shell-docs:

@@ -17,6 +17,7 @@ readonly class Composer
 
     /**
      * @return array<ReflectionClass<object>>
+     * @throws ReflectionException
      */
     public function __invoke(): array
     {
@@ -24,14 +25,14 @@ readonly class Composer
         if (!is_array($data)) {
             throw new InvalidArgumentException("`$this->filename` must return array");
         }
+        /** @var array<string, string> $data */
         $result = [];
-        foreach (array_keys($data) as $class) {
-            try {
-                // @phpstan-ignore argument.type
-                $result[] = new ReflectionClass($class);
-            } catch (ReflectionException) {
+        foreach ($data as $class => $file) {
+            if (!file_exists($file)) {
                 continue;
             }
+            // @phpstan-ignore argument.type
+            $result[] = new ReflectionClass($class);
         }
         return $result;
     }
