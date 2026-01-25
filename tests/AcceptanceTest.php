@@ -448,7 +448,7 @@ class AcceptanceTest extends TestCase
     {
         $module = $this->createMock(Module::class);
         $module->expects($this->once())
-            ->method('onDiscover')
+            ->method('getEncodedModule')
             ->willReturn('');
         $project = new Project(
             [$module],

@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Cekta\DI;
+namespace Cekta\DI\Lazy;
 
+use Cekta\DI\Lazy;
 use Psr\Container\ContainerInterface;
 
-class LazyClosure implements Lazy
+class Closure implements Lazy
 {
     /**
      * @var callable

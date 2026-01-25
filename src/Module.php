@@ -29,9 +29,15 @@ interface Module
     public function onBuild(string $encoded_module): array;
 
     /**
-     * method call once, when make discovery project
-     * @param array<ReflectionClass<object>> $classes
+     * method called for all classes from class provider
+     * @param ReflectionClass<object> $class
+     * @return void
+     */
+    public function discover(ReflectionClass $class): void;
+
+    /**
+     * this string will be cached and sent to all methods
      * @return string
      */
-    public function onDiscover(array $classes): string;
+    public function getEncodedModule(): string;
 }

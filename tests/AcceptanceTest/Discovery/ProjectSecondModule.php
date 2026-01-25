@@ -25,9 +25,16 @@ class ProjectSecondModule implements Module
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function onDiscover(array $classes): string
+    public function discover(ReflectionClass $class): void
+    {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncodedModule(): string
     {
         $params = [
             'second_test' => self::SECOND_TEST,

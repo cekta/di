@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\AcceptanceTest;
 
-use Cekta\DI\LazyClosure;
+use Cekta\DI\Lazy\Closure;
 use Cekta\DI\Module;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
@@ -36,8 +36,9 @@ class ProjectAppModule implements Module
      * @var array<string, mixed>
      */
     public array $container_params;
+
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onBuild(string $encoded_module): array
     {
@@ -50,7 +51,7 @@ class ProjectAppModule implements Module
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
     public function onCreate(string $encoded_module): array
     {
@@ -68,7 +69,7 @@ class ProjectAppModule implements Module
                 '...variadic_int' => [1, 3, 5],
                 '...' . EntrypointSharedDependency::class . '$variadic_int' => [9, 8, 7],
                 '...' . A::class => [new A(), new A()],
-                'dsn' => new LazyClosure(function (ContainerInterface $container) {
+                'dsn' => new Closure(function (ContainerInterface $container) {
                     /** @var string $username */
                     $username = $container->get('username');
                     /** @var string $password */
@@ -81,9 +82,16 @@ class ProjectAppModule implements Module
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function onDiscover(array $classes): string
+    public function discover(ReflectionClass $class): void
+    {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncodedModule(): string
     {
         return '';
     }
