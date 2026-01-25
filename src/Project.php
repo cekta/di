@@ -20,13 +20,13 @@ class Project
      */
     private array $cached_modules;
     /**
-     * @var Closure(): array<ReflectionClass<object>>
+     * @var Closure(): iterable<ReflectionClass<object>>
      */
     private readonly Closure $class_loader;
 
     /**
      * @param array<Module> $modules
-     * @param ?callable(): array<ReflectionClass<object>> $class_loader
+     * @param ?callable(): iterable<ReflectionClass<object>> $class_loader
      */
     public function __construct(
         private readonly array $modules,
@@ -35,10 +35,13 @@ class Project
         private readonly string $discover_filename,
         ?callable $class_loader = null,
     ) {
+        if ($class_loader === null) {
+            $class_loader = function () {
+                return [];
+            };
+        }
         /** @noinspection PhpClosureCanBeConvertedToFirstClassCallableInspection */
-        $this->class_loader = Closure::fromCallable($class_loader ?? function () {
-            return [];
-        });
+        $this->class_loader = Closure::fromCallable($class_loader);
 
         if (empty($this->modules)) {
             throw new InvalidArgumentException('`modules` must be not empty');
@@ -146,10 +149,15 @@ class Project
      */
     private function buildDiscover(): array
     {
+        $iterator = ($this->class_loader)();
+        foreach ($iterator as $class) {
+            foreach ($this->modules as $module) {
+                $module->discover($class);
+            }
+        }
         $result = [];
-        $classes = ($this->class_loader)();
         foreach ($this->modules as $module) {
-            $result[] = $module->onDiscover($classes);
+            $result[] = $module->getEncodedModule();
         }
         return $result;
     }

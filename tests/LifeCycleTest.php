@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
-use Cekta\DI\LazyClosure;
+use Cekta\DI\Lazy\Closure;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
 use Cekta\DI\Test\LifeCycleTest\Singleton;
@@ -42,13 +42,13 @@ class LifeCycleTest extends TestCase
             return;
         }
         $params = [
-            self::SCOPED_DEFINITION => new LazyClosure(function () {
+            self::SCOPED_DEFINITION => new Closure(function () {
                 return new stdClass();
             }),
-            self::SINGLETON_DEFINITION => new LazyClosure(function () {
+            self::SINGLETON_DEFINITION => new Closure(function () {
                 return new stdClass();
             }),
-            self::FACTORY_DEFINITION => new LazyClosure(function () {
+            self::FACTORY_DEFINITION => new Closure(function () {
                 static $index = 0;
                 return $index++;
             }),

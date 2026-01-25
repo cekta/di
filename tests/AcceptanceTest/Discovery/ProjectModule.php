@@ -9,6 +9,11 @@ use ReflectionClass;
 
 class ProjectModule implements Module
 {
+    /**
+     * @var array<string>
+     */
+    private array $entries = [];
+
     public function onBuild(string $encoded_module): array
     {
         $entries = json_decode($encoded_module, true);
@@ -33,17 +38,21 @@ class ProjectModule implements Module
     }
 
     /**
-     * @inheritdoc
+     * @inheritDoc
      */
-    public function onDiscover(array $classes): string
+    public function discover(ReflectionClass $class): void
     {
-        $entries = [];
-        foreach ($classes as $class) {
-            if ($class->implementsInterface(Entrypoint::class) && $class->isInstantiable()) {
-                $entries[] = $class->getName();
-            }
+        if ($class->implementsInterface(Entrypoint::class) && $class->isInstantiable()) {
+            $this->entries[] = $class->getName();
         }
-        $result = json_encode($entries);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncodedModule(): string
+    {
+        $result = json_encode($this->entries);
         assert(is_string($result));
         return $result;
     }
