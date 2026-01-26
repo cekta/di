@@ -12,13 +12,13 @@
   "require": {
     "psr/container": ">=2.0",
     "php": ">=8.2",
-    "symfony/filesystem": "@stable"
+    "cekta/di-module": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "@stable",
     "squizlabs/php_codesniffer": "@stable",
     "phpstan/phpstan": "@stable",
-    "infection/infection": "@dev"
+    "infection/infection": "@stable"
   },
   "autoload": {
     "psr-4": {
@@ -53,6 +53,8 @@
     "phpunit": "./vendor/bin/phpunit",
     "infection": "./vendor/bin/infection --show-mutations"
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "config": {
     "allow-plugins": {
       "infection/extension-installer": true
