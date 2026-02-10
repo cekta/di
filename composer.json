@@ -2,17 +2,20 @@
   "name": "cekta/di",
   "description": "psr/container implementation for humans",
   "type": "library",
-  "keywords": [
-    "psr-11",
-    "psr container",
-    "di",
-    "dependency injection",
-    "container"
-  ],
+  "license": "GPL-3.0-only",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "infection/extension-installer": true
+    }
+  },
+  "provide": {
+    "psr/container-implementation": "^2.0"
+  },
   "require": {
     "psr/container": ">=2.0",
-    "php": ">=8.2",
-    "cekta/di-module": "dev-master"
+    "php": ">=8.2"
   },
   "require-dev": {
     "phpunit/phpunit": "@stable",
@@ -20,32 +23,12 @@
     "phpstan/phpstan": "@stable",
     "infection/infection": "@stable"
   },
-  "autoload": {
-    "psr-4": {
-      "Cekta\\DI\\": "src/"
-    }
-  },
-  "provide": {
-    "psr/container-implementation": "^2.0"
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Cekta\\DI\\Test\\": "tests/"
-    }
-  },
-  "license": "GPL-3.0-only",
-  "authors": [
-    {
-      "name": "Evgeniy Kuvshinov",
-      "email": "smpl@itmywork.com"
-    }
-  ],
   "scripts": {
     "test": [
-      "@composer update",
+      "@composer install",
       "@phpcs",
       "@phpstan",
-      "phpunit",
+      "@phpunit",
       "@infection"
     ],
     "phpcs": "./vendor/bin/phpcs",
@@ -53,11 +36,27 @@
     "phpunit": "./vendor/bin/phpunit",
     "infection": "./vendor/bin/infection --show-mutations"
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "config": {
-    "allow-plugins": {
-      "infection/extension-installer": true
+  "autoload": {
+    "psr-4": {
+      "Cekta\\DI\\": "src/"
     }
-  }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Cekta\\DI\\Test\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Evgeniy Kuvshinov",
+      "email": "smpl@itmywork.com"
+    }
+  ],
+  "keywords": [
+    "psr-11",
+    "psr container",
+    "di",
+    "dependency injection",
+    "container"
+  ]
 }
