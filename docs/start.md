@@ -1,187 +1,216 @@
 # Начало работы
 
+## Пример проекта {#example-autowiring}
+
+Давайте рассмотрим простейший проект у которого все исходники в **src** и namespace **App**
+с классами **Example** и **A** (зависимости, чтобы продемонстрировать autowiring в конструктор).
+
+**src/Example.php**
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+class Example {
+    public function __construct(
+        private A $a,
+    ) {
+    }
+}
+```
+
+**src/A.php**
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+class A {
+}
+```
+
+**index.php** - Usage (Использование)
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$example = new \App\Example(new \App\A());
+var_dump($example);
+```
+
+Естественно будет настроенна автозагрузка классов с помощью composer и psr4.
+
+**composer.json**
+```json
+{
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
+```
+
 ## Установка
 ```
 composer require cekta/di
 ```
 
-## Настройка проекта
+## Минимальная настройка проекта. {#minimal-install}
 
-### 1. Создайте структуру проекта (опционально)
+### 1. Создаем скрипт
 
-Создайте папку для сгенерированного кода:
+**bin/build.php**
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$fqcn = 'App\Container';
+$filename = __DIR__ . '/../src/Container.php';
+
+file_put_contents(
+    $filename,
+    (new \Cekta\DI\ContainerBuilder(
+        fqcn: $fqcn,
+        entries: [\App\Example::class],
+        // you configuration here, like entries, params, alias, etc.
+    ))->build()
+);
+```
+
+В этом скрипте вы можете осуществлять [основную конфигурацию](./configuration.md).
+
+### 2. Генерируем Container (build)
+```
+php bin/build.php
+```
+
+Эту команду мы будем запускать каждый раз когда изменится наши зависимости и мы захотим актуализировать наш Container.
+
+### 3. Используем Container
+
+В вашей основной точке входа теперь все зависимости создаем через наш созданный контейнер
+
+**index.php**
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$params = []; // you current params
+$container = new \App\Container($params);
+var_dump($container->get(\App\Example::class));
+```
+
+⚠️ Если какие-то параметры **ИСПОЛЬЗОВАЛИСЬ** во время build, то эти параметры необходимо передать при создании 
+Container.
+
+Использовались это не значит что были объявлены, а значит что реально были использованы для разрешения entries, такие 
+параметры запоминаются.
+
+Container гарантирует все что было указано в entries на этапе build будет доступно при использовании.
+
+## Полезные рекомендации.
+
+### Получение параметров из одного места.
+
+Так как параметры нужны как на этапе build так и во время использования, лучше чтобы они генерировались в одном месте и 
+их можно было получать в разных местах.
+
+**src/Config.php**
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+class Config
+{
+    public function __construct(private readonly array $env = []) 
+    {
+    }
+    
+    public function load(): array 
+    {
+        $json = [];
+        $config = __DIR__ '/../config.json';
+        if (file_exists($config)) {
+            $json = json_decode(file_get_contents($config), true);
+        }
+        return [
+            'db_username' => $this->env['DB_USERNAME'] ?? $json['db']['username'] ?? 'default username',
+            // etc
+        ];
+    }
+}
+```
+
+Наличие такого конфига решает 2 основные проблемы:
+1. Позволяет получать параметры на этапе build и usage.
+2. Позволяет управлять конфигурацией проекта.
+
+Для примера реализованная простейшая конфигурация, параметр `db_username` либо берется из env `DB_USERNAME` 
+если там задан, в противном случае он читается из конфигурационного файла в формате json, в остальных случаях используется 
+значение по умолчанию.
+
+Естественно в каждом проекте своя конфигурация, свое расположение конфигурационных файлов, свои форматы конфигурации и 
+приоритет их определения, но задавать в одном месте очень удобно.
+
+### Сгенерированные файлы в отдельной папке
+
+Лучше не мешать файлы что пишутся людьми с файлами что были сгенерированными скриптами, например для сгенерированных 
+файлов можно создать папку **runtime** в корне с проектом.
 
 ```
 mkdir runtime
 ```
 
-Обновите `composer.json`, добавив автозагрузку:
+Внутри этой папки можно разместить readme.md что это для сгенерированных файлов, чтобы папка с этим файлом была в git.
 
 ```
-"autoload": {
-  "psr-4": {
-    "App\\": "src/",
-    "App\\Runtime\\": "runtime/"
-  }
-}
+echo "# For generated files" > runtime/readme.md
+git add runtime/readme.md
 ```
 
-Выполните:
+Можно выделить отдельный namespace, например **App\Runtime\\** для сгенерированных файлов.
 
-```
-composer dumpautoload
-```
-
-### 2. Создайте тестовый класс
-
-src/Example.php:
-
-```php
-<?php
-declare(strict_types=1);
-
-namespace App;
-
-class Example
-{
-}
-```
-
-### 3. Настройте класс проекта
-
-src/Project.php:
-
-```php
-<?php
-declare(strict_types=1);
-
-namespace App;
-
-use Cekta\DI\Compiler;
-use Psr\Container\ContainerInterface;
-use RuntimeException;
-
-class Project
-{
-    private string $container_file;
-    private string $container_fqcn = 'App\\Runtime\\Container';
-
-    public function __construct(private array $env)
-    {
-        $this->container_file = realpath(__DIR__ . '/..') . '/runtime/Container.php';
-    }
-
-    public function createContainer(): ContainerInterface
-    {
-        if (!class_exists($this->container_fqcn)) {
-            throw new RuntimeException("$this->container_fqcn не найден");
-        }
-        return new ($this->container_fqcn)($this->params());
-    }
-
-    public function compile(): void
-    {
-        $content = (new Compiler(
-            containers: [Example::class],
-            params: $this->params(),
-            fqcn: $this->container_fqcn,
-        ))->compile();
-
-        if (file_put_contents($this->container_file, $content, LOCK_EX) === false) {
-            throw new RuntimeException("Не удалось сгенерировать $this->container_file");
-        }
-        chmod($this->container_file, 0777);
-    }
-
-    private function params(): array
-    {
-        return [];
-    }
-}
-```
-
-### 4. Создайте скрипт генерации
-
-/bin/build.php:
-
-```php
-#!/usr/bin/env php
-<?php
-declare(strict_types=1);
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-$project = new \App\Project($_ENV);
-$project->compile();
-```
-
-### 5. Сгенерируйте контейнер
-
-```
-php bin/build.php
-```
-
-### 6. Проверьте работу
-
-/app.php
-
-```php
-<?php
-declare(strict_types=1);
-
-require_once __DIR__ . '/vendor/autoload.php';
-
-$project = new \App\Project($_ENV);
-$container = $project->createContainer();
-
-var_dump($container->get(App\Example::class));
-```
-
-Запустите:
-
-```
-php app.php
-```
-
-Ожидаемый вывод:
-
-```
-object(App\Example)#1 (0) {
-}
-```
-
-### 7. Настройте автоматическую генерацию (опционально)
-
-Добавьте в composer.json:
-
+**composer.json**:
 ```json
 {
-  "scripts": {
-    "post-autoload-dump": ["php ./bin/build.php"]
-  },
-  "config": {
-    "optimize-autoloader": true
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/",
+      "App\\Runtime\\": "runtime/"
+    }
   }
 }
 ```
 
-Теперь при обновлении автозагрузки контейнер будет генерироваться автоматически:
+### Сгенерированные файлы в .gitignore
 
+Нет смысла добавлять сгенерированные файлы в систему контроля версий (git), лучше их внести в .gitignore чтобы они 
+случайно не добавились
+
+**.gitignore**
 ```
-composer dumpautoload
+runtime # в случае если сгенерированные файлы в отдельной папке (предварительно добавленный readme.md останется)
+src/Container.php # в случае минимальной конфигурации
 ```
+### Skeleton для проектов.
 
-### Примеры реализации
+Имеется проект cekta/skeleton в котором сложенны лучшие практик, в том числе по cekta/di.
 
-* [Создание проекта](https://github.com/cekta/di-example-usage/commit/dcd1edaad83c6ebe621a5c9ae48cb11c634a7bdc)
-* [Интеграция cekta/di](https://github.com/cekta/di-example-usage/commit/c071b21fac50bdee943dd477b5f2c140c9608668)
-
-### Дальнейшие шаги
-
-После настройки используйте библиотеку следующим образом:
-
-1. Изменяйте конфигурацию в классе `App\Project`
-2. Генерируйте контейнер: `php bin/build.php` или `composer dumpautoload`
-3. Используйте контейнер в приложении: `$container->get(Service::class)`
-
-Готово к использованию!
+Вы можете использовать данный проект для ваших новых проектов или посмотреть лучшие применения в нем.

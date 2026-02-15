@@ -7,6 +7,9 @@ namespace Cekta\DI\Lazy;
 use Cekta\DI\Lazy;
 use Psr\Container\ContainerInterface;
 
+/**
+ * @external
+ */
 class Closure implements Lazy
 {
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\Compiler;
+use Cekta\DI\ContainerBuilder;
 use Cekta\DI\Lazy\Closure;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
@@ -53,8 +54,8 @@ class LifeCycleTest extends TestCase
                 return $index++;
             }),
         ];
-        $compiler = new Compiler(
-            containers: [
+        $builder = new ContainerBuilder(
+            entries: [
                 stdClass::class,
                 SingletonSubContainer::class,
                 FactorySubContainer::class,
@@ -85,7 +86,7 @@ class LifeCycleTest extends TestCase
                 self::FACTORY_DEFINITION,
             ]
         );
-        file_put_contents(self::FILE, $compiler->compile());
+        file_put_contents(self::FILE, $builder->build());
 
         // @phpstan-ignore-next-line
         self::$container = new (self::FQCN)($params);

@@ -8,6 +8,9 @@ use Cekta\DI\DependencyMap\Dependency\Alias;
 use Cekta\DI\DependencyMap\Dependency\AutowiringShared;
 use Cekta\DI\DependencyMap\Dependency\Param;
 
+/**
+ * @external
+ */
 readonly class ContainerBuilder
 {
     private DependencyMap $dependency_map;
