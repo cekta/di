@@ -51,6 +51,8 @@ jobs:
 
       - name: build pages
         run: make docs-build
+        env:
+          UID: 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
