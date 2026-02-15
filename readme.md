@@ -66,17 +66,6 @@ $controller = $container->get(App\Controller::class);
 
 https://cekta.github.io/di/
 
-* [Getting Started](https://cekta.github.io/di/start.html) - Installation and basic setup
-* [Containers](https://cekta.github.io/di/containers.html) - Defining your application's entry points
-* [Parameters](https://cekta.github.io/di/params.html) - Configuring values and instances
-* [Aliases](https://cekta.github.io/di/alias.html) - Mapping interfaces to implementation
-* [Lifecycle Management](https://cekta.github.io/di/lifecycle.html) - Scoped, Singleton, and Factory dependencies
-* [Priority Resolution](https://cekta.github.io/di/priority.html) - Understanding dependency resolution order
-* [Autoconfiguration](https://cekta.github.io/di/autoconfiguration.html) - Automatically discovering dependencies
-* [Service Locator](https://cekta.github.io/di/service-locator.html) - Using ContainerInterface as a dependency
-* [Argument Resolution](https://cekta.github.io/di/arguments.html) - How arguments become dependency names
-* [Troubleshooting](https://cekta.github.io/di/infinite-recursion.html) - Handling circular dependencies
-
 ## 🤝 Community
 Join the [Telegram chat](https://t.me/dev_ru) for discussions in English or Russian.
 
