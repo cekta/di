@@ -1,25 +1,15 @@
-# Документация V2 (actual)
-
-## Оглавление
+# Документация
 
 - [Введение](./readme.md)
 - [Начало работы](./start.md)
+- [Конфигурация ContainerBuilder](./configuration.md)
 
-## Основы конфигурации
-
-- [fqcn](./fqcn.md)
-- [containers](./containers.md)
-- [params](./params.md)
-- [alias](./alias.md)
-- [Управление жизненным циклом зависимостей](lifecycle.md)
-
-## Продвинутые часть
-- [Приоритет загрузки зависимостей](priority.md)
-- [Автоматическая конфигурация зависимостей](autoconfiguration.md)
-- [Service Locator с использованием ContainerInterface](service-locator.md)
-- [Преобразование аргументов в имена зависимостей](arguments.md)
-- [Обнаружение бесконечной рекурсии зависимостей](infinite-recursion.md)
-
----
-
-- [Документация V3(В разработке)](./v3/SUMMARY.md)
+# Подробней о конфигурации
+  - [Управление параметрами](params.md)
+  - [Управлениями alias для регистрации интерфейсов](alias.md)
+  - [Lazy параметры (отложенные значения)](lazy.md)
+  - [Управление жизненным циклом зависимостей](lifecycle.md)
+# Подробней о resolve dependency
+- [Как разрешается зависимости](./how.md)
+- [Как определяется имя зависимости](dependency-naming.md)
+- [Остались вопросы ?](support.md)

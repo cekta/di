@@ -15,6 +15,7 @@ services:
 
   pages:
     image: peaceiris/mdbook:latest
+    user: ${UID:-1000}
     ports:
       - "3000:3000"
     volumes:

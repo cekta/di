@@ -4,30 +4,11 @@
 
 * Приложениях на [RoadRunner](https://roadrunner.dev/) или [FrankenPHP](https://frankenphp.dev/)
 * Фоновых workers
-* Консольных командах, обрабатывающих множество задач
+* В консольных командах, обрабатывающих множество задач
 
-Вы можете управлять жизненным циклом любых зависимостей: containers, params, alias и autowiring.
+Вы можете управлять жизненным циклом любых зависимостей: entries, params, alias и autowiring.
 
-## 🔄 Типы жизненных циклов
-
-### 1. Scoped (Область видимости) ⭐ По умолчанию
-
-* Зависимость создаётся **один раз в пределах одного контейнера**
-* При создании нового экземпляра контейнера создаётся новая копия зависимости
-* Идеально для обработки отдельных запросов
-
-### 2. Singleton (Одиночка)
-
-* Зависимость создаётся **один раз на всё время выполнения скрипта**
-* Все экземпляры контейнера получают один и тот же объект
-* Используется через параметр singletons в конфигурации
-
-### 3. Factory (Фабрика)
-
-* Каждый запрос создаёт новый экземпляр зависимости
-* Используется через параметр factories в конфигурации
-
-### 📋 Конфигурация
+## 📋 Демонстрация разницы.
 
 ```php
 <?php
@@ -39,23 +20,20 @@ class Scoped {}
 class Singleton {}
 class Factory {}
 
-new \Cekta\DI\Compiler(
-    containers: [
-        Scoped::class,
-        Singleton::class,
-        Factory::class,
+new \Cekta\DI\ContainerBuilder(
+    entries: [
+        \App\Scoped::class,
+        \App\Singleton::class,
+        \App\Factory::class,
     ],
-    fqcn: 'App\\Runtime\\Container',
-    singletons: [Singleton::class],   // Singleton-зависимости
-    factories: [Factory::class],      // Factory-зависимости
+    fqcn: 'App\\Container',
+    singletons: [\App\Singleton::class],   // Singleton-зависимости
+    factories: [\App\Factory::class],      // Factory-зависимости
     // Scoped-зависимости не указываются явно (используются по умолчанию)
-)->compile();
+)->build();
 ```
 
-### 🧪 Пример использования
-
-[Демонстрация на GitHub](https://github.com/cekta/di-example-usage/commit/26fbb6bfd702c8d055818f61632d377c6bc3c40d)
-
+**index.php** - Usage (Использование)
 ```php
 <?php
 declare(strict_types=1);
@@ -63,8 +41,8 @@ declare(strict_types=1);
 namespace App;
 
 function testLifecycle(string $className) {
-    $container1 = new \App\Runtime\Container();
-    $container2 = new \App\Runtime\Container();
+    $container1 = new \App\Container();
+    $container2 = new \App\Container();
     
     $a = $container1->get($className);
     $b = $container1->get($className);  // Второй запрос к тому же контейнеру
@@ -114,14 +92,14 @@ Factory:
 1. **Scoped по умолчанию** - если не указан другой тип, используется Scoped
 2. **Конфликты приоритетов** - нельзя указать один класс одновременно как Singleton и Factory
 3. **Производительность** - Factory создаёт наибольшую нагрузку, Singleton - наименьшую
-4. **Потокобезопасность** - Singleton должен быть потокобезопасным в многопоточных средах
+4. **Потокобезопасность** - Singleton должен быть потоко-безопасным в многопоточных средах
 
 ## 🚀 Пример для долгоживущего приложения
 
 ```php
 <?php
 new \Cekta\DI\Compiler(
-    containers: [
+    entries: [
         HttpController::class,
         UserRepository::class,
         EmailService::class,
@@ -137,8 +115,6 @@ new \Cekta\DI\Compiler(
     ],
 );
 ```
-
----
 
 Правильное управление жизненным циклом позволяет:
 

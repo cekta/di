@@ -1,161 +1,84 @@
 # Params (Параметры)
 
-**По умолчанию:** `[]`
-
-## Назначение
-
 Параметры позволяют задавать конкретные значения для аргументов зависимостей:
+
 - Встроенные типы (`string`, `int`, `array` и т.д.)
-- Конкретные экземпляры объектов
-- Значения по умолчанию
+- Переопределять значение по умолчанию
+- Конкретные экземпляры объектов (например если вы создали `$logger` вы можете использовать его и дальше)
 
-## 📌 Основной синтаксис
-```
-{Имя аргумента без $} => {значение аргумента}
-```
+Некоторые параметры могут разрешаться в момент использования, а не во время build Container, такие параметры называются
+Lazy (ленивые). С помощью таких параметров можно реализовать свою callback функцию, которая будет
+генерировать зависимость в особо сложных случаях. [Подробней о Lazy (ленивых) параметрах](lazy.md).
 
-## 📋 Пример использования
+## Пример {#example-primitive}
 
-[Пример на GitHub](https://github.com/cekta/di-example-usage/commit/6fb30371083ffb38c8940adf5b948ce07ff3b5c0)
-
-### Конфигурация:
-
+**src/Example.php**
 ```php
+<?php
+
+namespace App;
 
 class Example
 {
-    public function __construct(private string $username, private string $password){}
+    public function __construct(public string $username, public string $password){}
 }
-
-new \Cekta\DI\Compiler(
-    containers: [Example::class],
-    params: [
-        'username' => 'my default username',
-        'password' => 'my default password',
-    ],
-    fqcn: 'App\\Runtime\\Container',
-)->compile();
 ```
 
-### Использование:
+**bin/build.php**
 ```php
-$container = new \App\Runtime\Container([
-    'username' => 'my current username', // Переопределяем!
-    'password' => 'my current password',
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$fqcn = 'App\Container';
+$filename = __DIR__ . '/../src/Container.php';
+
+file_put_contents(
+    $filename,
+    (new \Cekta\DI\ContainerBuilder(
+        fqcn: $fqcn,
+        entries: [\App\Example::class],
+        params: [
+            'username' => 'some username', // глобальное имя, всем кому потребуется username, будет использовано это значение.
+            \App\Example::class . '$password' => 'some password', // локальное имя, только для Example, аргумент с именем password будет иметь значение ...
+        ]
+    ))->build()
+);
+```
+
+Параметры можно задавать [глобально и локально](dependency-naming.md#global_vs_local).  
+Рекомендую задавать параметры для конкретной зависимости(локально).
+
+**Генерируем Container** - build
+```
+php bin/build.php
+```
+
+**index.php** - usage
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$params = []; // you current params
+$container = new \App\Container([
+    'username' => 'actual username',
+    \App\Example::class . '$password' => 'actual password',
 ]);
+$example = $container->get(\App\Example::class);
 
-$example = $container->get(Example::class);
-// $example->username = 'my current username'
-// $example->password = 'my current password'
+assert($example->username === 'actual username');
+assert($example->password === 'actual password');
 ```
 
-**Важно**: Значения из runtime имеют приоритет над значениями, заданными при компиляции.
+Обратите внимание что используется актуальное значение параметра которое передается при создании контейнера, а не то 
+что было на этапе build.
 
-##  Обязательные параметры
+Параметры, что **использовались** на этапе build считаются обязательными для создания Container, 
+если вы их не передадите, получите соответствующее исключение.
 
-Если параметры используются при компиляции, они становятся обязательными при создании контейнера:
-
-```php
-// Вызовет исключение - отсутствуют обязательные параметры
-$container = new \App\Runtime\Container([]); 
-
-// Правильно:
-$container = new \App\Runtime\Container([
-    'username' => '...',
-    'password' => '...',
-]);
-```
-
-## 🎯 Параметры для конкретных зависимостей
-
-### Синтаксис:
-
-```
-{ClassName}${argumentName} => {значение аргумента}
-```
-
-### Пример:
-
-```php
-class Example {
-    public function __construct(private string $username, private string $password) {}
-}
-
-class Example2 {
-    public function __construct(private string $username, private string $password) {}
-}
-
-new \Cekta\DI\Compiler(
-    containers: [Example::class, Example2::class],
-    params: [
-        'username' => 'default_username',
-        'password' => 'default_password',
-        Example2::class . '$username' => 'special_username', // Только для Example2
-    ],
-)->compile();
-```
-
-### Приоритеты:
-1. `ClassName$argumentName` (наивысший)
-2. Общие параметры
-3. Autowiring (если не указано явно)
-
-### 🔄 Работа с одинаковыми типами
-
-Используйте имя для точного указания аргумента, если у нескольких аргументов одинаковый тип.
-
-```php
-class Example {
-    public function __construct(
-        private A $a1, 
-        private A $a2,  // Только этот переопределяем
-        private A $a3,
-    ) {}
-}
-
-new \Cekta\DI\Compiler(
-    containers: [Example::class],
-    params: [
-        Example::class . '$a2' => new B(), // B extends A
-    ],
-)->compile();
-```
-
-## 🕐 Lazy-параметры (отложенные значения)
-
-Если параметр реализует [Lazy](../src/Lazy.php) interface то он будет загружаться в runtime.
-
-### Для чего:
-
-* Динамические вычисления значений
-* Фабрики и билдеры
-* Работа с legacy-кодом
-
-### Интерфейс Lazy:
-
-```php
-interface Lazy {
-    public function resolve(ContainerInterface $container): mixed;
-}
-```
-
-### Пример с LazyClosure:
-
-```php
-new \Cekta\DI\Compiler(
-    containers: [Example::class, 'db_type', 'db_path'],
-    params: [
-        'username' => $env['DB_USERNAME'] ?? null,
-        'password' => $env['DB_PASSWORD'] ?? null,
-        'dsn' => new \Cekta\DI\LazyClosure(
-            function (ContainerInterface $c) {
-                return "{$c->get('db_type')}:{$c->get('db_path')}";
-            }
-        ),
-        'db_type' => $env['DB_TYPE'] ?? 'sqlite',
-        'db_path' => $env['DB_PATH'] ?? './db.sqlite',
-    ],
-)->compile();
-```
-
-**Рекомендация:** Если параметры используются внутри LazyClosure, добавьте их в containers для гарантии доступности.
+Использовались != были объявлены. Использовались это значит они применялись для разрешения ``entries``.

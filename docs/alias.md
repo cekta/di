@@ -1,7 +1,5 @@
 # Alias (Псевдонимы)
 
-**По умолчанию:** `[]`
-
 Механизм псевдонимов позволяет заменять одну зависимость другой. Это полезно для:
 
 1. **Выбора реализации интерфейса** - указание, какой конкретный класс использовать для интерфейса.
@@ -9,11 +7,12 @@
 3. **Замены зависимостей** - использование подклассов вместо родительских классов.
 4. **Сокращения имен** - создание коротких псевдонимов для длинных имен классов
 
-## 📋 Базовый пример
+## Пример
+
+**src/Example.php**
 
 ```php
 <?php
-declare(strict_types=1);
 
 namespace App;
 
@@ -23,27 +22,80 @@ class Example {
         public Base $base,
     ) {}
 }
+```
+
+**src/I.php**
+
+```php
+<?php
+
+namespace App;
 
 interface I {}
-class R1 implements I {}
+```
+
+**src/R2.php**
+
+```php
+<?php
+
+namespace App;
+
 class R2 implements I {}
+```
+
+**src/Base.php**
+
+```php
+<?php
+
+namespace App;
 
 class Base {}
-class E1 extends Base {}
-class E2 extends Base {}
+```
 
-new \Cekta\DI\Compiler(
-    containers: [Example::class],
-    alias: [
-        I::class => R2::class,      // Для I используем R2
-        Base::class => E1::class,   // Для Base используем E1
-        'short-name' => Example::class, // Создаем короткий псевдоним
+**src/E1.php**
+
+```php
+<?php
+
+namespace App;
+
+class E1 extends Base {}
+```
+
+**bin/build.php** - build
+
+```php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$fqcn = 'App\Container';
+$filename = __DIR__ . '/../src/Container.php';
+
+file_put_contents(
+    $filename,
+    (new \Cekta\DI\ContainerBuilder(
+        fqcn: $fqcn,
+        entries: [\App\Example::class],
+        alias: [
+            I::class => R2::class,      // Для I используем R2
+            Base::class => E1::class,   // Для Base используем E1
     ],
-    fqcn: 'App\\Runtime\\Container',
+    ))->build()
 );
 ```
 
-### Использование:
+**Генерируем Container**
+
+```
+php bin/build.php
+```
+
+**index.php** - использование (use)
 
 ```php
 <?php
@@ -51,149 +103,11 @@ declare(strict_types=1);
 
 namespace App;
 
-$container = new \App\Runtime\Container([]);
+$container = new \App\Container([]);
 $example = $container->get(Example::class);
 
 $example->i instanceof R2;      // true
 $example->base instanceof E1;   // true
-$example === $container->get('short-name'); // true
 ```
 
 **Важно**: Псевдонимы устанавливаются на этапе компиляции. Для их изменения требуется повторная генерация контейнера.
-
-## 🎯 Псевдонимы для конкретных зависимостей
-
-Можно задавать псевдонимы, которые применяются только к определенным аргументам.
-
-### Синтаксис:
-
-```
-{ClassName}${argumentName} => {target}
-```
-
-### Пример:
-
-```php
-<?php
-declare(strict_types=1);
-
-namespace App;
-
-class Example {
-    public function __construct(
-        public I $i,
-        public I $i2,  // Этот аргумент получит особую реализацию
-        public I $i3,
-    ) {}
-}
-
-interface I {}
-class R1 implements I {}
-class R2 implements I {}
-
-new \Cekta\DI\Compiler(
-    containers: [Example::class],
-    alias: [
-        I::class => R2::class,                     // По умолчанию для I используем R2
-        Example::class . '$i2' => R1::class,       // Но для $i2 в Example используем R1
-    ],
-    fqcn: 'App\\Runtime\\Container',
-);
-```
-
-### Использование:
-
-```php
-<?php
-declare(strict_types=1);
-
-namespace App;
-
-$container = new \App\Runtime\Container([]);
-$example = $container->get(Example::class);
-
-$example->i instanceof R2;  // true
-$example->i2 instanceof R1; // true - переопределен!
-$example->i3 instanceof R2; // true
-```
-
-### 💡 Приоритеты применения
-
-При разрешении зависимостей учитывается следующий порядок приоритетов:
-
-1. **Конкретный аргумент** (`ClassName$argumentName`) - наивысший приоритет
-2. **Общий псевдоним** - применяется ко всем использованиям класса/интерфейса
-3. **Autowiring** - если псевдоним не задан, используется стандартное разрешение
-
-## 🚀 Типичные сценарии использования
-
-### 1. Выбор реализации интерфейса
-
-```php
-alias: [
-    LoggerInterface::class => FileLogger::class,
-    CacheInterface::class => RedisCache::class,
-]
-```
-
-### 2. Работа с абстрактными классами
-
-```php
-alias: [
-    AbstractRepository::class => UserRepository::class,
-    AbstractService::class => UserService::class,
-]
-```
-
-### 3. Сокращение длинных имен
-
-```php
-alias: [
-    'users' => \App\Domain\User\Services\UserManagementService::class,
-    'auth' => \App\Domain\Auth\Services\AuthenticationService::class,
-]
-```
-
-### 4. Замена реализации в определенном месте
-
-```php
-alias: [
-    MailerInterface::class => SmtpMailer::class,
-    NewsletterService::class . '$mailer' => TestMailer::class, // Только для NewsletterService
-]
-```
-
-## ⚠️ Важные замечания
-
-1. **Изменения требуют перекомпиляции** - псевдонимы фиксируются при генерации контейнера
-2. **Совместимость типов** - заменяемый класс должен быть совместим по типу (реализовывать интерфейс или наследовать класс)
-3. **Проверка на этапе компиляции** - ошибки несовместимости типов обнаруживаются при генерации кода
-
-## 🔄 Совместное использование с другими механизмами
-
-Псевдонимы хорошо работают в сочетании с:
-
-* [Params](params.md) - для передачи конкретных значений
-* [Autowiring](containers.md#-autowiring-в-конструкторе) - для автоматического разрешения оставшихся зависимостей
-* [Lazy-зависимостями](params.md#-lazy-параметры-отложенные-значения) - для отложенного создания объектов
-
-### Пример комплексного использования:
-
-```php
-new \Cekta\DI\Compiler(
-    containers: [Controller::class],
-    alias: [
-        RepositoryInterface::class => DatabaseRepository::class,
-        Controller::class . '$logger' => FileLogger::class,
-    ],
-    params: [
-        'database.dsn' => 'mysql:host=localhost;dbname=app',
-        Controller::class . '$debug' => true,
-    ],
-);
-```
-
----
-
-Псевдонимы - мощный инструмент для гибкой настройки зависимостей, позволяющий легко менять реализации без изменения 
-основного кода
