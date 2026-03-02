@@ -10,8 +10,8 @@ A modern, high-performance PSR-11 Container implementation designed for develope
 ## ✨ Features
 
 * 🚀 **Zero Runtime Overhead** - All dependencies are resolved during compilation, not at runtime
-  * **No runtime reflection** - All dependency resolution happens during compilation
-  * **Predictable performance** - No dynamic analysis slowing down your application
+    * **No runtime reflection** - All dependency resolution happens during compilation
+    * **Predictable performance** - No dynamic analysis slowing down your application
 * ⚡ **OPcache Ready** - Generated code works perfectly with PHP's opcode cache
 * 🔧 **Flexible Configuration** - Mix autowiring with explicit configuration
 * 📦 **Full PSR-11 Compliance** - Implements the standard Container Interface
@@ -28,38 +28,47 @@ composer require cekta/di
 
 ## 🚀 Quick Start
 
-src/Controller.php:
+**src/Controller.php**
 ```php
+<?php
+
 namespace App;
 
 class Controller {
 }
 ```
 
-bin/build.php:
-
+**bin/build.php**
 ```php
-use Cekta\DI\Compiler;
+<?php
+
+require __DIR__ . './../vendor/autoload.php';
 
 // Configure your dependencies.
-$compiler = new Compiler(
-    containers: [App\Controller::class],
+$builder = new \Cekta\DI\ContainerBuilder(
+    containers: [\App\Controller::class],
     fqcn: 'App\\Runtime\\Container'
 );
 
 // Generate the container
-$code = $compiler->compile();
+$code = $builder->compile();
 file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
 ```
 
-app.php:
+**CLI: generate container**
+```
+php bin/build.php
+```
 
+**app.php**
 ```php
-use Cekta\DI\Compiler;
+<?php
+
+require __DIR__ . './vendor/autoload.php';
 
 // Use it in your application
-$container = new App\Runtime\Container();
-$controller = $container->get(App\Controller::class);
+$container = new \App\Runtime\Container();
+$controller = $container->get(\App\Controller::class);
 ```
 
 ## 📚 Documentation
@@ -68,7 +77,3 @@ https://cekta.github.io/di/
 
 ## 🤝 Community
 Join the [Telegram chat](https://t.me/dev_ru) for discussions in English or Russian.
-
----
-
-Cekta/DI - Dependency injection that gets out of your way and lets you focus on building great applications.
