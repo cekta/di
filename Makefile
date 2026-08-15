@@ -16,7 +16,7 @@ docs-build:
 
 .PHONY: ci
 ci:
-	docker compose run --rm -it app composer test
+	docker compose run --rm app composer test
 
 .PHONY: test-8.2
 test-8.2:
