@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 1
 
       - name: run
-        run: docker compose run --rm app
+        run: make run
         env:
           UID: 0
           PHP_VERSION: ${{ matrix.php }}

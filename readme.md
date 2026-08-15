@@ -10,8 +10,7 @@ A modern, high-performance PSR-11 Container implementation designed for develope
 ## ✨ Features
 
 * 🚀 **Zero Runtime Overhead** - All dependencies are resolved during compilation, not at runtime
-    * **No runtime reflection** - All dependency resolution happens during compilation
-    * **Predictable performance** - No dynamic analysis slowing down your application
+* **No runtime reflection** - All dependency resolution happens during compilation
 * ⚡ **OPcache Ready** - Generated code works perfectly with PHP's opcode cache
 * 🔧 **Flexible Configuration** - Mix autowiring with explicit configuration
 * 📦 **Full PSR-11 Compliance** - Implements the standard Container Interface
@@ -34,7 +33,11 @@ composer require cekta/di
 
 namespace App;
 
-class Controller {
+class Controller
+{
+    public function __construct(private \PDO $service) 
+    {
+    }
 }
 ```
 
@@ -47,6 +50,9 @@ require __DIR__ . './../vendor/autoload.php';
 // Configure your dependencies.
 $builder = new \Cekta\DI\ContainerBuilder(
     containers: [\App\Controller::class],
+    params: [
+        \PDO::class . '$dsn' => 'sqlite:database.sqlite',
+    ],
     fqcn: 'App\\Runtime\\Container'
 );
 
@@ -60,6 +66,8 @@ file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
 php bin/build.php
 ```
 
+now we can use generated **/runtime/Container.php** in our project
+
 **app.php**
 ```php
 <?php
@@ -67,7 +75,9 @@ php bin/build.php
 require __DIR__ . './vendor/autoload.php';
 
 // Use it in your application
-$container = new \App\Runtime\Container();
+$container = new \App\Runtime\Container([
+    \PDO::class . '$dsn' => 'sqlite:database.sqlite', // can be changed, but required!!!
+]);
 $controller = $container->get(\App\Controller::class);
 ```
 

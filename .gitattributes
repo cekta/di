@@ -1,7 +1,13 @@
-* export-ignore
-
-/src** -export-ignore
-/template** -export-ignore
-/composer.json -export-ignore
-/readme.md -export-ignore
-/LICENSE -export-ignore
+/docs export-ignore
+/tests export-ignore
+/.github export-ignore
+/book.toml export-ignore
+/docker-compose.yml export-ignore
+/Dockerfile export-ignore
+/infection.json.dist export-ignore
+/Makefile export-ignore
+/phpcs.xml.dist export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/.phpstorm.meta.php export-ignore
+/.gitignore export-ignore
