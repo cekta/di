@@ -14,8 +14,8 @@ shell-docs:
 docs-build:
 	docker compose run --rm pages build
 
-.PHONY: run
-run:
+.PHONY: ci
+ci:
 	docker compose run --rm -it app composer test
 
 .PHONY: test-8.2
