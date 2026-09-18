@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\ContainerBuilder;
+use Cekta\DI\ContainerFactory;
+use Cekta\DI\ContainerGenerator;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Test\ContainerBuilderTest\A;
-use Cekta\DI\Test\ContainerBuilderTest\App;
 use Cekta\DI\Test\ContainerBuilderTest\CircularDependency;
 use Cekta\DI\Test\ContainerBuilderTest\ContainerCreatedWithNew;
 use Cekta\DI\Test\ContainerBuilderTest\EntrypointAutowiring;
@@ -17,9 +17,11 @@ use Cekta\DI\Test\ContainerBuilderTest\EntrypointOverwriteExtendConstructor;
 use Cekta\DI\Test\ContainerBuilderTest\EntrypointSharedDependency;
 use Cekta\DI\Test\ContainerBuilderTest\EntrypointVariadicClass;
 use Cekta\DI\Test\ContainerBuilderTest\I;
+use Cekta\DI\Test\ContainerBuilderTest\ProjectEnd2End;
 use Cekta\DI\Test\ContainerBuilderTest\R1;
 use Cekta\DI\Test\ContainerBuilderTest\S;
 use Cekta\DI\Test\ContainerBuilderTest\SWithParam;
+use Cekta\DI\Test\Fixture\Project;
 use InvalidArgumentException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
@@ -28,30 +30,29 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use stdClass;
 
-class ContainerBuilderTest extends TestCase
+class End2EndTest extends TestCase
 {
     private ContainerInterface $container;
-    private static string $container_filename = __DIR__ . "/ContainerBuilderTest/Container.php";
-    private string $container_fqcn = "Cekta\DI\Test\ContainerBuilderTest\Container";
-    private App $app;
+    private static ProjectEnd2End $project;
+
+    public static function setUpBeforeClass(): void
+    {
+        self::$project = new ProjectEnd2End(__DIR__ . "/ContainerBuilderTest/Container.php");
+        file_exists(self::$project->filename) &&
+            unlink(self::$project->filename);
+    }
 
     /**
      * @inheritDoc
      */
     protected function setUp(): void
     {
-        $this->app = new App();
-        if (!file_exists(self::$container_filename)) {
-            // cant be moved to setupBeforeClass, infection not fix mutants
-            $builder = new ContainerBuilder(
-                entries: $this->app->entries,
-                params: $this->app->params,
-                alias: $this->app->alias,
-                fqcn: $this->container_fqcn,
-            );
-            file_put_contents(self::$container_filename, $builder->build());
+        if (!file_exists(self::$project->filename)) {
+            $generator = new ContainerGenerator();
+            file_put_contents(self::$project->filename, $generator->generate(self::$project));
         }
-        $this->container = new $this->container_fqcn($this->app->params);
+        $factory = new ContainerFactory();
+        $this->container = $factory->create(self::$project);
     }
 
     /**
@@ -59,8 +60,8 @@ class ContainerBuilderTest extends TestCase
      */
     public static function tearDownAfterClass(): void
     {
-        file_exists(self::$container_filename) &&
-            unlink(self::$container_filename);
+        file_exists(self::$project->filename) &&
+            unlink(self::$project->filename);
     }
 
     /**
@@ -69,7 +70,7 @@ class ContainerBuilderTest extends TestCase
      */
     public function testAllEntriesMustBeAvailableAndGettable(): void
     {
-        foreach ($this->app->entries as $key) {
+        foreach (self::$project->entries as $key) {
             Assert::assertTrue(
                 $this->container->has($key),
                 "available for get",
@@ -104,12 +105,12 @@ class ContainerBuilderTest extends TestCase
         $autowiring = $this->container->get(EntrypointAutowiring::class);
         Assert::assertInstanceOf(EntrypointAutowiring::class, $autowiring);
         Assert::assertSame(
-            $this->app->params["username"],
+            self::$project->params["username"],
             $autowiring->username,
             "string(primitive) params must be inject",
         );
         Assert::assertSame(
-            $this->app->params["password"],
+            self::$project->params["password"],
             $autowiring->password,
             "string(primitive) params must be inject",
         );
@@ -145,7 +146,7 @@ class ContainerBuilderTest extends TestCase
             "must be called array_pop on everytime",
         );
         Assert::assertSame(
-            $this->app->params[S::class . "|string"],
+            self::$project->params[S::class . "|string"],
             $autowiring->union_type,
             "union|dfn params must work",
         );
@@ -155,12 +156,12 @@ class ContainerBuilderTest extends TestCase
             "lazy loading params must be correct inject",
         );
         Assert::assertSame(
-            $this->app->params["argument_to_custom_param"],
+            self::$project->params["argument_to_custom_param"],
             $autowiring->argument_to_custom_param,
             "must default value from param, no custom param",
         );
         Assert::assertSame(
-            $this->app->params["argument_to_custom_alias_value"],
+            self::$project->params["argument_to_custom_alias_value"],
             $autowiring->argument_to_custom_alias,
             "must default alias, no custom alias",
         );
@@ -170,7 +171,7 @@ class ContainerBuilderTest extends TestCase
             "other entrypoint must be correct inject",
         );
         Assert::assertSame(
-            $this->app->params["...variadic_int"],
+            self::$project->params["...variadic_int"],
             $autowiring->variadic_int,
             "variadic params must be inject",
         );
@@ -213,24 +214,24 @@ class ContainerBuilderTest extends TestCase
             "dependency between few entrypoint must be auto shared (same)",
         );
         Assert::assertSame(
-            $this->app->params[
+            self::$project->params[
                 EntrypointSharedDependency::class . '$argument_to_custom_param'
             ],
             $entrypoint_shared->argument_to_custom_param,
             "must be set custom param only for this class",
         );
         Assert::assertSame(
-            $this->app->params["argument_to_custom_alias_custom_value"],
+            self::$project->params["argument_to_custom_alias_custom_value"],
             $entrypoint_shared->argument_to_custom_alias,
             "must be used custom alias only for this class",
         );
         Assert::assertSame(
-            $this->app->params["argument_to_custom_alias_custom_value"],
+            self::$project->params["argument_to_custom_alias_custom_value"],
             $entrypoint_shared->argument_to_custom_alias2,
             "after alias must be correct detect param with array_pop stack",
         );
         Assert::assertSame(
-            $this->app->params[
+            self::$project->params[
                 "..." . EntrypointSharedDependency::class . '$variadic_int'
             ],
             $entrypoint_shared->variadic_int,
@@ -257,7 +258,7 @@ class ContainerBuilderTest extends TestCase
         /** @var EntrypointVariadicClass $obj */
         $obj = $this->container->get(EntrypointVariadicClass::class);
         Assert::assertSame(
-            $this->app->params["..." . A::class],
+            self::$project->params["..." . A::class],
             $obj->a_array,
             "variadic params without primitive must be correct injected",
         );
@@ -274,7 +275,7 @@ class ContainerBuilderTest extends TestCase
             EntrypointOverwriteExtendConstructor::class,
         );
         Assert::assertSame(
-            $this->app->params[
+            self::$project->params[
                 EntrypointOverwriteExtendConstructor::class . '$username'
             ],
             $obj->username,
@@ -311,7 +312,7 @@ class ContainerBuilderTest extends TestCase
                 EntrypointOverwriteExtendConstructor::class . '$username',
             ),
         );
-        new $this->container_fqcn([]);
+        new (self::$project->fqcn)([]);
     }
 
     public function testInfiniteRecursion(): void
@@ -325,9 +326,12 @@ class ContainerBuilderTest extends TestCase
                 CircularDependency::class,
             ),
         );
-
-        (new ContainerBuilder(
+        $project = new Project(
+            filename: self::$project->filename,
+            fqcn: self::$project->fqcn,
             entries: [EntrypointCircularDependency::class],
-        ))->build();
+        );
+        $generator = new ContainerGenerator();
+        $generator->generate($project);
     }
 }

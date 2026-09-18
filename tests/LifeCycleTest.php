@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test;
 
-use Cekta\DI\Compiler;
-use Cekta\DI\ContainerBuilder;
-use Cekta\DI\Lazy\Closure;
+use Cekta\DI\ContainerFactory;
+use Cekta\DI\ContainerGenerator;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
+use Cekta\DI\Test\LifeCycleTest\Project;
 use Cekta\DI\Test\LifeCycleTest\Singleton;
 use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer;
-use Cekta\DI\Test\LifeCycleTest\SingletonSubContainer\Dependency;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
@@ -21,82 +20,31 @@ use stdClass;
 
 class LifeCycleTest extends TestCase
 {
-    private const FILE = __DIR__ . DIRECTORY_SEPARATOR . 'LifeCycleContainer.php';
-    private const FQCN = 'Cekta\DI\Test\LifeCycleContainer';
-    private const SCOPED_ALIAS = 'scoped_alias';
-    private const SCOPED_DEFINITION = 'scoped_definition';
-    private const SINGLETON_ALIAS = 'singleton_alias';
-    private const SINGLETON_DEFINITION = 'singleton_definition';
-    private const FACTORY_ALIAS = 'factory_alias';
-    private const FACTORY_DEFINITION = 'factory_definition';
+    private static Project $project;
     private static ContainerInterface $container;
     private static ContainerInterface $container2;
 
     public static function setUpBeforeClass(): void
     {
-        file_exists(self::FILE) && unlink(self::FILE);
+        self::$project = new Project(__DIR__ . DIRECTORY_SEPARATOR . 'LifeCycleContainer.php');
+        file_exists(self::$project->filename) && unlink(self::$project->filename);
     }
 
     protected function setUp(): void
     {
-        if (file_exists(self::FILE)) {
+        if (file_exists(self::$project->filename)) {
             return;
         }
-        $params = [
-            self::SCOPED_DEFINITION => new Closure(function () {
-                return new stdClass();
-            }),
-            self::SINGLETON_DEFINITION => new Closure(function () {
-                return new stdClass();
-            }),
-            self::FACTORY_DEFINITION => new Closure(function () {
-                static $index = 0;
-                return $index++;
-            }),
-        ];
-        $builder = new ContainerBuilder(
-            entries: [
-                stdClass::class,
-                SingletonSubContainer::class,
-                FactorySubContainer::class,
-                Singleton::class,
-                Factory::class,
-                self::SCOPED_ALIAS,
-                self::SINGLETON_ALIAS,
-                self::FACTORY_ALIAS,
-            ],
-            params: $params,
-            alias: [
-                self::SCOPED_ALIAS => stdClass::class,
-                self::SINGLETON_ALIAS => stdClass::class,
-                self::FACTORY_ALIAS => self::FACTORY_DEFINITION,
-            ],
-            fqcn: self::FQCN,
-            singletons: [
-                Dependency::class,
-                self::SINGLETON_ALIAS,
-                self::SINGLETON_DEFINITION,
-                Singleton::class,
-            ],
-            factories: [
-                FactorySubContainer\Dependency::class,
-                FactorySubContainer::class,
-                Factory::class,
-                self::FACTORY_ALIAS,
-                self::FACTORY_DEFINITION,
-            ]
-        );
-        file_put_contents(self::FILE, $builder->build());
-
-        // @phpstan-ignore-next-line
-        self::$container = new (self::FQCN)($params);
-        // @phpstan-ignore-next-line
-        self::$container2 = new (self::FQCN)($params);
+        $generator = new ContainerGenerator();
+        file_put_contents(self::$project->filename, $generator->generate(self::$project));
+        $factory = new ContainerFactory();
+        self::$container = $factory->create(self::$project);
+        self::$container2 = $factory->create(self::$project);
     }
 
     public static function tearDownAfterClass(): void
     {
-        file_exists(self::FILE) && unlink(self::FILE);
+        file_exists(self::$project->filename) && unlink(self::$project->filename);
     }
 
     /**
@@ -132,9 +80,9 @@ class LifeCycleTest extends TestCase
     public function testDefaultAliasMustBeScoped(): void
     {
         $this->mustBeScoped(
-            self::$container->get(self::SCOPED_ALIAS),
-            self::$container->get(self::SCOPED_ALIAS),
-            self::$container2->get(self::SCOPED_ALIAS)
+            self::$container->get(self::$project::SCOPED_ALIAS),
+            self::$container->get(self::$project::SCOPED_ALIAS),
+            self::$container2->get(self::$project::SCOPED_ALIAS)
         );
     }
 
@@ -145,9 +93,9 @@ class LifeCycleTest extends TestCase
     public function testDefaultDefinitionMustBeScoped(): void
     {
         $this->mustBeScoped(
-            self::$container->get(self::SCOPED_DEFINITION),
-            self::$container->get(self::SCOPED_DEFINITION),
-            self::$container2->get(self::SCOPED_DEFINITION)
+            self::$container->get(self::$project::SCOPED_DEFINITION),
+            self::$container->get(self::$project::SCOPED_DEFINITION),
+            self::$container2->get(self::$project::SCOPED_DEFINITION)
         );
     }
 
@@ -170,8 +118,8 @@ class LifeCycleTest extends TestCase
     public function testSingletonAlias(): void
     {
         Assert::assertSame(
-            self::$container->get(self::SINGLETON_ALIAS),
-            self::$container2->get(self::SINGLETON_ALIAS)
+            self::$container->get(self::$project::SINGLETON_ALIAS),
+            self::$container2->get(self::$project::SINGLETON_ALIAS)
         );
     }
 
@@ -182,8 +130,8 @@ class LifeCycleTest extends TestCase
     public function testSingletonDefinition(): void
     {
         Assert::assertSame(
-            self::$container->get(self::SINGLETON_DEFINITION),
-            self::$container2->get(self::SINGLETON_DEFINITION)
+            self::$container->get(self::$project::SINGLETON_DEFINITION),
+            self::$container2->get(self::$project::SINGLETON_DEFINITION)
         );
     }
 
@@ -205,8 +153,8 @@ class LifeCycleTest extends TestCase
      */
     public function testFactoryAlias(): void
     {
-        $v1 = self::$container->get(self::FACTORY_ALIAS);
-        $v2 = self::$container->get(self::FACTORY_ALIAS);
+        $v1 = self::$container->get(self::$project::FACTORY_ALIAS);
+        $v2 = self::$container->get(self::$project::FACTORY_ALIAS);
         Assert::assertNotEquals($v1, $v2);
     }
 
@@ -216,8 +164,8 @@ class LifeCycleTest extends TestCase
      */
     public function testFactoryDefinition(): void
     {
-        $v1 = self::$container->get(self::FACTORY_DEFINITION);
-        $v2 = self::$container->get(self::FACTORY_DEFINITION);
+        $v1 = self::$container->get(self::$project::FACTORY_DEFINITION);
+        $v2 = self::$container->get(self::$project::FACTORY_DEFINITION);
         Assert::assertNotEquals($v1, $v2);
     }
 
