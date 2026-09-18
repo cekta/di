@@ -22,14 +22,14 @@ class DependencyMap
      * @var array<string>
      */
     private array $stack = [];
-    private ContainerBuilder $config;
+    private BuildConfiguration $config;
     private ReflectionService $reflection_service;
 
     /**
-     * @param ContainerBuilder $config
+     * @param BuildConfiguration $config
      * @return array<string, Dependency>
      */
-    public function generate(ContainerBuilder $config): array
+    public function generate(BuildConfiguration $config): array
     {
         $this->config = $config;
         $this->reflection_service = new ReflectionService($this->config->params, $this->config->alias);
@@ -84,10 +84,12 @@ class DependencyMap
 
             switch ($dependency::class) {
                 case Alias::class:
+                    /** @var Alias $dependency */
                     $this->match($dependency->target);
                     break;
                 case Container::class:
                 case Autowiring::class:
+                    /** @var Autowiring|Container $dependency */
                     $this->autowiring($dependency);
                     break;
             }

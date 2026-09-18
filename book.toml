@@ -3,3 +3,6 @@ authors = ["Evgeniy Kuvshinov"]
 language = "ru"
 src = "docs"
 title = "CEKTA/DI"
+
+[output.html]
+additional-css = ["docs/theme/style.css"]

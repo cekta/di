@@ -10,12 +10,12 @@ use Cekta\DI\DependencyMap\Dependency\Param;
 
 /**
  * @external
+ * @deprecated will be removed on next release, use AbstractProject
  */
 readonly class ContainerBuilder
 {
-    private DependencyMap $dependency_map;
-    private Template $template;
     public FQCN $fqcn;
+    private readonly AbstractProject $project;
     /**
      * @param array<string> $entries
      * @param array<string, mixed|Lazy> $params
@@ -31,47 +31,31 @@ readonly class ContainerBuilder
         string $fqcn = 'App\Container',
         public array $singletons = [],
         public array $factories = [],
+        private ContainerGenerator $generator = new ContainerGenerator(),
     ) {
         $this->fqcn = new FQCN($fqcn);
-        $this->dependency_map = new DependencyMap();
-        $this->template = new Template(__DIR__ . '/../template/container.compiler.php');
+        $this->project = new class ($fqcn, $this) extends AbstractProject {
+            public function __construct(
+                private string $fqcnString,
+                private ContainerBuilder $builder
+            ) {
+                parent::__construct('tmp stub', $this->fqcnString, $this->builder->params);
+            }
+
+            public function definition(): array
+            {
+                return [
+                    'entries' => $this->builder->entries,
+                    'alias' => $this->builder->alias,
+                    'singletons' => $this->builder->singletons,
+                    'factories' => $this->builder->factories,
+                ];
+            }
+        };
     }
 
-    /**
-     * @return string
-     */
     public function build(): string
     {
-        $dependency_map = $this->dependency_map->generate($this);
-
-        $required_keys = [];
-        $dependencies = [];
-        foreach ($dependency_map as $dependency) {
-            if ($dependency::class === Param::class) {
-                $required_keys[] = $dependency->name;
-            }
-            if (
-                in_array(
-                    $dependency::class,
-                    [DependencyMap\Dependency\Container::class, Alias::class, AutowiringShared::class]
-                )
-            ) {
-                $dependencies[$dependency->name] = $dependency->render($dependency_map);
-            }
-
-            if ($dependency::class === Alias::class) {
-                $dependencies[$dependency->target] = $dependency_map[$dependency->target]->render($dependency_map);
-            }
-        }
-        return $this->template->render([
-            'namespace' => $this->fqcn->namespace,
-            'class' => $this->fqcn->className,
-            'entries' => $this->entries,
-            'singletons' => $this->singletons,
-            'factories' => $this->factories,
-
-            'dependencies' => $dependencies,
-            'required_keys' => $required_keys,
-        ]);
+        return $this->generator->generate($this->project);
     }
 }
