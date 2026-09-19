@@ -1,216 +1,143 @@
 # Начало работы
 
-## Пример проекта {#example-autowiring}
+Этот раздел — пошаговое руководство, которое покажет, как настроить и использовать `Cekta\DI`.
 
-Давайте рассмотрим простейший проект у которого все исходники в **src** и namespace **App**
-с классами **Example** и **A** (зависимости, чтобы продемонстрировать autowiring в конструктор).
+## Без DI-контейнера
+
+Давайте представим простейший проект с классом `Example`, зависящим от подключения к базе данных (PDO).
 
 **src/Example.php**
 ```php
 <?php
-
 declare(strict_types=1);
 
 namespace App;
 
-class Example {
+class Example
+{
     public function __construct(
-        private A $a,
+        private \PDO $db,
     ) {
+    }
+
+    public function payload(): void
+    {
+        // ... используйте $db ...
     }
 }
 ```
 
-**src/A.php**
+**index.php** — ручное создание зависимости:
+
 ```php
 <?php
-
-declare(strict_types=1);
-
-namespace App;
-
-class A {
-}
-```
-
-**index.php** - Usage (Использование)
-```php
-<?php
-
 declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$example = new \App\Example(new \App\A());
-var_dump($example);
+$pdo = new \PDO(getenv('DB_DSN') ?? 'sqlite:' . __DIR__ . '/../mydb.sqlite');
+$example = new \App\Example($pdo);
+$example->payload();
 ```
 
-Естественно будет настроенна автозагрузка классов с помощью composer и psr4.
+Проблема: каждый, кто использует `Example`, должен вручную создавать и передавать `\PDO`. При росте проекта это быстро становится хаосом.
 
-**composer.json**
-```json
-{
-  "autoload": {
-    "psr-4": {
-      "App\\": "src/"
-    }
-  }
-}
-```
+## С DI-контейнером
 
-## Установка
-```
+Теперь то же самое, но зависимости управляются централизованно через `Cekta\DI`.
+
+### 1. Установка
+
+```bash
 composer require cekta/di
 ```
 
-## Минимальная настройка проекта. {#minimal-install}
+### 2. Конфигурация проекта
 
-### 1. Создаем скрипт
+**src/Project.php**
 
-**bin/build.php**
 ```php
 <?php
-
-declare(strict_types=1);
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-$fqcn = 'App\Container';
-$filename = __DIR__ . '/../src/Container.php';
-
-file_put_contents(
-    $filename,
-    (new \Cekta\DI\ContainerBuilder(
-        fqcn: $fqcn,
-        entries: [\App\Example::class],
-        // you configuration here, like entries, params, alias, etc.
-    ))->build()
-);
-```
-
-В этом скрипте вы можете осуществлять [основную конфигурацию](./configuration.md).
-
-### 2. Генерируем Container (build)
-```
-php bin/build.php
-```
-
-Эту команду мы будем запускать каждый раз когда изменится наши зависимости и мы захотим актуализировать наш Container.
-
-### 3. Используем Container
-
-В вашей основной точке входа теперь все зависимости создаем через наш созданный контейнер
-
-**index.php**
-```php
-<?php
-
-declare(strict_types=1);
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-$params = []; // you current params
-$container = new \App\Container($params);
-var_dump($container->get(\App\Example::class));
-```
-
-⚠️ Если какие-то параметры **ИСПОЛЬЗОВАЛИСЬ** во время build, то эти параметры необходимо передать при создании 
-Container.
-
-Использовались это не значит что были объявлены, а значит что реально были использованы для разрешения entries, такие 
-параметры запоминаются.
-
-Container гарантирует все что было указано в entries на этапе build будет доступно при использовании.
-
-## Полезные рекомендации.
-
-### Получение параметров из одного места.
-
-Так как параметры нужны как на этапе build так и во время использования, лучше чтобы они генерировались в одном месте и 
-их можно было получать в разных местах.
-
-**src/Config.php**
-```php
-<?php
-
 declare(strict_types=1);
 
 namespace App;
 
-class Config
+class Project extends \Cekta\DI\AbstractProject
 {
-    public function __construct(private readonly array $env = []) 
+    public function __construct(public readonly array $env = getenv())
     {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+            params: [
+                \PDO::class . '$dsn' => $env['DB_DSN'] ?? 'sqlite:' . __DIR__ . '/../mydb.sqlite',
+            ],
+        );
     }
-    
-    public function load(): array 
+
+    public function definition(): array
     {
-        $json = [];
-        $config = __DIR__ '/../config.json';
-        if (file_exists($config)) {
-            $json = json_decode(file_get_contents($config), true);
-        }
         return [
-            'db_username' => $this->env['DB_USERNAME'] ?? $json['db']['username'] ?? 'default username',
-            // etc
+            'entries' => [\App\Example::class],
+            'alias' => [],
+            'singletons' => [],
+            'factories' => [],
         ];
     }
 }
 ```
 
-Наличие такого конфига решает 2 основные проблемы:
-1. Позволяет получать параметры на этапе build и usage.
-2. Позволяет управлять конфигурацией проекта.
+### 3. Компиляция контейнера
 
-Для примера реализованная простейшая конфигурация, параметр `db_username` либо берется из env `DB_USERNAME` 
-если там задан, в противном случае он читается из конфигурационного файла в формате json, в остальных случаях используется 
-значение по умолчанию.
+**bin/compile.php** — скрипт для генерации сконфигурированного контейнера:
 
-Естественно в каждом проекте своя конфигурация, свое расположение конфигурационных файлов, свои форматы конфигурации и 
-приоритет их определения, но задавать в одном месте очень удобно.
+```php
+<?php
+declare(strict_types=1);
 
-### Сгенерированные файлы в отдельной папке
+require_once __DIR__ . '/../vendor/autoload.php';
 
-Лучше не мешать файлы что пишутся людьми с файлами что были сгенерированными скриптами, например для сгенерированных 
-файлов можно создать папку **runtime** в корне с проектом.
-
-```
-mkdir runtime
+$project = new \App\Project();
+$compiler = new \Cekta\DI\ContainerCompiler();
+file_put_contents($project->filename, $compiler->compile($project));
+echo "{$project->filename} was generated" . PHP_EOL;
 ```
 
-Внутри этой папки можно разместить readme.md что это для сгенерированных файлов, чтобы папка с этим файлом была в git.
+Запустите скрипт один раз, чтобы создать **Container.php**:
 
-```
-echo "# For generated files" > runtime/readme.md
-git add runtime/readme.md
-```
-
-Можно выделить отдельный namespace, например **App\Runtime\\** для сгенерированных файлов.
-
-**composer.json**:
-```json
-{
-  "autoload": {
-    "psr-4": {
-      "App\\": "src/",
-      "App\\Runtime\\": "runtime/"
-    }
-  }
-}
+```bash
+php bin/compile.php
 ```
 
-### Сгенерированные файлы в .gitignore
+Скрипт создаётся один раз и переиспользуется при необходимости перегенерации.  
+Он читает конфигурацию из `Project` и генерирует готовый файл контейнера.
 
-Нет смысла добавлять сгенерированные файлы в систему контроля версий (git), лучше их внести в .gitignore чтобы они 
-случайно не добавились
+### 4. Использование контейнера
 
-**.gitignore**
+Скомпилированный контейнер можно использовать в приложении:
+
+```php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$project = new \App\Project();
+$factory = new \Cekta\DI\ContainerFactory();
+$container = $factory->create($project);
+
+$example = $container->get(\App\Example::class);
+$example->payload();
 ```
-runtime # в случае если сгенерированные файлы в отдельной папке (предварительно добавленный readme.md останется)
-src/Container.php # в случае минимальной конфигурации
-```
-### Skeleton для проектов.
 
-Имеется проект cekta/skeleton в котором сложенны лучшие практик, в том числе по cekta/di.
+`ContainerFactory` создаёт экземпляр контейнера и подставляет параметры из проекта.
 
-Вы можете использовать данный проект для ваших новых проектов или посмотреть лучшие применения в нем.
+Зависимости разрешаются автоматически — `\PDO` будет передан в конструктор `Example` без ручной настройки.
+
+### Преимущества
+
+Однажды сконфигурированная зависимость доступна всем, кто в ней нуждается — без лишних настроек.
+
+Допустим, у вас есть `Example`, `ReportGenerator` и `ConsoleCommand`, всем нужен `\PDO`. Вам не нужно настраивать подключение к базе каждый раз: достаточно описать параметр один раз в конфигурации, а контейнер сам внедрит его в любые классы, которым он требуется.
+
+Это особенно удобно в команде: разработчик пишет код, опираясь на типизированные зависимости, и не заботится о деталях их создания — всё настроено централизованно.

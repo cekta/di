@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
-use Cekta\DI\ContainerGenerator;
+use Cekta\DI\ContainerCompiler;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Test\ContainerBuilderTest\A;
 use Cekta\DI\Test\ContainerBuilderTest\CircularDependency;
@@ -48,8 +48,8 @@ class End2EndTest extends TestCase
     protected function setUp(): void
     {
         if (!file_exists(self::$project->filename)) {
-            $generator = new ContainerGenerator();
-            file_put_contents(self::$project->filename, $generator->generate(self::$project));
+            $compiler = new ContainerCompiler();
+            file_put_contents(self::$project->filename, $compiler->compile(self::$project));
         }
         $factory = new ContainerFactory();
         $this->container = $factory->create(self::$project);
@@ -331,7 +331,7 @@ class End2EndTest extends TestCase
             fqcn: self::$project->fqcn,
             entries: [EntrypointCircularDependency::class],
         );
-        $generator = new ContainerGenerator();
-        $generator->generate($project);
+        $compiler = new ContainerCompiler();
+        $compiler->compile($project);
     }
 }

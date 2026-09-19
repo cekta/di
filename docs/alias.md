@@ -1,11 +1,12 @@
-# Alias (Псевдонимы)
+# Алиасы
 
-Механизм псевдонимов позволяет заменять одну зависимость другой. Это полезно для:
+Алиасы — маппинг абстрактных типов (интерфейсов, абстрактных классов) на конкретные реализации.  
 
-1. **Выбора реализации интерфейса** - указание, какой конкретный класс использовать для интерфейса.
-2. **Выбора наследника абстрактного класса** - определение конкретной реализации абстрактного класса.
-3. **Замены зависимостей** - использование подклассов вместо родительских классов.
-4. **Сокращения имен** - создание коротких псевдонимов для длинных имен классов
+## Когда использовать
+
+- **Привязка интерфейса к реализации** — контейнер видит тип `Logger` и создаёт `ConsoleLogger`.
+- **Выбор наследника** — вместо базового класса подставляется конкретный наследник.
+- **Замена зависимостей** — можно подменить реализацию, не трогая код потребителя.
 
 ## Пример
 
@@ -13,89 +14,20 @@
 
 ```php
 <?php
+declare(strict_types=1);
 
 namespace App;
 
-class Example {
+class Example
+{
     public function __construct(
-        public I $i,
-        public Base $base,
-    ) {}
+        public Logger $logger,
+    ) {
+    }
 }
 ```
 
-**src/I.php**
-
-```php
-<?php
-
-namespace App;
-
-interface I {}
-```
-
-**src/R2.php**
-
-```php
-<?php
-
-namespace App;
-
-class R2 implements I {}
-```
-
-**src/Base.php**
-
-```php
-<?php
-
-namespace App;
-
-class Base {}
-```
-
-**src/E1.php**
-
-```php
-<?php
-
-namespace App;
-
-class E1 extends Base {}
-```
-
-**bin/build.php** - build
-
-```php
-<?php
-
-declare(strict_types=1);
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-$fqcn = 'App\Container';
-$filename = __DIR__ . '/../src/Container.php';
-
-file_put_contents(
-    $filename,
-    (new \Cekta\DI\ContainerBuilder(
-        fqcn: $fqcn,
-        entries: [\App\Example::class],
-        alias: [
-            I::class => R2::class,      // Для I используем R2
-            Base::class => E1::class,   // Для Base используем E1
-    ],
-    ))->build()
-);
-```
-
-**Генерируем Container**
-
-```
-php bin/build.php
-```
-
-**index.php** - использование (use)
+**src/Project.php**
 
 ```php
 <?php
@@ -103,11 +35,31 @@ declare(strict_types=1);
 
 namespace App;
 
-$container = new \App\Container([]);
-$example = $container->get(Example::class);
+class Project extends \Cekta\DI\AbstractProject
+{
+    public function __construct()
+    {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+        );
+    }
 
-$example->i instanceof R2;      // true
-$example->base instanceof E1;   // true
+    public function definition(): array
+    {
+        return [
+            'entries' => [Example::class],
+            'alias' => [
+                // Глобальный алиас — для всех, кто просит Logger
+                Logger::class => ConsoleLogger::class,
+            ],
+            'singletons' => [],
+            'factories' => [],
+        ];
+    }
+}
 ```
 
-**Важно**: Псевдонимы устанавливаются на этапе компиляции. Для их изменения требуется повторная генерация контейнера.
+Использование скомпилированного контейнера описано в [Начале работы](start.md).
+
+> ⚠️ Алиасы определяются на этапе **компиляции**. Для изменения маппинга потребуется пересобрать контейнер.
