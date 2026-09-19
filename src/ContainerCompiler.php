@@ -9,7 +9,7 @@ use Cekta\DI\DependencyMap\Dependency\AutowiringShared;
 use Cekta\DI\DependencyMap\Dependency\Container;
 use Cekta\DI\DependencyMap\Dependency\Param;
 
-class ContainerGenerator
+class ContainerCompiler
 {
     public function __construct(
         private DependencyMap $dependency_map = new DependencyMap(),
@@ -17,7 +17,7 @@ class ContainerGenerator
     ) {
     }
 
-    public function generate(AbstractProject $project): string
+    public function compile(AbstractProject $project): string
     {
         $definition = $project->definition();
         $config = new BuildConfiguration(

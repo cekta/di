@@ -31,7 +31,7 @@ readonly class ContainerBuilder
         string $fqcn = 'App\Container',
         public array $singletons = [],
         public array $factories = [],
-        private ContainerGenerator $generator = new ContainerGenerator(),
+        private ContainerCompiler $generator = new ContainerCompiler(),
     ) {
         $this->fqcn = new FQCN($fqcn);
         $this->project = new class ($fqcn, $this) extends AbstractProject {
@@ -56,6 +56,6 @@ readonly class ContainerBuilder
 
     public function build(): string
     {
-        return $this->generator->generate($this->project);
+        return $this->generator->compile($this->project);
     }
 }

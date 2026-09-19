@@ -1,14 +1,26 @@
-# Управление жизненным циклом зависимостей
+# Жизненный цикл
 
-Библиотека предоставляет три типа жизненного цикла для зависимостей, что особенно полезно в долгоживущих процессах:
+В долгоживущих процессах — приложениях на [RoadRunner](https://roadrunner.dev/),
+[FrankenPHP](https://frankenphp.dev/), фоновых workers или консольных командах, обрабатывающих
+множество задач — важно контролировать, сколько экземпляров сервиса создаётся и где они живут.
 
-* Приложениях на [RoadRunner](https://roadrunner.dev/) или [FrankenPHP](https://frankenphp.dev/)
-* Фоновых workers
-* В консольных командах, обрабатывающих множество задач
+Для этого в библиотеке предусмотрены три типа жизненного цикла. Их можно применять к любым
+зависимостям: entries, params, alias и autowiring.
 
-Вы можете управлять жизненным циклом любых зависимостей: entries, params, alias и autowiring.
+## Обзор
 
-## 📋 Демонстрация разницы.
+| Тип | Описание | Когда использовать |
+|-----|----------|---------------------|
+| **Scoped** | Один экземпляр на контейнер | Обработка запросов, пользовательские сессии, изоляция данных |
+| **Singleton** | Один экземпляр на весь PHP-процесс | Конфигурация, подключения к БД, кеши |
+| **Factory** | Новый экземпляр при каждом вызове `get()` | Stateless-сервисы, DTO, временные данные |
+
+> 💡 Классы, указанные в `entries`, по умолчанию ведут себя как **scoped**.
+> Указывать их в отдельных разделах не нужно.
+
+## Конфигурация
+
+Жизненный цикл определяется в методе `definition()` класса [`AbstractProject`](api:AbstractProject):
 
 ```php
 <?php
@@ -16,109 +28,60 @@ declare(strict_types=1);
 
 namespace App;
 
-class Scoped {}
-class Singleton {}
-class Factory {}
-
-new \Cekta\DI\ContainerBuilder(
-    entries: [
-        \App\Scoped::class,
-        \App\Singleton::class,
-        \App\Factory::class,
-    ],
-    fqcn: 'App\\Container',
-    singletons: [\App\Singleton::class],   // Singleton-зависимости
-    factories: [\App\Factory::class],      // Factory-зависимости
-    // Scoped-зависимости не указываются явно (используются по умолчанию)
-)->build();
-```
-
-**index.php** - Usage (Использование)
-```php
-<?php
-declare(strict_types=1);
-
-namespace App;
-
-function testLifecycle(string $className) {
-    $container1 = new \App\Container();
-    $container2 = new \App\Container();
-    
-    $a = $container1->get($className);
-    $b = $container1->get($className);  // Второй запрос к тому же контейнеру
-    $c = $container2->get($className);  // Запрос к другому контейнеру
-    
-    echo "Внутри одного контейнера: " . ($a === $b ? "одинаковый" : "разный") . "\n";
-    echo "Между разными контейнерами: " . ($a === $c ? "одинаковый" : "разный") . "\n";
-    echo "---\n";
+class Project extends \Cekta\DI\AbstractProject
+{
+    public function definition(): array
+    {
+        return [
+            'entries' => [
+                \App\HttpController::class,  // Scoped
+            ],
+            'singletons' => [
+                \App\Database::class,         // Singleton
+            ],
+            'factories' => [
+                \App\HttpRequest::class,      // Factory
+            ],
+        ];
+    }
 }
-
-echo "Scoped (по умолчанию):\n";
-testLifecycle(Scoped::class);
-
-echo "Singleton:\n";
-testLifecycle(Singleton::class);
-
-echo "Factory:\n";
-testLifecycle(Factory::class);
 ```
 
-**Результат:**
+## Пример
 
-```
-Scoped (по умолчанию):
-Внутри одного контейнера: одинаковый
-Между разными контейнерами: разный
----
-Singleton:
-Внутри одного контейнера: одинаковый
-Между разными контейнерами: одинаковый
----
-Factory:
-Внутри одного контейнера: разный
-Между разными контейнерами: разный
-```
-
-## 🎯 Сравнение жизненных циклов
-
-| Тип       | Внутри одного контейнера | Между разными контейнерами	 | Когда использовать                          |
-|-----------|--------------------------|-----------------------------|---------------------------------------------|
-| Scoped ⭐  | 	Один объект	            | Разные объекты	             | Обработка запросов, пользовательские сессии |
-| Singleton | 	Один объект             | Один объект	                | Конфигурация, подключения к БД, кеши        |
-| Factory   | 	Разные объекты	         | Разные объекты	             | Stateless-сервисы, DTO, временные данные    |
-
-## ⚠️ Важные замечания
-
-1. **Scoped по умолчанию** - если не указан другой тип, используется Scoped
-2. **Конфликты приоритетов** - нельзя указать один класс одновременно как Singleton и Factory
-3. **Производительность** - Factory создаёт наибольшую нагрузку, Singleton - наименьшую
-4. **Потокобезопасность** - Singleton должен быть потоко-безопасным в многопоточных средах
-
-## 🚀 Пример для долгоживущего приложения
+Рассмотрим, как ведёт себя каждый тип при вызове `get()` на одном и том же и на разных контейнерах:
 
 ```php
 <?php
-new \Cekta\DI\Compiler(
-    entries: [
-        HttpController::class,
-        UserRepository::class,
-        EmailService::class,
-    ],
-    singletons: [
-        Database::class,           // Одно подключение
-        RedisCache::class,         // Общий кеш
-        Config::class,             // Конфигурация
-    ],
-    factories: [
-        HttpRequest::class,        // Новый для каждого запроса
-        UserSession::class,        // Новый для каждого пользователя
-    ],
-);
+$container1 = new \App\Container();
+$container2 = new \App\Container();
+
+$scoped1 = $container1->get(\App\Scoped::class);
+$scoped2 = $container1->get(\App\Scoped::class);
+// $scoped1 === $scoped2
+
+$singleton1 = $container1->get(\App\Singleton::class);
+$singleton2 = $container2->get(\App\Singleton::class);
+// $singleton1 === $singleton2
+
+$factory1 = $container1->get(\App\Factory::class);
+$factory2 = $container2->get(\App\Factory::class);
+// $factory1 !== $factory2
+// $factory1 !== $factory2
 ```
 
-Правильное управление жизненным циклом позволяет:
+## Сравнение
 
-* [x] Экономить ресурсы (Singleton)
-* [x] Изолировать данные (Scoped)
-* [x] Предотвращать утечки памяти (Factory)
-* [x] Легко масштабировать приложение
+| Тип | Внутри одного контейнера | Между разными контейнерами | Когда использовать |
+|-----|--------------------------|----------------------------|---------------------|
+| **Scoped** | Один объект | Разные объекты | Обработка запросов, пользовательские сессии, изоляция данных |
+| **Singleton** | Один объект | Один объект | Конфигурация, подключения к БД, кеши |
+| **Factory** | Разные объекты | Разные объекты | Stateless-сервисы, DTO, временные данные |
+
+## Важно
+
+- **Конфликты** — один и тот же класс нельзя указать одновременно как `Singleton` и `Factory`
+- **Производительность** — `Factory` создаёт наибольшую нагрузку, `Singleton` — наименьшую
+- **Потокобезопасность** — `Singleton` должен быть потокобезопасным в многопоточных средах
+
+Полное описание параметров конфигурации — [Проект](configuration.md).

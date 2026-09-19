@@ -1,84 +1,79 @@
-# Params (Параметры)
+# Параметры
 
-Параметры позволяют задавать конкретные значения для аргументов зависимостей:
+Параметры — механизм задания конкретных значений для аргументов конструктора. Они позволяют:
 
-- Встроенные типы (`string`, `int`, `array` и т.д.)
-- Переопределять значение по умолчанию
-- Конкретные экземпляры объектов (например если вы создали `$logger` вы можете использовать его и дальше)
+- передавать встроенные типы (`string`, `int`, `array` и т.д.)
+- переопределять значения по умолчанию
+- передавать конкретные экземпляры объектов
 
-Некоторые параметры могут разрешаться в момент использования, а не во время build Container, такие параметры называются
-Lazy (ленивые). С помощью таких параметров можно реализовать свою callback функцию, которая будет
-генерировать зависимость в особо сложных случаях. [Подробней о Lazy (ленивых) параметрах](lazy.md).
+Значения параметров задаются в конструкторе класса, наследуемого от [`AbstractProject`](api:AbstractProject).
 
-## Пример {#example-primitive}
+## Имена параметров
+
+Каждый параметр имеет **имя** — ключ в конфигурации.  
+Имена могут быть [глобальными и локальными](dependency-naming.md).
+
+> 💡 **Рекомендация.** По умолчанию используйте **глобальные** имена. Они делают конфигурацию
+> предсказуемой — одна настройка работает для всех потребителей. Локальные имена — для точечного
+> переопределения.
+
+## Пример
 
 **src/Example.php**
+
 ```php
 <?php
+declare(strict_types=1);
 
 namespace App;
 
 class Example
 {
-    public function __construct(public string $username, public string $password){}
+    public function __construct(
+        public string $firstName,
+        public string $lastName,
+    ) {}
 }
 ```
 
-**bin/build.php**
+**src/Project.php**
+
 ```php
 <?php
-
 declare(strict_types=1);
 
-require_once __DIR__ . '/../vendor/autoload.php';
+namespace App;
 
-$fqcn = 'App\Container';
-$filename = __DIR__ . '/../src/Container.php';
+class Project extends \Cekta\DI\AbstractProject
+{
+    public function __construct()
+    {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+            params: [
+                \App\Example::class . '$firstName' => 'admin',
+                \App\Example::class . '$lastName' => 'secret',
+            ],
+        );
+    }
 
-file_put_contents(
-    $filename,
-    (new \Cekta\DI\ContainerBuilder(
-        fqcn: $fqcn,
-        entries: [\App\Example::class],
-        params: [
-            'username' => 'some username', // глобальное имя, всем кому потребуется username, будет использовано это значение.
-            \App\Example::class . '$password' => 'some password', // локальное имя, только для Example, аргумент с именем password будет иметь значение ...
-        ]
-    ))->build()
-);
+    public function definition(): array
+    {
+        return [
+            'entries' => [\App\Example::class],
+            'alias' => [],
+            'singletons' => [],
+            'factories' => [],
+        ];
+    }
+}
 ```
 
-Параметры можно задавать [глобально и локально](dependency-naming.md#global_vs_local).  
-Рекомендую задавать параметры для конкретной зависимости(локально).
+Полный пример с компиляцией и использованием контейнера описан в [Начале работы](start.md).
 
-**Генерируем Container** - build
-```
-php bin/build.php
-```
+## Отложенные значения
 
-**index.php** - usage
-```php
-<?php
+Параметры вычисляются каждый раз в runtime (значения runtime переопределяют значения параметров с compile).
 
-declare(strict_types=1);
-
-require_once __DIR__ . '/../vendor/autoload.php';
-
-$params = []; // you current params
-$container = new \App\Container([
-    'username' => 'actual username',
-    \App\Example::class . '$password' => 'actual password',
-]);
-$example = $container->get(\App\Example::class);
-
-assert($example->username === 'actual username');
-assert($example->password === 'actual password');
-```
-
-Обратите внимание что используется актуальное значение параметра которое передается при создании контейнера, а не то 
-что было на этапе build.
-
-Параметры, что **использовались** на этапе build считаются обязательными для создания Container, 
-если вы их не передадите, получите соответствующее исключение.
-
-Использовались != были объявлены. Использовались это значит они применялись для разрешения ``entries``.
+Если нужно отложить вычисление до рантайма — см. [Отложенные значения](lazy.md).

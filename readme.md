@@ -27,59 +27,60 @@ composer require cekta/di
 
 ## 🚀 Quick Start
 
-**src/Controller.php**
 ```php
 <?php
+// src/Example.php
+class Example {
+    public function __construct(private \PDO $db) {}
+}
+```
 
-namespace App;
+**1. Configure** — define your dependencies
 
-class Controller
+```php
+<?php
+// src/Project.php
+class Project extends \Cekta\DI\AbstractProject
 {
-    public function __construct(private \PDO $service) 
+    public function __construct(public readonly array $env = getenv())
     {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+            params: [
+                \PDO::class . '$dsn' => $env['DB_DSN'] ?? 'sqlite:' . __DIR__ . '/../mydb.sqlite',
+            ],
+        );
+    }
+
+    public function definition(): array
+    {
+        return ['entries' => [\App\Example::class]];
     }
 }
 ```
 
-**bin/build.php**
+**2. Compile** — generate the container
+
 ```php
 <?php
-
-require __DIR__ . './../vendor/autoload.php';
-
-// Configure your dependencies.
-$builder = new \Cekta\DI\ContainerBuilder(
-    containers: [\App\Controller::class],
-    params: [
-        \PDO::class . '$dsn' => 'sqlite:database.sqlite',
-    ],
-    fqcn: 'App\\Runtime\\Container'
+$project = new \App\Project();
+file_put_contents(
+    $project->filename,
+    (new \Cekta\DI\ContainerGenerator())->compile($project)
 );
-
-// Generate the container
-$code = $builder->compile();
-file_put_contents(__DIR__ . '/../runtime/Container.php', $code);
 ```
 
-**CLI: generate container**
-```
-php bin/build.php
-```
+**3. Use** — get your dependencies
 
-now we can use generated **/runtime/Container.php** in our project
-
-**app.php**
 ```php
 <?php
-
-require __DIR__ . './vendor/autoload.php';
-
-// Use it in your application
-$container = new \App\Runtime\Container([
-    \PDO::class . '$dsn' => 'sqlite:database.sqlite', // can be changed, but required!!!
-]);
-$controller = $container->get(\App\Controller::class);
+$project = new \App\Project();
+$container = (new \Cekta\DI\ContainerFactory())->create($project);
+$example = $container->get(\App\Example::class);
 ```
+
+[full documentation →](https://cekta.github.io/di/start.html)
 
 ## 📚 Documentation
 

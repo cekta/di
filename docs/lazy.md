@@ -1,25 +1,78 @@
-# 🕐 Lazy-параметры (отложенные значения)
+# Отложенные значения (Lazy)
 
-Некоторые параметры могут разрешаться в момент использования, а не во время build Container, такие параметры называются
-Lazy (ленивые). С помощью таких параметров можно реализовать свою callback функцию, которая будет
-генерировать зависимость в особо сложных случаях:
+Большинство параметров вычисляются на этапе компиляции контейнера. Однако есть сценарии, когда
+значение нужно получить только в момент использования. Для таких случаев в библиотеке
+предусмотрен интерфейс [`Lazy`](#интерфейс-lazy), позволяющий отложить вычисление до рантайма.
 
-1. Нужно внедрять зависимости не только в конструктор, но и например в методы после создания объекта.
-2. Нужно получить текущий Container, для различных service locator которым требуется текущая реализация
-   ContainerInterface.
-3. Можно генерировать различные значения на основе других, например dsn строку подключения к бд, на основе db_type,
-   db_host, db_name и тд.
+Lazy-параметры полезны, когда:
 
-Если параметр реализует [Lazy interface](../src/Lazy.php), то он будет загружаться в runtime.
+1. Нужно создать объект через callback, например, внедряя зависимости в методы после создания.
+2. Нужно получить ссылку на текущий контейнер для реализации паттерна Service Locator.
+3. Нужно сгенерировать значение на основе других параметров, например, DSN-строку подключения
+   к БД из `db_type`, `db_host`, `db_name` и т. д.
 
-## Пример внедрения зависимостей через метод. {#example-method-injection}
+Подробнее о параметрах — в разделе [Параметры](params.md).
 
-Может быть ситуация когда требуется внедрить зависимость не через конструктор, а через метод или другими более сложными 
-способами.
+---
 
-**src/Example.php**
+## Интерфейс Lazy
+
 ```php
 <?php
+
+declare(strict_types=1);
+
+namespace Cekta\DI;
+
+use Psr\Container\ContainerInterface;
+
+/**
+ * @external
+ */
+interface Lazy
+{
+    public function load(ContainerInterface $container): mixed;
+}
+```
+
+Интерфейс [`Lazy`](https://github.com/cekta/di/blob/main/src/Lazy.php) помечен как **external** —
+он предназначен для использования пользователями библиотеки. Вы можете создать собственную
+реализацию, если стандартные решения не покрывают ваши потребности.
+
+Все реализации `Lazy` вызывают метод `load()` в момент разрешения зависимости — уже внутри
+скомпилированного контейнера. Это позволяет получить доступ к экземпляру `ContainerInterface`
+и выполнить произвольную логику.
+
+В библиотеке есть две готовые реализации.
+
+### Closure
+
+[Исходный код](https://github.com/cekta/di/blob/main/src/Lazy/Closure.php)
+
+Принимает callback-функцию и вызывает её в момент разрешения зависимости. Позволяет реализовать
+любую логику создания и возврата значения.
+
+### Container
+
+[Исходный код](https://github.com/cekta/di/blob/main/src/Lazy/Container.php)
+
+Возвращает сам контейнер при вызове `load()`. Используется, когда классу нужен доступ к контейнеру
+для разрешения зависимостей, например, при реализации паттерна Service Locator.
+
+---
+
+## Примеры
+
+### Пример 1: Внедрение зависимостей через метод
+
+Обычно зависимости передаются через конструктор. Однако бывают ситуации, когда требуется
+внедрить зависимость в метод или выполнить дополнительную инициализацию после создания объекта.
+
+**src/Example.php**
+
+```php
+<?php
+declare(strict_types=1);
 
 namespace App;
 
@@ -29,134 +82,108 @@ class Example
 
     public function setPdo(\PDO $connection)
     {
-        // inject via method
         $this->connection = $connection;
     }
 }
 ```
 
-**src/Config.php**
+**src/Project.php**
+
 ```php
 <?php
+declare(strict_types=1);
 
 namespace App;
 
-class Config
+class Project extends \Cekta\DI\AbstractProject
 {
     public function __construct(private array $env)
     {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+            params: [
+                \App\Example::class . '$connection' => new \Cekta\DI\Lazy\Closure(
+                    function (\Psr\Container\ContainerInterface $c) {
+                        $example = new \App\Example();
+                        $example->setPdo($c->get(\PDO::class));
+                        return $example;
+                    }
+                ),
+            ],
+        );
     }
 
-    public function __invoke(): array
+    public function definition(): array
     {
         return [
-            \App\Example::class => new \Cekta\DI\Lazy\Closure(
-                function (\Psr\Container\ContainerInterface $c) {
-                    $example = new \App\Example();
-                    $example->setPdo($c->get(\PDO::class));
-                    return $example;
-                }
-            ),
-            \PDO::class . '$dsn' => $this->env['DB_DSN'] ?? 'sqlite:./db.sqlite',
+            'entries' => [\App\Example::class, \PDO::class],
+            'alias' => [],
+            'singletons' => [],
+            'factories' => [],
         ];
     }
 }
 ```
 
-**bin/build.php**
-```php
-<?php
+### Пример 2: Внедрение ContainerInterface
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
-(new \Cekta\DI\ContainerBuilder(
-    entries: [\App\Example::class, \PDO::class],
-    fqcn: '\App\Container',
-    params: (new \App\Config(getenv() + $_ENV))(),
-))->build();
-```
-
-**index.php**
-```php
-<?php
-
-reqire_once __DIR__ . '/vendor/autoload.php';
-
-$container = new \App\Container((new Config(getenv() + $_ENV))());
-var_dump($container->get(\App\Example::class));
-```
-
-[\Cekta\DI\Lazy\Closure](https://github.com/cekta/di/blob/master/src/Lazy/Closure.php) использую callback функцию 
-создает любое значение. Вы можете задать любую callback функцию и внедрять любым способом.
-
-Вы можете [управлять жизненном циклом](lifecycle.md) данных зависимостей.
-
-**Рекомендация:** 
-1. Если параметры используются внутри LazyClosure, добавьте их в entries для гарантии доступности.
-2. Передавайте зависимости через конструктор.
-
-## Пример передачи ContainerInterface в Service Locator. {#example-service-locator}
-
-Service Locator для своей работы может требовать [ContainerInterface](https://www.php-fig.org/psr/psr-11/), 
-чтобы разрешать зависимости.
+Иногда классу требуется доступ к контейнеру для разрешения зависимостей. Например,
+при реализации паттерна Service Locator.
 
 **src/Example.php**
+
 ```php
 <?php
+declare(strict_types=1);
 
 namespace App;
 
 class Example
 {
-    public function __construct(private \Psr\Container\ContainerInterface $container) {
+    public function __construct(
+        private \Psr\Container\ContainerInterface $container
+    ) {
     }
 }
 ```
 
-**src/Config.php**
+**src/Project.php**
 
 ```php
 <?php
+declare(strict_types=1);
 
 namespace App;
 
-class Config
+class Project extends \Cekta\DI\AbstractProject
 {
-    public function __construct(private array $env)
+    public function __construct()
     {
+        parent::__construct(
+            filename: __DIR__ . '/../Container.php',
+            fqcn: 'App\Container',
+            params: [
+                \Psr\Container\ContainerInterface::class => new \Cekta\DI\Lazy\Container(),
+            ],
+        );
     }
 
-    public function __invoke(): array
+    public function definition(): array
     {
         return [
-            \Psr\Container\ContainerInterface::class => new \Cekta\DI\Lazy\Container(),
+            'entries' => [\App\Example::class],
+            'alias' => [],
+            'singletons' => [],
+            'factories' => [],
         ];
     }
 }
 ```
 
-**bin/build.php**
-```php
-<?php
+---
 
-require_once __DIR__ . '/../vendor/autoload.php';
+## Рекомендации
 
-(new \Cekta\DI\ContainerBuilder(
-    entries: [\App\Example::class],
-    fqcn: '\App\Container',
-    params: (new \App\Config(getenv() + $_ENV))(),
-))->build();
-```
-
-**index.php**
-```php
-<?php
-
-reqire_once __DIR__ . '/vendor/autoload.php';
-
-$container = new \App\Container((new Config(getenv() + $_ENV))());
-var_dump($container->get(\App\Example::class));
-```
-
-Внедрить текущую реализацию Container можно с помощью Lazy параметра 
-[\Cekta\DI\Lazy\Container](https://github.com/cekta/di/blob/master/src/Lazy/Container.php).
+1. Если параметры используются внутри `Closure`, добавляйте их в `entries` для гарантии доступности
+2. Предпочтительный способ внедрения зависимостей — конструктор. Используйте `Lazy` только когда это невозможно

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
-use Cekta\DI\ContainerGenerator;
+use Cekta\DI\ContainerCompiler;
 use Cekta\DI\Test\LifeCycleTest\Factory;
 use Cekta\DI\Test\LifeCycleTest\FactorySubContainer;
 use Cekta\DI\Test\LifeCycleTest\Project;
@@ -35,8 +35,8 @@ class LifeCycleTest extends TestCase
         if (file_exists(self::$project->filename)) {
             return;
         }
-        $generator = new ContainerGenerator();
-        file_put_contents(self::$project->filename, $generator->generate(self::$project));
+        $compiler = new ContainerCompiler();
+        file_put_contents(self::$project->filename, $compiler->compile(self::$project));
         $factory = new ContainerFactory();
         self::$container = $factory->create(self::$project);
         self::$container2 = $factory->create(self::$project);
