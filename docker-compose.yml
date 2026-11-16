@@ -10,7 +10,10 @@ services:
     volumes:
       - ./:/app
     environment:
-      - PHP_IDE_CONFIG=serverName=docker
+      - XDEBUG_MODE=debug
+      - XDEBUG_CONFIG=client_host=host.docker.internal client_port=9003 start_with_request=yes
+    extra_hosts:
+      - "host.docker.internal:host-gateway" 
 
   pages:
     image: peaceiris/mdbook:latest

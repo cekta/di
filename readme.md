@@ -39,8 +39,8 @@ class Example {
 
 ```php
 <?php
-// src/Project.php
-class Project extends \Cekta\DI\AbstractProject
+// src/Manifest.php
+class Manifest extends \Cekta\DI\Manifest
 {
     public function __construct(public readonly array $env = getenv())
     {
@@ -64,10 +64,10 @@ class Project extends \Cekta\DI\AbstractProject
 
 ```php
 <?php
-$project = new \App\Project();
+$manifest = new \App\Manifest();
 file_put_contents(
-    $project->filename,
-    (new \Cekta\DI\ContainerGenerator())->compile($project)
+    $manifest->filename(),
+    (new \Cekta\DI\ContainerGenerator())->compile($manifest)
 );
 ```
 
@@ -75,8 +75,8 @@ file_put_contents(
 
 ```php
 <?php
-$project = new \App\Project();
-$container = (new \Cekta\DI\ContainerFactory())->create($project);
+$manifest = new \App\Manifest();
+$container = (new \Cekta\DI\ContainerFactory())->create($manifest);
 $example = $container->get(\App\Example::class);
 ```
 

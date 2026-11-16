@@ -3,19 +3,24 @@
 - [Введение](readme.md)
 - [Начало работы](start.md)
 
-## Конфигурация
+# Конфигурация
 
-- [Проект](configuration.md)
-- [Параметры](params.md)
-- [Алиасы](alias.md)
+- [Manifest](manifest.md)
+- [params](params.md)
+- [definition](definition.md)
+  - [entries](entries.md)
+  - [alias](alias.md)
+  - [Жизненный цикл(singletons, factories)](lifecycle.md)
 - [Отложенные значения (Lazy)](lazy.md)
-- [Жизненный цикл](lifecycle.md)
 
-## Разрешение зависимостей
+# Advanced
 
 - [Имена зависимостей](dependency-naming.md)
-- [Процесс разрешения](resolving.md)
+- [Генерация контейнера](generate.md)
+- [Использование контейнера](usage.md)
+- [Долгоживующие процессы](reset.md)
+- [Discovery](discovery.md)
 
-## Поддержка
+# Поддержка
 
 - [Поддержка](support.md)

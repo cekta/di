@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Cekta\DI\Test\ContainerBuilderTest;
 
+use Cekta\DI\Manifest;
 use Cekta\DI\Lazy\Closure;
-use Cekta\DI\Test\Fixture\Project;
 use Psr\Container\ContainerInterface;
 use stdClass;
 
-class ProjectEnd2End extends Project
+class ProjectEnd2End extends Manifest
 {
     public function __construct(
         string $filename,
@@ -23,15 +23,6 @@ class ProjectEnd2End extends Project
         parent::__construct(
             filename: $filename,
             fqcn: 'Cekta\DI\Test\ContainerBuilderTest\Container',
-            entries: [
-                stdClass::class,
-                EntrypointAutowiring::class,
-                EntrypointSharedDependency::class,
-                EntrypointVariadicClass::class,
-                EntrypointOverwriteExtendConstructor::class,
-                EntrypointOptionalArgument::class,
-            ],
-            alias: $alias,
             params: [
                 'username' => 'some username',
                 'password' => 'some password',
@@ -52,6 +43,17 @@ class ProjectEnd2End extends Project
                     $password = $container->get('password');
                     return "definition u: $username, p: $password";
                 })
+            ],
+            definition: [
+                'alias' => $alias,
+                'entries' => [
+                    stdClass::class,
+                    EntrypointAutowiring::class,
+                    EntrypointSharedDependency::class,
+                    EntrypointVariadicClass::class,
+                    EntrypointOverwriteExtendConstructor::class,
+                    EntrypointOptionalArgument::class,
+                ]
             ]
         );
     }

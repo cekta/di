@@ -9,7 +9,7 @@ use Cekta\DI\DependencyMap\Dependency\AutowiringShared;
 use Cekta\DI\DependencyMap\Dependency\Container;
 use Cekta\DI\DependencyMap\Dependency\Param;
 
-class ContainerCompiler
+class ContainerGenerator
 {
     public function __construct(
         private DependencyMap $dependency_map = new DependencyMap(),
@@ -17,18 +17,10 @@ class ContainerCompiler
     ) {
     }
 
-    public function compile(AbstractProject $project): string
+    public function generate(ManifestInterface $manifest): string
     {
-        $definition = $project->definition();
-        $config = new BuildConfiguration(
-            fqcn:  new FQCN($project->fqcn),
-            entries: $definition['entries'] ?? [],
-            params: $project->params,
-            alias: $definition['alias'] ?? [],
-            singletons: $definition['singletons'] ?? [],
-            factories: $definition['factories'] ?? [],
-        );
-        $dependency_map = $this->dependency_map->generate($config);
+        $definition = $manifest->definition();
+        $dependency_map = $this->dependency_map->generate($manifest);
         $required_keys = [];
         $dependencies = [];
         foreach ($dependency_map as $dependency) {
@@ -45,11 +37,11 @@ class ContainerCompiler
             }
         }
         return $this->template->render([
-            'namespace' => $config->fqcn->namespace,
-            'class' => $config->fqcn->className,
-            'entries' => $config->entries,
-            'singletons' => $config->singletons,
-            'factories' => $config->factories,
+            'namespace' => $manifest->fqcn()->namespace,
+            'class' => $manifest->fqcn()->className,
+            'entries' => $definition->entries,
+            'singletons' => $definition->singletons,
+            'factories' => $definition->factories,
             'dependencies' => $dependencies,
             'required_keys' => $required_keys,
         ]);

@@ -1,14 +1,14 @@
 # Алиасы
 
-Алиасы — маппинг абстрактных типов (интерфейсов, абстрактных классов) на конкретные реализации.  
+Алиасы — маппинг одной зависимости (А) на другую (B).
 
-## Когда использовать
+Когда использовать:
 
-- **Привязка интерфейса к реализации** — контейнер видит тип `Logger` и создаёт `ConsoleLogger`.
-- **Выбор наследника** — вместо базового класса подставляется конкретный наследник.
+- **Привязка интерфейса к реализации** — контейнер видит тип `Logger`(А) и создаёт `ConsoleLogger`(B).
+- **Выбор наследника** — вместо базового класса(A) подставляется конкретный наследник(B).
 - **Замена зависимостей** — можно подменить реализацию, не трогая код потребителя.
 
-## Пример
+## Пример простой
 
 **src/Example.php**
 
@@ -27,7 +27,7 @@ class Example
 }
 ```
 
-**src/Project.php**
+**src/Manifest.php**
 
 ```php
 <?php
@@ -35,31 +35,27 @@ declare(strict_types=1);
 
 namespace App;
 
-class Project extends \Cekta\DI\AbstractProject
+class Manifest extends \Cekta\DI\Manifest
 {
     public function __construct()
     {
         parent::__construct(
             filename: __DIR__ . '/../Container.php',
             fqcn: 'App\Container',
+            definition: [
+                'entries' => [Example::class],
+                'alias' => [
+                    // Глобальный алиас — для всех, кто просит Logger
+                    Logger::class => ConsoleLogger::class,
+                ],
+                'singletons' => [],
+                'factories' => [],
+            ]
         );
-    }
-
-    public function definition(): array
-    {
-        return [
-            'entries' => [Example::class],
-            'alias' => [
-                // Глобальный алиас — для всех, кто просит Logger
-                Logger::class => ConsoleLogger::class,
-            ],
-            'singletons' => [],
-            'factories' => [],
-        ];
     }
 }
 ```
 
-Использование скомпилированного контейнера описано в [Начале работы](start.md).
+> ⚠️ Алиасы определяются на этапе **генерации контейнера**.
 
-> ⚠️ Алиасы определяются на этапе **компиляции**. Для изменения маппинга потребуется пересобрать контейнер.
+> Для изменения маппинга потребуется пересобрать контейнер.
