@@ -9,9 +9,9 @@ readonly class FQCN
     public string $className;
     public string $namespace;
 
-    public function __construct(string $fqcn)
+    public function __construct(public string $fqcn)
     {
-        $parts = explode('\\', $fqcn);
+        $parts = explode('\\', $this->fqcn);
         $this->className = array_pop($parts);
         $this->namespace = implode('\\', $parts);
     }

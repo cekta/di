@@ -22,18 +22,21 @@ class DependencyMap
      * @var array<string>
      */
     private array $stack = [];
-    private BuildConfiguration $config;
+    private ManifestInterface $manifest;
     private ReflectionService $reflection_service;
 
     /**
-     * @param BuildConfiguration $config
+     * @param ManifestInterface $manifest
      * @return array<string, Dependency>
      */
-    public function generate(BuildConfiguration $config): array
+    public function generate(ManifestInterface $manifest): array
     {
-        $this->config = $config;
-        $this->reflection_service = new ReflectionService($this->config->params, $this->config->alias);
-        foreach ($this->config->entries as $container) {
+        $this->manifest = $manifest;
+        $this->reflection_service = new ReflectionService(
+            $this->manifest->params(),
+            $this->manifest->definition()->alias
+        );
+        foreach ($this->manifest->definition()->entries as $container) {
             $this->match($container);
         }
         return $this->dependencies_map;
@@ -41,16 +44,24 @@ class DependencyMap
 
     private function makeDependency(string $name): Dependency
     {
-        if (array_key_exists($name, $this->config->params)) {
+        if (array_key_exists($name, $this->manifest->params())) {
             $dependency = new Param($name);
-        } elseif (array_key_exists($name, $this->config->alias)) {
-            $dependency = new Alias($name, $this->config->alias[$name]);
-        } elseif (in_array($name, $this->config->entries)) {
+        } elseif (array_key_exists($name, $this->manifest->definition()->alias)) {
+            $dependency = new Alias($name, $this->manifest->definition()->alias[$name]);
+        } elseif (in_array($name, $this->manifest->definition()->entries)) {
             $dependency = new Container(
                 $name,
                 ...$this->reflection_service->getParameters($name, $this->stack)
             );
-        } elseif (in_array($name, [...$this->config->factories, ...$this->config->singletons])) {
+        } elseif (
+            in_array(
+                $name,
+                [
+                    ...$this->manifest->definition()->factories,
+                    ...$this->manifest->definition()->singletons
+                ]
+            )
+        ) {
             $dependency = new AutowiringShared(
                 $name,
                 ...$this->reflection_service->getParameters($name, $this->stack)

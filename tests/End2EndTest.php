@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Cekta\DI\Test;
 
 use Cekta\DI\ContainerFactory;
-use Cekta\DI\ContainerCompiler;
+use Cekta\DI\ContainerGenerator;
+use Cekta\DI\Manifest;
 use Cekta\DI\Exception\NotFound;
 use Cekta\DI\Test\ContainerBuilderTest\A;
 use Cekta\DI\Test\ContainerBuilderTest\CircularDependency;
@@ -21,7 +22,6 @@ use Cekta\DI\Test\ContainerBuilderTest\ProjectEnd2End;
 use Cekta\DI\Test\ContainerBuilderTest\R1;
 use Cekta\DI\Test\ContainerBuilderTest\S;
 use Cekta\DI\Test\ContainerBuilderTest\SWithParam;
-use Cekta\DI\Test\Fixture\Project;
 use InvalidArgumentException;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
@@ -33,13 +33,13 @@ use stdClass;
 class End2EndTest extends TestCase
 {
     private ContainerInterface $container;
-    private static ProjectEnd2End $project;
+    private static ProjectEnd2End $manifest;
 
     public static function setUpBeforeClass(): void
     {
-        self::$project = new ProjectEnd2End(__DIR__ . "/ContainerBuilderTest/Container.php");
-        file_exists(self::$project->filename) &&
-            unlink(self::$project->filename);
+        self::$manifest = new ProjectEnd2End(__DIR__ . "/ContainerBuilderTest/Container.php");
+        file_exists(self::$manifest->filename()) &&
+            unlink(self::$manifest->filename());
     }
 
     /**
@@ -47,12 +47,12 @@ class End2EndTest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!file_exists(self::$project->filename)) {
-            $compiler = new ContainerCompiler();
-            file_put_contents(self::$project->filename, $compiler->compile(self::$project));
+        if (!file_exists(self::$manifest->filename())) {
+            $compiler = new ContainerGenerator();
+            file_put_contents(self::$manifest->filename(), $compiler->generate(self::$manifest));
         }
         $factory = new ContainerFactory();
-        $this->container = $factory->create(self::$project);
+        $this->container = $factory->build(self::$manifest);
     }
 
     /**
@@ -60,8 +60,8 @@ class End2EndTest extends TestCase
      */
     public static function tearDownAfterClass(): void
     {
-        file_exists(self::$project->filename) &&
-            unlink(self::$project->filename);
+        file_exists(self::$manifest->filename()) &&
+            unlink(self::$manifest->filename());
     }
 
     /**
@@ -70,7 +70,7 @@ class End2EndTest extends TestCase
      */
     public function testAllEntriesMustBeAvailableAndGettable(): void
     {
-        foreach (self::$project->entries as $key) {
+        foreach (self::$manifest->definition()->entries as $key) {
             Assert::assertTrue(
                 $this->container->has($key),
                 "available for get",
@@ -105,12 +105,12 @@ class End2EndTest extends TestCase
         $autowiring = $this->container->get(EntrypointAutowiring::class);
         Assert::assertInstanceOf(EntrypointAutowiring::class, $autowiring);
         Assert::assertSame(
-            self::$project->params["username"],
+            self::$manifest->params()["username"],
             $autowiring->username,
             "string(primitive) params must be inject",
         );
         Assert::assertSame(
-            self::$project->params["password"],
+            self::$manifest->params()["password"],
             $autowiring->password,
             "string(primitive) params must be inject",
         );
@@ -146,7 +146,7 @@ class End2EndTest extends TestCase
             "must be called array_pop on everytime",
         );
         Assert::assertSame(
-            self::$project->params[S::class . "|string"],
+            self::$manifest->params()[S::class . "|string"],
             $autowiring->union_type,
             "union|dfn params must work",
         );
@@ -156,12 +156,12 @@ class End2EndTest extends TestCase
             "lazy loading params must be correct inject",
         );
         Assert::assertSame(
-            self::$project->params["argument_to_custom_param"],
+            self::$manifest->params()["argument_to_custom_param"],
             $autowiring->argument_to_custom_param,
             "must default value from param, no custom param",
         );
         Assert::assertSame(
-            self::$project->params["argument_to_custom_alias_value"],
+            self::$manifest->params()["argument_to_custom_alias_value"],
             $autowiring->argument_to_custom_alias,
             "must default alias, no custom alias",
         );
@@ -171,7 +171,7 @@ class End2EndTest extends TestCase
             "other entrypoint must be correct inject",
         );
         Assert::assertSame(
-            self::$project->params["...variadic_int"],
+            self::$manifest->params()["...variadic_int"],
             $autowiring->variadic_int,
             "variadic params must be inject",
         );
@@ -214,24 +214,24 @@ class End2EndTest extends TestCase
             "dependency between few entrypoint must be auto shared (same)",
         );
         Assert::assertSame(
-            self::$project->params[
+            self::$manifest->params()[
                 EntrypointSharedDependency::class . '$argument_to_custom_param'
             ],
             $entrypoint_shared->argument_to_custom_param,
             "must be set custom param only for this class",
         );
         Assert::assertSame(
-            self::$project->params["argument_to_custom_alias_custom_value"],
+            self::$manifest->params()["argument_to_custom_alias_custom_value"],
             $entrypoint_shared->argument_to_custom_alias,
             "must be used custom alias only for this class",
         );
         Assert::assertSame(
-            self::$project->params["argument_to_custom_alias_custom_value"],
+            self::$manifest->params()["argument_to_custom_alias_custom_value"],
             $entrypoint_shared->argument_to_custom_alias2,
             "after alias must be correct detect param with array_pop stack",
         );
         Assert::assertSame(
-            self::$project->params[
+            self::$manifest->params()[
                 "..." . EntrypointSharedDependency::class . '$variadic_int'
             ],
             $entrypoint_shared->variadic_int,
@@ -258,7 +258,7 @@ class End2EndTest extends TestCase
         /** @var EntrypointVariadicClass $obj */
         $obj = $this->container->get(EntrypointVariadicClass::class);
         Assert::assertSame(
-            self::$project->params["..." . A::class],
+            self::$manifest->params()["..." . A::class],
             $obj->a_array,
             "variadic params without primitive must be correct injected",
         );
@@ -275,7 +275,7 @@ class End2EndTest extends TestCase
             EntrypointOverwriteExtendConstructor::class,
         );
         Assert::assertSame(
-            self::$project->params[
+            self::$manifest->params()[
                 EntrypointOverwriteExtendConstructor::class . '$username'
             ],
             $obj->username,
@@ -312,7 +312,7 @@ class End2EndTest extends TestCase
                 EntrypointOverwriteExtendConstructor::class . '$username',
             ),
         );
-        new (self::$project->fqcn)([]);
+        new (self::$manifest->fqcn()->fqcn)([]);
     }
 
     public function testInfiniteRecursion(): void
@@ -326,12 +326,15 @@ class End2EndTest extends TestCase
                 CircularDependency::class,
             ),
         );
-        $project = new Project(
-            filename: self::$project->filename,
-            fqcn: self::$project->fqcn,
-            entries: [EntrypointCircularDependency::class],
+        $manifest = new Manifest(
+            filename: self::$manifest->filename(),
+            fqcn: self::$manifest->fqcn()->fqcn,
+            params: [],
+            definition: [
+                'entries' => [EntrypointCircularDependency::class],
+            ],
         );
-        $compiler = new ContainerCompiler();
-        $compiler->compile($project);
+        $compiler = new ContainerGenerator();
+        $compiler->generate($manifest);
     }
 }

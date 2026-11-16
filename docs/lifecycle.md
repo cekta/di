@@ -2,50 +2,37 @@
 
 В долгоживущих процессах — приложениях на [RoadRunner](https://roadrunner.dev/),
 [FrankenPHP](https://frankenphp.dev/), фоновых workers или консольных командах, обрабатывающих
-множество задач — важно контролировать, сколько экземпляров сервиса создаётся и где они живут.
+множество задач — важно контролировать, сколько экземпляров сервиса создаётся.
 
-Для этого в библиотеке предусмотрены три типа жизненного цикла. Их можно применять к любым
-зависимостям: entries, params, alias и autowiring.
+Для этого в библиотеке предусмотрены три типа жизненного цикла.
+Их можно применять к любым зависимостям.
 
-## Обзор
+Управлением жизненным циклом зависимостей привязано к созданию экземпляра контейнера.
 
-| Тип | Описание | Когда использовать |
-|-----|----------|---------------------|
-| **Scoped** | Один экземпляр на контейнер | Обработка запросов, пользовательские сессии, изоляция данных |
-| **Singleton** | Один экземпляр на весь PHP-процесс | Конфигурация, подключения к БД, кеши |
-| **Factory** | Новый экземпляр при каждом вызове `get()` | Stateless-сервисы, DTO, временные данные |
+## Scoped
 
-> 💡 Классы, указанные в `entries`, по умолчанию ведут себя как **scoped**.
-> Указывать их в отдельных разделах не нужно.
+Зависимость существует в единственном экземпляра в рамках **экземпляра контейнера**.
 
-## Конфигурация
+Экземпляр зависимости создается единожды (в момент когда он понадобится),
+сохраняется в in memory storage конкретного экземпляра контейнера (в свойство экземпляра контейнера).
 
-Жизненный цикл определяется в методе `definition()` класса [`AbstractProject`](api:AbstractProject):
+Если будет несколько экземпляров контейнера, может быть несколько разных экземпляров зависимости.
 
-```php
-<?php
-declare(strict_types=1);
+> 💡 Значение по умолчанию для всех.
 
-namespace App;
+## Singleton
 
-class Project extends \Cekta\DI\AbstractProject
-{
-    public function definition(): array
-    {
-        return [
-            'entries' => [
-                \App\HttpController::class,  // Scoped
-            ],
-            'singletons' => [
-                \App\Database::class,         // Singleton
-            ],
-            'factories' => [
-                \App\HttpRequest::class,      // Factory
-            ],
-        ];
-    }
-}
-```
+Зависимомсть существует в единственном экземпляре в рамках **ВСЕХ** экзепляров контейнеров.
+
+in memory storage **общий между всеми контейнерами** (статическое свойство)
+
+Сколько бы не было экземпляров контейнеров, зависимость будет в одном экземпляре.
+
+> 💡В многопоточной среде, желательно чтобы такая зависимость была **потокабезопасна**.
+
+## Factory
+
+Зависимость создается каждый раз как ее запросят (она не кэшируется in memory storage).
 
 ## Пример
 
@@ -53,35 +40,43 @@ class Project extends \Cekta\DI\AbstractProject
 
 ```php
 <?php
-$container1 = new \App\Container();
-$container2 = new \App\Container();
+$manifest = new Cekta\DI\Manifest(
+    filename: __DIR__ . '/src/Container.php',
+    fqcn: 'App\\Container',
+    definition: [
+        [
+            'entries' => [
+                \App\HttpController::class,  // Scoped
+                \App\Database::class,
+                \App\HttpRequest::class,
+            ],
+            'singletons' => [
+                \App\Database::class,         // Singleton
+            ],
+            'factories' => [
+                \App\HttpRequest::class,      // Factory
+            ],
+        ]
+    ]
+);
+$factory = new Cekta\DI\ContainerFactory();
+$container1 = $factory->create($manifest); // первый экземпляр контейнера
+$container2 = $factory->create($manifest); // второй экземпляр контейнера
 
-$scoped1 = $container1->get(\App\Scoped::class);
-$scoped2 = $container1->get(\App\Scoped::class);
-// $scoped1 === $scoped2
+$scoped1 = $container1->get(\App\HttpController::class); // создали зависимость и положили в кэш первого экземпляра контейнера
+assert($scoped1 === $container1->get(\App\HttpController::class));
+assert($scoped1 !== $container2->get(\App\HttpController::class)); // в кэще второго экземпляра контейнера зависимости нет!!!
 
-$singleton1 = $container1->get(\App\Singleton::class);
-$singleton2 = $container2->get(\App\Singleton::class);
-// $singleton1 === $singleton2
+$singleton1 = $container1->get(\App\Database::class); // создали зависимость и положили в кэш ВСЕХ контейнеров
+assert($singleton1 === $container1->get(\App\Database::class));
+assert($singleton1 === $container2->get(\App\Database::class));
 
-$factory1 = $container1->get(\App\Factory::class);
-$factory2 = $container2->get(\App\Factory::class);
-// $factory1 !== $factory2
-// $factory1 !== $factory2
+$factory1 = $container1->get(\App\HttpRequest::class); // создали зависимость и не закэшировали ее
+assert($factory1 !== $container1->get(\App\HttpRequest::class)); // каждый следующий вызов создает новый экземпляр
+assert($factory1 !== $container2->get(\App\HttpRequest::class));
 ```
 
-## Сравнение
+Данный пример наглядно демонстрирует что жизненный цикл зависимостей привязан к экземпляру контейнера, 
+если у вас долгоживущие процессы, то вы можетете управлять временем жизни экземпляра контейнер.
 
-| Тип | Внутри одного контейнера | Между разными контейнерами | Когда использовать |
-|-----|--------------------------|----------------------------|---------------------|
-| **Scoped** | Один объект | Разные объекты | Обработка запросов, пользовательские сессии, изоляция данных |
-| **Singleton** | Один объект | Один объект | Конфигурация, подключения к БД, кеши |
-| **Factory** | Разные объекты | Разные объекты | Stateless-сервисы, DTO, временные данные |
-
-## Важно
-
-- **Конфликты** — один и тот же класс нельзя указать одновременно как `Singleton` и `Factory`
-- **Производительность** — `Factory` создаёт наибольшую нагрузку, `Singleton` — наименьшую
-- **Потокобезопасность** — `Singleton` должен быть потокобезопасным в многопоточных средах
-
-Полное описание параметров конфигурации — [Проект](configuration.md).
+[Подробней о долгоживущих процессах](reset.md)

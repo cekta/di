@@ -20,7 +20,7 @@ if (!empty($namespace)) {
 }
 ?>
 
-class <?= $class ?> implements \Psr\Container\ContainerInterface
+class <?= $class ?> implements \Psr\Container\ContainerInterface, \Cekta\DI\Disposable
 {
     /**
      * @var array<string, mixed>
@@ -43,12 +43,14 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
      */
     private array $targets;
 
+    private bool $disposed = false;
+
     /**
      * @param array<string, mixed> $params
      * @throws \RuntimeException if required params not declared
      */
     public function __construct(
-        private array $params = [], 
+        private array $params = [],
     ) {
         $keys = array_keys($this->params);
         $diff = array_diff(<?= var_export($required_keys, true) ?>, $keys);
@@ -59,6 +61,28 @@ class <?= $class ?> implements \Psr\Container\ContainerInterface
         $this->list_factories = <?= var_export($factories, true) ?>;
         $this->list_singletons = <?= var_export($singletons, true) ?>;
         $this->targets = <?= var_export($entries, true) ?>;
+    }
+
+    public function __destruct()
+    {
+        $this->dispose();
+    }
+
+    public function dispose(): void
+    {
+        if ($this->disposed) {
+            return;
+        }
+        foreach ($this->context as $service) {
+            if ($service instanceof \Cekta\DI\Disposable) {
+                try {
+                    $service->dispose();
+                } catch (\Throwable) {
+                }
+            }
+        }
+        $this->context = [];
+        $this->disposed = true;
     }
 
     public function get(string $id)

@@ -10,12 +10,13 @@ use Cekta\DI\DependencyMap\Dependency\Param;
 
 /**
  * @external
- * @deprecated will be removed on next release, use AbstractProject
+ * @deprecated will be removed on next release, use ContainerCompiler
  */
 readonly class ContainerBuilder
 {
     public FQCN $fqcn;
-    private readonly AbstractProject $project;
+
+    private readonly Manifest $manifest;
     /**
      * @param array<string> $entries
      * @param array<string, mixed|Lazy> $params
@@ -31,31 +32,18 @@ readonly class ContainerBuilder
         string $fqcn = 'App\Container',
         public array $singletons = [],
         public array $factories = [],
-        private ContainerCompiler $generator = new ContainerCompiler(),
     ) {
-        $this->fqcn = new FQCN($fqcn);
-        $this->project = new class ($fqcn, $this) extends AbstractProject {
-            public function __construct(
-                private string $fqcnString,
-                private ContainerBuilder $builder
-            ) {
-                parent::__construct('tmp stub', $this->fqcnString, $this->builder->params);
-            }
-
-            public function definition(): array
-            {
-                return [
-                    'entries' => $this->builder->entries,
-                    'alias' => $this->builder->alias,
-                    'singletons' => $this->builder->singletons,
-                    'factories' => $this->builder->factories,
-                ];
-            }
-        };
+        $this->manifest = new Manifest('tmp stub', $fqcn, $params, [
+            'entries' => $entries,
+            'alias' => $alias,
+            'singletons' => $singletons,
+            'factories' => $factories,
+        ]);
+        $this->fqcn = $this->manifest->fqcn();
     }
 
     public function build(): string
     {
-        return $this->generator->compile($this->project);
+        return new ContainerGenerator()->generate($this->manifest);
     }
 }

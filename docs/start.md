@@ -40,7 +40,8 @@ $example = new \App\Example($pdo);
 $example->payload();
 ```
 
-Проблема: каждый, кто использует `Example`, должен вручную создавать и передавать `\PDO`. При росте проекта это быстро становится хаосом.
+Проблема: каждый, кто использует `Example`, должен вручную создавать и передавать `\PDO`.  
+При росте проекта это быстро становится хаосом.
 
 ## С DI-контейнером
 
@@ -54,7 +55,7 @@ composer require cekta/di
 
 ### 2. Конфигурация проекта
 
-**src/Project.php**
+**src/Manifest.php**
 
 ```php
 <?php
@@ -62,7 +63,7 @@ declare(strict_types=1);
 
 namespace App;
 
-class Project extends \Cekta\DI\AbstractProject
+class Manifest extends \Cekta\DI\Manifest
 {
     public function __construct(public readonly array $env = getenv())
     {
@@ -72,24 +73,19 @@ class Project extends \Cekta\DI\AbstractProject
             params: [
                 \PDO::class . '$dsn' => $env['DB_DSN'] ?? 'sqlite:' . __DIR__ . '/../mydb.sqlite',
             ],
+            definition: [
+                'entries' => [\App\Example::class],
+            ],
         );
-    }
-
-    public function definition(): array
-    {
-        return [
-            'entries' => [\App\Example::class],
-            'alias' => [],
-            'singletons' => [],
-            'factories' => [],
-        ];
     }
 }
 ```
 
-### 3. Компиляция контейнера
+[Подробней о manifest](manifest.md)
 
-**bin/compile.php** — скрипт для генерации сконфигурированного контейнера:
+### 3. Генерация контейнера
+
+**bin/generate.php** — скрипт для генерации сконфигурированного контейнера:
 
 ```php
 <?php
@@ -97,24 +93,24 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$project = new \App\Project();
-$compiler = new \Cekta\DI\ContainerCompiler();
-file_put_contents($project->filename, $compiler->compile($project));
-echo "{$project->filename} was generated" . PHP_EOL;
+$manifest = new \App\Manifest();
+$generator = new \Cekta\DI\ContainerGenerator();
+file_put_contents($manifest->filename(), $generator->generate($manifest));
+echo "{$manifest->filename()} was generated" . PHP_EOL;
 ```
 
 Запустите скрипт один раз, чтобы создать **Container.php**:
 
 ```bash
-php bin/compile.php
+php bin/generate.php
 ```
 
 Скрипт создаётся один раз и переиспользуется при необходимости перегенерации.  
-Он читает конфигурацию из `Project` и генерирует готовый файл контейнера.
+Он читает конфигурацию из `Manifest` и генерирует готовый файл контейнера.
+
+[Подробней о генерации](generate.md)
 
 ### 4. Использование контейнера
-
-Скомпилированный контейнер можно использовать в приложении:
 
 ```php
 <?php
@@ -122,22 +118,21 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$project = new \App\Project();
 $factory = new \Cekta\DI\ContainerFactory();
-$container = $factory->create($project);
+$container = $factory->create(new \App\Manifest());
 
 $example = $container->get(\App\Example::class);
 $example->payload();
 ```
 
-`ContainerFactory` создаёт экземпляр контейнера и подставляет параметры из проекта.
+`ContainerFactory` создаёт экземпляр контейнера и подставляет параметры из [manifest](manifest.md).
 
 Зависимости разрешаются автоматически — `\PDO` будет передан в конструктор `Example` без ручной настройки.
 
 ### Преимущества
 
-Однажды сконфигурированная зависимость доступна всем, кто в ней нуждается — без лишних настроек.
+Однажды сконфигурированная зависимость доступна всем, кто в ней нуждается — без лишних настроек и погружений в детали ее работы.
 
 Допустим, у вас есть `Example`, `ReportGenerator` и `ConsoleCommand`, всем нужен `\PDO`. Вам не нужно настраивать подключение к базе каждый раз: достаточно описать параметр один раз в конфигурации, а контейнер сам внедрит его в любые классы, которым он требуется.
 
-Это особенно удобно в команде: разработчик пишет код, опираясь на типизированные зависимости, и не заботится о деталях их создания — всё настроено централизованно.
+Это особенно удобно в команде: разработчик пишет код, опираясь на типизированные зависимости, и не заботится о деталях их создания.
